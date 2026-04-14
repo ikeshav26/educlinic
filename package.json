@@ -1,0 +1,18 @@
+{
+  "name": "bring-me-back-root",
+  "private": true,
+  "scripts": {
+    "install": " pnpm -C client install && pnpm -C server install",
+    "dev": "concurrently \"pnpm -C client dev\" \"pnpm -C server dev\"",
+    "format": "prettier --write .",
+    "lint": "pnpm -C client lint && pnpm -C server lint",
+    "lint:root": "eslint ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1"
+  },
+  "dependencies": {
+    "eslint": "^9.39.2"
+  }
+}
