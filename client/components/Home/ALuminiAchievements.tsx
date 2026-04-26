@@ -3,63 +3,67 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface AlumniCardProps {
-  initials: string;
   name: string;
   role: string;
   company: string;
   batch: string;
   branch: string;
+  image?: string;
 }
 
 const alumniData: AlumniCardProps[] = [
   {
-    initials: 'SM',
     name: 'Sidhanshu Monga',
     role: 'Sr. Software Developer',
     company: 'Google',
     batch: 'Batch 2018',
     branch: 'CSE',
+    image: "/alumini/sidhanshu.png"
   },
   {
-    initials: 'ST',
-    name: 'Saimon Thada Magger',
-    role: 'Sr. Member Technical',
-    company: 'Oracle',
-    batch: 'Batch 2016',
-    branch: 'ECE',
-  },
-  {
-    initials: 'AM',
     name: 'Aish Monga',
     role: 'Software Dev Engineer',
     company: 'IBM',
     batch: 'Batch 2019',
     branch: 'CSE',
+    image: "/alumini/aish.png"
   },
   {
-    initials: 'GS',
-    name: 'Gaurav Sachdeva',
-    role: 'Sr. Software Engineer',
-    company: 'Philips',
+    name: 'Yerramili Tarun',
+    role: 'Head - Central Operations',
+    company: 'Amazon',
+    batch: 'Batch 2019',
+    branch: 'CSE',
+    image: "/alumini/yerramili.png"
+  },
+  {
+    name: 'Raveena Monga',
+    role: 'Sr. Analyst',
+    company: 'Deloitte',
     batch: 'Batch 2015',
     branch: 'CSE',
+    image: "/alumini/raveena.png"
   },
 ];
 
-const AlumniCard: React.FC<AlumniCardProps> = ({ initials, name, role, company, batch, branch }) => {
+const AlumniCard: React.FC<AlumniCardProps> = ({ name, role, company, batch, branch, image }) => {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.05)] border border-gray-100 flex flex-col transition-transform hover:-translate-y-1 duration-300">
-      <div className="h-28 bg-[#b8cffa] relative p-4 flex justify-end">
-        <div className="bg-white text-gray-800 text-xs font-bold px-4 py-1.5 rounded-full h-fit flex items-center shadow-sm">
+      <div className="h-48 lg:h-78 bg-[#b8cffa] relative p-4 flex justify-end overflow-hidden">
+        {image && (
+          <img 
+            src={image} 
+            alt={name} 
+            className="absolute inset-0 w-full h-full object-cover object-center z-0"
+          />
+        )}
+        <div className="bg-white text-gray-800 text-xs font-bold px-4 py-1.5 rounded-full h-fit flex items-center shadow-sm relative z-10">
           {company}
         </div>
       </div>
       
 
       <div className="px-6 pt-12 pb-6 relative flex-grow flex flex-col">
-        <div className="absolute -top-10 left-6 w-20 h-20 bg-[#1e2336] rounded-full flex justify-center items-center text-[#eab308] font-bold text-2xl border-4 border-white shadow-sm">
-          {initials}
-        </div>
         
         <div className="flex-grow">
           <h3 className="font-bold text-[#111827] text-lg leading-tight">{name}</h3>
