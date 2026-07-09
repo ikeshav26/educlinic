@@ -3,6 +3,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import authRoutes from './routes/auth.routes.js';
 import morgan from 'morgan';
+import eventRoutes from "./routes/event.routes.js"
+import { authMiddleware } from './middleware/auth.js';
+import { UserRole } from '../generated/prisma/enums.js';
 
 const app: express.Application = express();
 
@@ -24,5 +27,6 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use("/api/events",eventRoutes);
 
 export default app;
