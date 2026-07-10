@@ -12,7 +12,7 @@ import { UserRole } from '../../generated/prisma/enums.js';
 const router: express.Router = express.Router();
 
 router.post('/create', authMiddleware(UserRole.ADMIN), createEvent);
-router.get('/all-events', authMiddleware(UserRole.USER), getAllEvents);
+router.get('/all-events', getAllEvents);
 router.get('/:id', authMiddleware(UserRole.USER), getEventById);
 router.patch('/update/:id', authMiddleware(UserRole.ADMIN), updateEvent);
 router.delete('/delete/:id', authMiddleware(UserRole.ADMIN), deleteEvent);
