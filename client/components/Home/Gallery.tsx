@@ -12,19 +12,19 @@ interface GalleryItem {
 const galleryItems: GalleryItem[] = [
   {
     id: '1',
-    src: '/gallery/gallery-1.jpg',
+    src: '/gallery/gallery-5.jpg',
     title: 'IITDAA 1st Executive Meeting held on 23rd May, 2026',
     itemsCount: 61,
   },
   {
     id: '2',
-    src: '/gallery/gallery-2.jpg',
+    src: '/gallery/gallery-6.jpg',
     title: 'Farewell to IIT Delhi Alumni Graduating Batch 2026',
     itemsCount: 429,
   },
   {
     id: '3',
-    src: '/gallery/gallery-3.jpg',
+    src: '/gallery/gallery-7.jpg',
     title: 'Annual General Meeting 2026',
     itemsCount: 341,
   },

@@ -56,10 +56,9 @@ export default function EventsClient({ events }: { events: Event[] }) {
   const handleNext = () => setPage(p => Math.min(totalPages, p + 1));
 
   const placeholderImages = [
-    '/gallery/gallery-1.jpg',
-    '/gallery/gallery-2.jpg',
-    '/gallery/gallery-3.jpg',
-    '/gallery/gallery-4.jpg',
+    '/gallery/gallery-5.jpg',
+    '/gallery/gallery-6.jpg',
+    '/gallery/gallery-7.jpg',
   ];
 
   if (!mounted) return null;

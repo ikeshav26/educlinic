@@ -23,13 +23,13 @@ interface ListEventProps {
 const featuredEvents: EventCardProps[] = [
   {
     id: '1',
-    image: '/gallery/gallery-1.jpg',
+    image: '/gallery/gallery-5.jpg',
     title: 'Invitation: IIT Delhi Alumni Greater Noida Mixer',
     date: 'Jul 30, 2026 - 05:30 PM',
   },
   {
     id: '2',
-    image: '/gallery/gallery-2.jpg',
+    image: '/gallery/gallery-6.jpg',
     title: 'Save the Date: Convocation 2026 || ...',
     date: 'Aug 08, 2026',
   }
