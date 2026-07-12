@@ -18,7 +18,7 @@ export default function EventsPage() {
 
   return (
     <div className="w-full bg-white text-[#231f1b] min-h-screen font-sans">
-      <section className="py-16 md:py-24 px-6 md:px-12 lg:px-16 xl:px-20 w-full max-w-[90rem] mx-auto">
+      <section className="py-16 md:py-24 px-4 md:px-8 lg:px-16 xl:px-32 w-full">
         {/* Page Header */}
         <div className="flex flex-col mb-12 md:mb-16">
           <p className="text-sm font-semibold tracking-[0.15em] text-[#a62025] uppercase mb-2">

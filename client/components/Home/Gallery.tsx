@@ -53,7 +53,7 @@ const Gallery = () => {
 
   return (
     <section ref={sectionRef} className="bg-white py-12 md:py-20 w-full overflow-hidden">
-      <div className="mx-auto max-w-[90rem] px-4 md:px-8 lg:px-16 xl:px-32">
+      <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
         {/* Header Section */}
         <div
           className={`flex justify-between items-center mb-8 transition-all duration-700 ease-out transform ${

@@ -17,7 +17,7 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 export default function AlumniMap() {
   return (
     <section className="bg-white py-12 md:py-20 w-full border-t border-gray-100">
-      <div className="mx-auto max-w-[90rem] px-4 md:px-8 lg:px-16 xl:px-32">
+      <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
         <div className="flex flex-col items-center justify-center text-center mb-10">
           <h2 className="text-3xl font-semibold text-gray-900">World Wide Alumni Presence</h2>
           <p className="text-gray-500 mt-2 text-sm max-w-2xl">
