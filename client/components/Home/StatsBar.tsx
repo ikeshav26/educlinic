@@ -48,7 +48,7 @@ export function StatsBar() {
   ];
 
   return (
-    <section className="bg-[#faf8f3] border-b border-gray-200/80 w-full" aria-label="BFCET by the numbers">
+    <section className="bg-white border-b border-gray-200/80 w-full" aria-label="BFCET by the numbers">
       <div className="mx-auto max-w-[90rem] px-6 md:px-12 lg:px-16 xl:px-20 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x divide-gray-200">
           {stats.map((stat, idx) => (
