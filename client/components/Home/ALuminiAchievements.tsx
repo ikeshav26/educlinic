@@ -55,7 +55,7 @@ const ALuminiAchievements = () => {
   return (
     <section className="bg-white py-12 md:py-20 w-full">
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
-        
+
         {/* Header Section */}
         <div className="flex justify-between items-center mb-10">
           <div>
@@ -75,8 +75,8 @@ const ALuminiAchievements = () => {
         {/* Clean Portrait Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {alumniData.map((alum) => (
-            <div 
-              key={alum.id} 
+            <div
+              key={alum.id}
               className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden group shadow-sm hover:shadow-xl transition-all duration-300"
             >
               {/* Fallback gray bg in case image fails to load */}
@@ -86,12 +86,12 @@ const ALuminiAchievements = () => {
                 src={alum.image}
                 alt={`Portrait of ${alum.name}`}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                className="object-cover transition-transform duration-700"
               />
-              
+
               {/* Gradient Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-              
+
               {/* Text Info */}
               <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-start justify-end">
                 <span className="bg-[#a62025] text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider mb-2">

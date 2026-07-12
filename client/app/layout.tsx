@@ -4,6 +4,7 @@ import './globals.css';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import ToastProvider from '@/utils/ToastProvider';
+import SplashScreen from '@/components/SplashScreen';
 
 const roboto = Roboto({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -30,9 +31,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${roboto.variable} ${lora.variable} h-full antialiased`}
-      suppressHydrationWarning
+      suppressHydrationWarning={true}
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col" >
+        <SplashScreen />
         <ConditionalNavbar />
         <ToastProvider>{children}</ToastProvider>
         <ConditionalFooter />

@@ -56,9 +56,8 @@ const Gallery = () => {
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
         {/* Header Section */}
         <div
-          className={`flex justify-between items-center mb-8 transition-all duration-700 ease-out transform ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
-          }`}
+          className={`flex justify-between items-center mb-8 transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+            }`}
         >
           <h2 className="text-3xl font-semibold text-gray-900">Gallery</h2>
           <Link
@@ -74,9 +73,8 @@ const Gallery = () => {
           {galleryItems.map((item, index) => (
             <div
               key={item.id}
-              className={`flex flex-col gap-3 group cursor-pointer transition-all duration-700 ease-out transform ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`flex flex-col gap-3 group cursor-pointer transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{ transitionDelay: `${index * 150}ms` }}
             >
               {/* Image Container */}
@@ -85,7 +83,7 @@ const Gallery = () => {
                   src={item.src}
                   alt={item.title}
                   fill
-                  className="object-cover z-10 transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover z-10 transition-transform duration-700"
                 />
               </div>
 
