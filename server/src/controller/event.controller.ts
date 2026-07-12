@@ -6,6 +6,7 @@ import {
   UserRole,
   type UserRole as UserRoleEnum,
 } from '../../generated/prisma/enums.js';
+import cloudinary from '../config/cloudinary.js';
 
 const validEventTypes = new Set<string>(Object.values(EventType));
 const validEventVisibilities = new Set<string>(Object.values(EventVisibility));
@@ -37,12 +38,14 @@ export const createEvent = async (req: Request, res: Response) => {
       name,
       description,
       organizedBy,
+      imageUrl,
       place,
       eventType,
       visibility,
       startDate,
       endDate,
     } = req.body;
+
 
     if (!name || !organizedBy || !place || !eventType || !visibility || !startDate || !endDate) {
       return res.status(400).json({ message: 'All required fields must be provided' });
@@ -67,6 +70,16 @@ export const createEvent = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'endDate must be after startDate' });
     }
 
+    let finalImageUrl = undefined;
+    if (imageUrl) {
+      try {
+        const cloudinaryUpload = await cloudinary.uploader.upload(imageUrl, { folder: "events" });
+        finalImageUrl = cloudinaryUpload.secure_url;
+      } catch (error) {
+        return res.status(500).json({ message: 'Image upload failed', error });
+      }
+    }
+
     const event = await prisma.event.create({
       data: {
         name,
@@ -78,6 +91,7 @@ export const createEvent = async (req: Request, res: Response) => {
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         createdById: req.user.id,
+        ...(finalImageUrl && { imageUrl: finalImageUrl }),
       },
     });
 
@@ -116,13 +130,33 @@ export const getEventById = async (req: Request, res: Response) => {
 
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
-    const events = await prisma.event.findMany({
-      orderBy: {
-        startDate: 'asc',
-      },
-    });
 
-    return res.json({ events });
+    const { limit, offset } = _req.params;
+    const { filter } = _req.query;
+
+    const take = limit ? parseInt(limit as string, 10) : 8;
+    const skip = offset ? parseInt(offset as string, 10) : 0;
+
+    const now = new Date();
+    const where = filter === 'upcoming' 
+      ? { startDate: { gte: now } }
+      : filter === 'past' 
+      ? { startDate: { lt: now } }
+      : {};
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        take,
+        skip,
+        orderBy: {
+          startDate: filter === 'past' ? 'desc' : 'asc',
+        },
+      }),
+      prisma.event.count({ where })
+    ]);
+
+    return res.json({ events, total });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Internal Server Error' });

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Calendar, CalendarX } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import axios from 'axios';
 
 interface Event {
   id: number;
@@ -11,6 +12,7 @@ interface Event {
   description: string | null;
   organizedBy: string;
   place: string;
+  imageUrl?: string | null;
   eventType: string;
   visibility: string;
   startDate: string;
@@ -22,35 +24,42 @@ const formatDate = (dateString: string) => {
   const month = date.toLocaleString('default', { month: 'short' }).toUpperCase();
   const day = date.getDate().toString().padStart(2, '0');
   const year = date.getFullYear().toString();
-  
+
   // Format time (e.g. 05:30 PM)
   const time = date.toLocaleString('default', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   return { month, day, year, time, fullDate: `${month} ${day}, ${year} - ${time}` };
 };
 
-export default function EventsClient({ events }: { events: Event[] }) {
+export default function EventsClient() {
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [page, setPage] = useState(1);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const ITEMS_PER_PAGE = 8;
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const now = new Date();
-  
-  // Classify events
-  const categorizedEvents = events.map(e => ({
-    ...e,
-    type: new Date(e.startDate) >= now ? 'upcoming' : 'past'
-  }));
-
-  const filteredEvents = categorizedEvents.filter(e => e.type === filter);
-  
-  const ITEMS_PER_PAGE = 4;
-  const displayedList = filteredEvents.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / ITEMS_PER_PAGE));
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const offset = (page - 1) * ITEMS_PER_PAGE;
+        const res = await axios.get(`http://localhost:4000/api/events/all-events/${ITEMS_PER_PAGE}/${offset}?filter=${filter}`);
+        setEvents(res.data.events || []);
+        setTotalPages(Math.max(1, Math.ceil((res.data.total || 0) / ITEMS_PER_PAGE)));
+      } catch (err) {
+        console.error('Failed to fetch events:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [page, filter]);
 
   const handlePrev = () => setPage(p => Math.max(1, p - 1));
   const handleNext = () => setPage(p => Math.min(totalPages, p + 1));
@@ -99,40 +108,44 @@ export default function EventsClient({ events }: { events: Event[] }) {
 
         {/* Calendar List View */}
         <div className="flex flex-col gap-2 min-h-[300px]">
-          {displayedList.map(event => {
-            const { month, day } = formatDate(event.startDate);
-            return (
-              <div key={event.id} className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group">
-                <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{month}</span>
-                  <span className="text-xl font-bold text-[#a62025] leading-none mt-1">{day}</span>
+          {loading ? (
+            <p className="text-sm text-gray-500 p-4">Loading events...</p>
+          ) : (
+            events.map(event => {
+              const { month, day } = formatDate(event.startDate);
+              return (
+                <div key={event.id} className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group">
+                  <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{month}</span>
+                    <span className="text-xl font-bold text-[#a62025] leading-none mt-1">{day}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 mt-0.5">
+                    <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
+                      {event.name}
+                    </h4>
+                    <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <MapPin size={12} /> {event.place}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1 mt-0.5">
-                  <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
-                    {event.name}
-                  </h4>
-                  <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <MapPin size={12}/> {event.place}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
 
-          {displayedList.length === 0 && (
+          {!loading && events.length === 0 && (
             <p className="text-sm text-gray-500 italic p-4 text-center">No {filter} events found.</p>
           )}
         </div>
 
         {/* Pagination Controls */}
         {totalPages > 0 && (
-          <div className="flex justify-between items-center mt-auto border-t border-gray-100 pt-5">
+          <div className="flex justify-between items-center mt-2 border-t border-gray-100 pt-5">
             <button
               onClick={handlePrev}
               disabled={page === 1}
               className="p-1 text-gray-400 hover:text-[#a62025] disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer"
             >
-              <ChevronLeft size={22}/>
+              <ChevronLeft size={22} />
             </button>
             <span className="text-xs font-medium text-gray-500">Page {page} of {totalPages}</span>
             <button
@@ -140,7 +153,7 @@ export default function EventsClient({ events }: { events: Event[] }) {
               disabled={page === totalPages}
               className="p-1 text-gray-400 hover:text-[#a62025] disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer"
             >
-              <ChevronRight size={22}/>
+              <ChevronRight size={22} />
             </button>
           </div>
         )}
@@ -149,9 +162,11 @@ export default function EventsClient({ events }: { events: Event[] }) {
       {/* Right Area (70%) - Event Cards */}
       <div className="lg:col-span-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 h-full items-start">
-          {displayedList.map((event, index) => {
+          {events.map((event, index) => {
             const { fullDate } = formatDate(event.startDate);
-            const image = placeholderImages[index % placeholderImages.length];
+            // Fallback to placeholder if no imageUrl or if it's the bad Unsplash HTML page URL
+            const isBadUrl = event.imageUrl?.includes('unsplash.com/photos/');
+            const image = (event.imageUrl && !isBadUrl) ? event.imageUrl : placeholderImages[index % placeholderImages.length];
             return (
               <article
                 key={event.id}

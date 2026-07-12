@@ -1,60 +1,65 @@
 'use client';
-import React, { useState } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import axios from 'axios';
 
-interface EventCardProps {
-  id: string;
-  image: string;
-  title: string;
-  date: string;
+interface Event {
+  id: number;
+  name: string;
+  description: string | null;
+  organizedBy: string;
+  place: string;
+  imageUrl?: string | null;
+  eventType: string;
+  visibility: string;
+  startDate: string;
+  endDate: string;
 }
 
-interface ListEventProps {
-  id: string;
-  month: string;
-  day: string;
-  title: string;
-  location: string;
-  type: 'upcoming' | 'past';
-}
-
-const featuredEvents: EventCardProps[] = [
-  {
-    id: '1',
-    image: '/gallery/gallery-5.jpg',
-    title: 'Invitation: IIT Delhi Alumni Greater Noida Mixer',
-    date: 'Jul 30, 2026 - 05:30 PM',
-  },
-  {
-    id: '2',
-    image: '/gallery/gallery-6.jpg',
-    title: 'Save the Date: Convocation 2026 || ...',
-    date: 'Aug 08, 2026',
-  }
-];
-
-const listEvents: ListEventProps[] = [
-  { id: '10', month: 'Jul', day: '30', title: 'IIT Delhi Alumni Greater Noida Mixer', location: 'Noida', type: 'upcoming' },
-  { id: '11', month: 'Aug', day: '08', title: 'Convocation 2026', location: 'Campus', type: 'upcoming' },
-  { id: '12', month: 'Aug', day: '15', title: 'HYFIT Games — Run. Lift. Live', location: 'Delhi', type: 'upcoming' },
-  { id: '13', month: 'Sep', day: '02', title: 'Startup Networking Night', location: 'Gurugram', type: 'upcoming' },
-  { id: '14', month: 'Jan', day: '15', title: 'Alumni Meet 2025', location: 'Virtual', type: 'past' },
-  { id: '15', month: 'Dec', day: '20', title: 'Winter Gala Dinner', location: 'Delhi', type: 'past' },
-];
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const month = date.toLocaleString('default', { month: 'short' }).toUpperCase();
+  const day = date.getDate().toString().padStart(2, '0');
+  const year = date.getFullYear().toString();
+  const time = date.toLocaleString('default', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return { month, day, year, time, fullDate: `${month} ${day}, ${year} - ${time}` };
+};
 
 export function UpcomingEvents() {
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [page, setPage] = useState(1);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const ITEMS_PER_PAGE = 4;
 
-  const filteredEvents = listEvents.filter(e => e.type === filter);
-  // Paginate 4 per page
-  const displayedList = filteredEvents.slice((page - 1) * 4, page * 4);
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / 4));
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const offset = (page - 1) * ITEMS_PER_PAGE;
+        const res = await axios.get(`http://localhost:4000/api/events/all-events/${ITEMS_PER_PAGE}/${offset}?filter=${filter}`);
+        setEvents(res.data.events || []);
+        setTotalPages(Math.max(1, Math.ceil((res.data.total || 0) / ITEMS_PER_PAGE)));
+      } catch (err) {
+        console.error('Failed to fetch events:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [page, filter]);
 
   const handlePrev = () => setPage(p => Math.max(1, p - 1));
   const handleNext = () => setPage(p => Math.min(totalPages, p + 1));
+
+  const placeholderImages = [
+    '/gallery/gallery-5.jpg',
+    '/gallery/gallery-6.jpg',
+    '/gallery/gallery-7.jpg',
+  ];
 
   return (
     <section className="bg-white py-12 md:py-20 w-full">
@@ -95,26 +100,31 @@ export function UpcomingEvents() {
 
             {/* Calendar List View */}
             <div className="flex flex-col gap-2 min-h-[300px]">
-              {displayedList.map(event => (
-                <div key={event.id} className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group">
-                  {/* Date Icon */}
-                  <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{event.month}</span>
-                    <span className="text-xl font-bold text-[#a62025] leading-none mt-1">{event.day}</span>
-                  </div>
-                  {/* Event Details */}
-                  <div className="flex flex-col gap-1 mt-0.5">
-                    <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
-                      {event.title}
-                    </h4>
-                    <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                      <MapPin size={12}/> {event.location}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              
-              {displayedList.length === 0 && (
+              {loading ? (
+                <p className="text-sm text-gray-500 p-4">Loading events...</p>
+              ) : (
+                events.map(event => {
+                  const { month, day } = formatDate(event.startDate);
+                  return (
+                    <div key={event.id} className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group">
+                      <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{month}</span>
+                        <span className="text-xl font-bold text-[#a62025] leading-none mt-1">{day}</span>
+                      </div>
+                      <div className="flex flex-col gap-1 mt-0.5">
+                        <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
+                          {event.name}
+                        </h4>
+                        <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                          <MapPin size={12}/> {event.place}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {!loading && events.length === 0 && (
                 <p className="text-sm text-gray-500 italic p-4 text-center">No {filter} events found.</p>
               )}
             </div>
@@ -144,49 +154,55 @@ export function UpcomingEvents() {
           {/* Right Area (70%) - Featured Event Cards */}
           <div className="lg:col-span-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 h-full">
-              {featuredEvents.map((event) => (
-                <article
-                  key={event.id}
-                  className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100"
-                >
-                  {/* Image Container */}
-                  <div className="relative w-full aspect-square md:aspect-[4/3] overflow-hidden bg-white">
-                    <Image
-                      src={event.image}
-                      alt={event.title}
-                      fill
-                      className="object-cover z-10 transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
+              {events.slice(0, 2).map((event, index) => {
+                const { fullDate } = formatDate(event.startDate);
+                const isBadUrl = event.imageUrl?.includes('unsplash.com/photos/');
+                const image = (event.imageUrl && !isBadUrl) ? event.imageUrl : placeholderImages[index % placeholderImages.length];
+                
+                return (
+                  <article
+                    key={event.id}
+                    className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100"
+                  >
+                    {/* Image Container */}
+                    <div className="relative w-full aspect-square md:aspect-[4/3] overflow-hidden bg-white">
+                      <Image
+                        src={image}
+                        alt={event.name}
+                        fill
+                        className="object-cover z-10 transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
 
-                  {/* Content Box */}
-                  <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
-                    <h3 className="font-medium text-gray-800 text-[15px] line-clamp-1 mb-1">
-                      {event.title}
-                    </h3>
-                    
-                    <div>
-                      <span className="inline-block bg-[#85161a] text-white text-[11px] font-medium px-3 py-1 rounded-full">
-                        Upcoming Event
-                      </span>
+                    {/* Content Box */}
+                    <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
+                      <h3 className="font-medium text-gray-800 text-[15px] line-clamp-1 mb-1">
+                        {event.name}
+                      </h3>
+                      
+                      <div>
+                        <span className="inline-block bg-[#85161a] text-white text-[11px] font-medium px-3 py-1 rounded-full">
+                          {event.eventType}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm mt-1">
+                        <Calendar size={14} className="text-gray-400" />
+                        <span>{fullDate}</span>
+                      </div>
+                      
+                      <div className="mt-5">
+                        <Link
+                          href="/events"
+                          className="inline-block bg-[#85161a] text-white text-xs font-medium px-5 py-2 hover:bg-[#6c1215] transition-colors rounded-sm"
+                        >
+                          View Event
+                        </Link>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm mt-1">
-                      <Calendar size={14} className="text-gray-400" />
-                      <span>{event.date}</span>
-                    </div>
-                    
-                    <div className="mt-5">
-                      <Link
-                        href="/events"
-                        className="inline-block bg-[#85161a] text-white text-xs font-medium px-5 py-2 hover:bg-[#6c1215] transition-colors rounded-sm"
-                      >
-                        View Event
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </div>
 

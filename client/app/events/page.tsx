@@ -14,18 +14,7 @@ interface Event {
   endDate: string;
 }
 
-const getEvents = async (): Promise<Event[]> => {
-  try {
-    const res = await axios.get('http://localhost:4000/api/events/all-events');
-    return res.data.events || [];
-  } catch (error) {
-    console.error('Failed to fetch events:', error);
-    return [];
-  }
-};
-
-export default async function EventsPage() {
-  const events = await getEvents();
+export default function EventsPage() {
 
   return (
     <div className="w-full bg-white text-[#231f1b] min-h-screen font-sans">
@@ -44,7 +33,7 @@ export default async function EventsPage() {
         </div>
 
         {/* Client Layout for 30/70 split */}
-        <EventsClient events={events} />
+        <EventsClient />
       </section>
     </div>
   );
