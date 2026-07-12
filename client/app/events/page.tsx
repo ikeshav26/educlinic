@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, MapPin, Users, CalendarX } from 'lucide-react';
+import { ArrowRight, MapPin, CalendarX } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 
@@ -37,15 +37,18 @@ export default async function EventsPage() {
   const events = await getEvents();
 
   return (
-    <div className="w-full bg-black/5 min-h-screen font-sans">
+    <div className="w-full bg-[#faf8f3] text-[#231f1b] min-h-screen font-sans">
       <section className="py-16 md:py-24 px-6 md:px-12 lg:px-16 xl:px-20 w-full max-w-[90rem] mx-auto">
         {/* Page Header */}
         <div className="flex flex-col mb-12 md:mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#111827] leading-tight tracking-tight mb-4">
-            Upcoming Events
+          <p className="text-sm font-semibold tracking-[0.15em] text-[#a62025] uppercase mb-2">
+            Stay Connected
+          </p>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight tracking-tight mb-4">
+            Come back home. Or join from anywhere.
           </h1>
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed">
-            Discover and register for the latest workshops, reunions, and professional gatherings.
+            Discover and register for the latest workshops, reunions, and professional gatherings. Reconnect with peers and expand your BFCET network.
           </p>
         </div>
 
@@ -55,82 +58,65 @@ export default async function EventsPage() {
             <div className="bg-gray-50 p-4 rounded-full mb-4">
               <CalendarX size={32} className="text-gray-400" />
             </div>
-            <h3 className="text-xl font-bold text-[#111827] mb-2">No events scheduled</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No events scheduled</h3>
             <p className="text-gray-500 max-w-sm">
               We are currently planning new events. Check back later for updates and registrations.
             </p>
           </div>
         ) : (
           /* Event Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {events.map((event) => {
               const { month, day, year } = formatDate(event.startDate);
               return (
-                <div
+                <article
                   key={event.id}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-200 flex flex-col transition-all hover:-translate-y-1.5 duration-300 h-full"
+                  className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md h-full"
                 >
-                  {/* Date Header Strip */}
-                  <div className="bg-[#161f36] relative flex justify-between items-center py-4 px-6 shrink-0 border-b-4 border-[#d60000]">
-                    <div className="flex items-baseline space-x-2 z-10">
-                      <span className="text-3xl font-black text-white tracking-tighter">
-                        {day}
-                      </span>
-                      <span className="text-[#eab308] text-sm font-bold tracking-widest">
+                  {/* Date/Header Strip */}
+                  <div className="flex items-center gap-4 bg-[#182236] px-6 py-4 text-white">
+                    <div className="text-center leading-none">
+                      <span className="block text-xs font-semibold tracking-widest text-[#a62025] uppercase">
                         {month}
                       </span>
+                      <span className="mt-1 block font-serif text-3xl font-bold">
+                        {day}
+                      </span>
                     </div>
-                    <span className="text-gray-300 text-sm font-medium z-10">
-                      {year}
-                    </span>
+                    <div className="border-l border-white/20 pl-4">
+                      <span className="inline-flex bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {event.eventType}
+                      </span>
+                      <p className="mt-1.5 text-xs text-gray-400">
+                        {year} &middot; By {event.organizedBy}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-6 flex flex-col flex-grow relative bg-white">
-                    {/* Event Tag */}
-                    <div className="mb-4">
-                      <span className="inline-flex bg-[#fee2e2] text-[#d60000] text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-[#fecaca]">
-                        {event.eventType}
-                      </span>
-                    </div>
-
-                    {/* Title & Description */}
-                    <div className="flex-grow mb-6">
-                      <h3 className="font-bold text-[#111827] group-hover:text-[#d60000] transition-colors text-xl mb-3 leading-snug">
-                        {event.name}
-                      </h3>
-                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-3">
-                        {event.description || 'No detailed description provided for this event.'}
-                      </p>
-                    </div>
-
-                    {/* Meta Information (Organizer & Location) */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Users size={16} className="text-gray-400 shrink-0 mr-3" />
-                        <span className="truncate font-medium">By {event.organizedBy}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin size={16} className="text-[#d60000] shrink-0 mr-3" />
-                        <span className="truncate">{event.place}</span>
-                      </div>
-                    </div>
-
-                    {/* Footer CTA */}
-                    <div className="pt-5 border-t border-gray-100 mt-auto flex justify-end">
-                      <Link
-                        href="#"
-                        className="inline-flex items-center space-x-2 text-[#111827] font-bold text-sm hover:text-[#d60000] transition-colors"
-                      >
-                        <span>Register Now</span>
-                        <ArrowRight
-                          size={16}
-                          className="transition-transform group-hover:translate-x-1.5"
-                        />
-                      </Link>
-                    </div>
+                  <div className="flex flex-1 flex-col gap-3 p-6 bg-white">
+                    <h3 className="font-serif text-xl font-bold leading-snug text-gray-900 group-hover:text-[#a62025] transition-colors">
+                      {event.name}
+                    </h3>
+                    <p className="flex-1 text-sm leading-relaxed text-gray-500 line-clamp-3">
+                      {event.description || 'No detailed description provided for this event.'}
+                    </p>
+                    <p className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <MapPin className="size-4 text-[#a62025]" aria-hidden="true" />
+                      {event.place}
+                    </p>
+                    <Link
+                      href="#"
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#a62025] hover:text-[#85161a]"
+                    >
+                      Register Now
+                      <ArrowRight
+                        className="size-4 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

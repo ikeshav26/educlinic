@@ -35,17 +35,21 @@ const MainNav = () => {
   };
 
   return (
-    <div className="bg-white w-full shadow-sm border-b border-gray-100">
-      <div className="w-full px-6 md:px-12 lg:px-32 xl:px-58 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <Image
-            src="/logo1.png"
-            alt="College Logo"
-            width={220}
-            height={60}
-            loading="eager"
-            className="w-auto h-auto object-contain"
-          />
+    <div className="bg-white w-full shadow-sm border-b border-gray-100 sticky top-0 z-50">
+      <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32 py-2 flex items-center justify-between">
+        
+        {/* Left Logo */}
+        <div className="flex-shrink-0 flex items-center space-x-6">
+          <Link href="/">
+            <Image
+              src="/logo1.png"
+              alt="BABA FARID GROUP OF INSTITUTIONS"
+              width={250}
+              height={70}
+              loading="eager"
+              className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+            />
+          </Link>
           <Image
             src="/logo2.jpg"
             alt="NAAC Logo"
@@ -55,6 +59,7 @@ const MainNav = () => {
           />
         </div>
 
+        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-8">
           {routes.map((route) => {
             const href =
@@ -77,23 +82,26 @@ const MainNav = () => {
           })}
         </div>
 
+        {/* Right Section: Auth & Mobile Menu */}
         <div className="flex items-center space-x-4">
-          {isAuthenticated ? (
-            <button
-              onClick={handleLogout}
-              className="bg-[#d60000] hover:bg-[#b30000] text-white hidden  cursor-pointer px-4 py-3 mt-4 rounded lg:flex items-center justify-center space-x-2 font-medium w-full"
-            >
-              <span>Logout</span>
-              <ArrowRight size={18} />
-            </button>
-          ) : (
-            <Link href="/auth">
-              <button className="bg-[#d60000] hover:bg-[#b30000] text-white cursor-pointer px-4 py-3 mt-4 rounded flex items-center justify-center space-x-2 font-medium w-full">
-                <span>Login</span>
+          <div className="hidden lg:block">
+            {isAuthenticated ? (
+              <button
+                onClick={handleLogout}
+                className="bg-[#d60000] hover:bg-[#b30000] text-white cursor-pointer px-4 py-2 rounded flex items-center justify-center space-x-2 font-medium transition"
+              >
+                <span>Logout</span>
                 <ArrowRight size={18} />
               </button>
-            </Link>
-          )}
+            ) : (
+              <Link href="/auth">
+                <button className="bg-[#d60000] hover:bg-[#b30000] text-white cursor-pointer px-4 py-2 rounded flex items-center justify-center space-x-2 font-medium transition">
+                  <span>Login</span>
+                  <ArrowRight size={18} />
+                </button>
+              </Link>
+            )}
+          </div>
 
           <button
             className="lg:hidden text-gray-700 hover:text-[#d60000] focus:outline-none"
@@ -104,6 +112,7 @@ const MainNav = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-2 flex flex-col space-y-2 pb-6 shadow-inner">
           {routes.map((route) => (

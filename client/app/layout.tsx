@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Roboto, Lora } from 'next/font/google';
 import './globals.css';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import ToastProvider from '@/utils/ToastProvider';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const roboto = Roboto({
+  weight: ['100', '300', '400', '500', '700', '900'],
+  variable: '--font-roboto',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const lora = Lora({
+  variable: '--font-lora',
   subsets: ['latin'],
 });
 
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${roboto.variable} ${lora.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
