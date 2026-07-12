@@ -33,7 +33,7 @@ export default function RootLayout({
       className={`${roboto.variable} ${lora.variable} h-full antialiased`}
       suppressHydrationWarning={true}
     >
-      <body className="min-h-full flex flex-col" >
+      <body className="min-h-full flex flex-col">
         <SplashScreen />
         <ConditionalNavbar />
         <ToastProvider>{children}</ToastProvider>

@@ -52,12 +52,15 @@ const Gallery = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-white py-12 md:py-20 w-full overflow-hidden">
+    <section
+      ref={sectionRef}
+      className="bg-white py-12 md:py-20 w-full overflow-hidden"
+    >
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
-        {/* Header Section */}
         <div
-          className={`flex justify-between items-center mb-8 transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
-            }`}
+          className={`flex justify-between items-center mb-8 transition-all duration-700 ease-out transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+          }`}
         >
           <h2 className="text-3xl font-semibold text-gray-900">Gallery</h2>
           <Link
@@ -68,16 +71,17 @@ const Gallery = () => {
           </Link>
         </div>
 
-        {/* Gallery Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {galleryItems.map((item, index) => (
             <div
               key={item.id}
-              className={`flex flex-col gap-3 group cursor-pointer transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
+              className={`flex flex-col gap-3 group cursor-pointer transition-all duration-700 ease-out transform ${
+                isVisible
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}
               style={{ transitionDelay: `${index * 150}ms` }}
             >
-              {/* Image Container */}
               <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:border-[#a62025]/20">
                 <Image
                   src={item.src}
@@ -87,7 +91,6 @@ const Gallery = () => {
                 />
               </div>
 
-              {/* Text Info */}
               <div className="flex justify-between items-start gap-4 px-1">
                 <h3 className="font-semibold text-gray-900 text-sm md:text-base leading-tight flex-1 group-hover:text-[#a62025] group-hover:translate-x-1 transition-all duration-300">
                   {item.title}

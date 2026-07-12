@@ -7,12 +7,10 @@ export default function SplashScreen() {
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    // Start fading out after 1.5 seconds
     const fadeTimer = setTimeout(() => {
       setIsFadingOut(true);
     }, 1500);
-    
-    // Completely unmount after transition completes
+
     const removeTimer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
@@ -26,18 +24,15 @@ export default function SplashScreen() {
   if (!isLoading) return null;
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-[9999] bg-[#fafafa] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      {/* Sleek Minimalist Spinner */}
       <div className="relative flex items-center justify-center w-12 h-12 mb-8">
         <div className="absolute inset-0 border-[1.5px] border-gray-200 rounded-full"></div>
         <div className="absolute inset-0 border-[1.5px] border-[#85161a] rounded-full border-t-transparent animate-spin"></div>
       </div>
-      
-      {/* Elegant Typography */}
       <h2 className="text-gray-800 font-light text-sm sm:text-base tracking-[0.25em] uppercase">
         BFGI Alumni Association
       </h2>

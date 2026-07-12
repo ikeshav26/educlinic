@@ -37,8 +37,6 @@ const MainNav = () => {
   return (
     <div className="bg-white w-full shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32 py-2 flex items-center justify-between">
-        
-        {/* Left Logo */}
         <div className="flex-shrink-0 flex items-center space-x-6">
           <Link href="/">
             <Image
@@ -59,7 +57,6 @@ const MainNav = () => {
           />
         </div>
 
-        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-8">
           {routes.map((route) => {
             const href =
@@ -82,7 +79,6 @@ const MainNav = () => {
           })}
         </div>
 
-        {/* Right Section: Auth & Mobile Menu */}
         <div className="flex items-center space-x-4">
           <div className="hidden lg:block">
             {isAuthenticated ? (
@@ -112,7 +108,6 @@ const MainNav = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-2 flex flex-col space-y-2 pb-6 shadow-inner">
           {routes.map((route) => (

@@ -25,7 +25,10 @@ const HeroSection = () => {
         if (scrollLeft + clientWidth >= scrollWidth - 1) {
           scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
-          scrollRef.current.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+          scrollRef.current.scrollBy({
+            left: window.innerWidth,
+            behavior: 'smooth',
+          });
         }
       }
     }, 4000);
@@ -34,13 +37,19 @@ const HeroSection = () => {
 
   const scrollLeft = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+      scrollRef.current.scrollBy({
+        left: -window.innerWidth,
+        behavior: 'smooth',
+      });
     }
   };
 
   const scrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+      scrollRef.current.scrollBy({
+        left: window.innerWidth,
+        behavior: 'smooth',
+      });
     }
   };
 
@@ -55,13 +64,15 @@ const HeroSection = () => {
 
   const scrollTo = (index: number) => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({ left: window.innerWidth * index, behavior: 'smooth' });
+      scrollRef.current.scrollTo({
+        left: window.innerWidth * index,
+        behavior: 'smooth',
+      });
     }
   };
 
   return (
     <section className="relative w-full h-[60vh] md:h-[85vh] bg-black group">
-      {/* Scrollable Container */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -82,13 +93,11 @@ const HeroSection = () => {
               sizes="100vw"
               className="object-cover object-center"
             />
-            {/* Modern, professional transparent black overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/60 z-10" />
           </div>
         ))}
       </div>
 
-      {/* Navigation Arrows */}
       <button
         onClick={scrollLeft}
         className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center border border-white/15 z-30 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 cursor-pointer"
@@ -104,20 +113,21 @@ const HeroSection = () => {
         <ChevronRight className="text-white" size={24} />
       </button>
 
-      {/* Pagination Indicators */}
       <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'
-              }`}
+            className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
+              currentIndex === index
+                ? 'bg-white scale-125'
+                : 'bg-white/50 hover:bg-white/75'
+            }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
 
-      {/* Bottom Red Border Strip */}
       <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#a62025] z-30" />
     </section>
   );

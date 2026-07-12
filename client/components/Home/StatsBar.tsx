@@ -32,7 +32,10 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
   }, [target]);
 
   return (
-    <span ref={ref} className="font-serif text-3xl font-bold md:text-5xl text-[#a62025] tracking-tight">
+    <span
+      ref={ref}
+      className="font-serif text-3xl font-bold md:text-5xl text-[#a62025] tracking-tight"
+    >
       {value.toLocaleString('en-IN')}
       {suffix}
     </span>
@@ -48,7 +51,10 @@ export function StatsBar() {
   ];
 
   return (
-    <section className="bg-white border-b border-gray-200/80 w-full" aria-label="BFCET by the numbers">
+    <section
+      className="bg-white border-b border-gray-200/80 w-full"
+      aria-label="BFCET by the numbers"
+    >
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x divide-gray-200">
           {stats.map((stat, idx) => (

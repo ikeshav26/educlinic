@@ -5,16 +5,19 @@ import Link from 'next/link';
 const TopBar = () => {
   return (
     <div className="bg-[#222222] w-full py-2 px-4 md:px-8 lg:px-16 xl:px-32 flex flex-col lg:flex-row items-center justify-between text-white text-sm border-b border-black">
-      {/* Left Content */}
       <div className="flex items-center space-x-4 mb-2 lg:mb-0">
-        <h1 className="font-bold tracking-wide text-lg text-white">Alumni Portal</h1>
+        <h1 className="font-bold tracking-wide text-lg text-white">
+          Alumni Portal
+        </h1>
         <span className="hidden text-gray-500 md:inline">|</span>
-        <Link href="/auth" className="bg-[#e31e24] px-3 py-1 text-white font-semibold hover:bg-red-700 transition rounded-sm text-xs">
+        <Link
+          href="/auth"
+          className="bg-[#e31e24] px-3 py-1 text-white font-semibold hover:bg-red-700 transition rounded-sm text-xs"
+        >
           Apply Now
         </Link>
       </div>
 
-      {/* Right Content */}
       <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-xs md:text-sm font-medium">
         <div className="flex items-center space-x-2 text-gray-300">
           <MapPin size={16} className="text-[#e31e24]" />

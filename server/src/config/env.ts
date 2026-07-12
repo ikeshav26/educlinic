@@ -16,9 +16,13 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string('DATABASE_URL is required').nonempty(),
 
-  CLOUDINARY_CLOUD_NAME: z.string('CLOUDINARY_CLOUD_NAME is required').nonempty(),
+  CLOUDINARY_CLOUD_NAME: z
+    .string('CLOUDINARY_CLOUD_NAME is required')
+    .nonempty(),
   CLOUDINARY_API_KEY: z.string('CLOUDINARY_API_KEY is required').nonempty(),
-  CLOUDINARY_API_SECRET: z.string('CLOUDINARY_API_SECRET is required').nonempty(),
+  CLOUDINARY_API_SECRET: z
+    .string('CLOUDINARY_API_SECRET is required')
+    .nonempty(),
 
   JWT_ACCESS_SECRET: z.string('JWT_ACCESS_SECRET is required').min(10),
 

@@ -55,13 +55,14 @@ const ALuminiAchievements = () => {
   return (
     <section className="bg-white py-12 md:py-20 w-full">
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32">
-
-        {/* Header Section */}
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h2 className="text-3xl font-semibold text-gray-900">Alumni Spotlight</h2>
+            <h2 className="text-3xl font-semibold text-gray-900">
+              Alumni Spotlight
+            </h2>
             <p className="text-gray-500 mt-2 text-sm max-w-xl">
-              From these corridors to the world&apos;s biggest stages. Meet the leaders shaping the future.
+              From these corridors to the world&apos;s biggest stages. Meet the
+              leaders shaping the future.
             </p>
           </div>
           <Link
@@ -72,14 +73,12 @@ const ALuminiAchievements = () => {
           </Link>
         </div>
 
-        {/* Clean Portrait Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {alumniData.map((alum) => (
             <div
               key={alum.id}
               className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden group shadow-sm hover:shadow-xl transition-all duration-300"
             >
-              {/* Fallback gray bg in case image fails to load */}
               <div className="absolute inset-0 bg-gray-100 -z-10" />
 
               <Image
@@ -88,11 +87,8 @@ const ALuminiAchievements = () => {
                 fill
                 className="object-cover transition-transform duration-700"
               />
-
-              {/* Gradient Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
 
-              {/* Text Info */}
               <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-start justify-end">
                 <span className="bg-[#a62025] text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider mb-2">
                   {alum.company}
@@ -116,7 +112,6 @@ const ALuminiAchievements = () => {
           ))}
         </div>
 
-        {/* Mobile View All Button */}
         <div className="mt-8 flex justify-center md:hidden">
           <Link
             href="/alumni"
@@ -125,7 +120,6 @@ const ALuminiAchievements = () => {
             View Directory
           </Link>
         </div>
-
       </div>
     </section>
   );

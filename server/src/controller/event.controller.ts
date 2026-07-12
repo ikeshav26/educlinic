@@ -24,13 +24,13 @@ const parseDate = (value: unknown) => {
 
 const canManageEvent = (
   actor: { id: number; role: UserRoleEnum },
-  owner: { id: number; role: UserRoleEnum },
+  owner: { id: number; role: UserRoleEnum }
 ) => actor.id === owner.id || roleRank[actor.role] > roleRank[owner.role];
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      console.log(req.user)
+      console.log(req.user);
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -46,9 +46,18 @@ export const createEvent = async (req: Request, res: Response) => {
       endDate,
     } = req.body;
 
-
-    if (!name || !organizedBy || !place || !eventType || !visibility || !startDate || !endDate) {
-      return res.status(400).json({ message: 'All required fields must be provided' });
+    if (
+      !name ||
+      !organizedBy ||
+      !place ||
+      !eventType ||
+      !visibility ||
+      !startDate ||
+      !endDate
+    ) {
+      return res
+        .status(400)
+        .json({ message: 'All required fields must be provided' });
     }
 
     if (!validEventTypes.has(eventType)) {
@@ -67,13 +76,17 @@ export const createEvent = async (req: Request, res: Response) => {
     }
 
     if (parsedEndDate <= parsedStartDate) {
-      return res.status(400).json({ message: 'endDate must be after startDate' });
+      return res
+        .status(400)
+        .json({ message: 'endDate must be after startDate' });
     }
 
     let finalImageUrl = undefined;
     if (imageUrl) {
       try {
-        const cloudinaryUpload = await cloudinary.uploader.upload(imageUrl, { folder: "events" });
+        const cloudinaryUpload = await cloudinary.uploader.upload(imageUrl, {
+          folder: 'events',
+        });
         finalImageUrl = cloudinaryUpload.secure_url;
       } catch (error) {
         return res.status(500).json({ message: 'Image upload failed', error });
@@ -130,7 +143,6 @@ export const getEventById = async (req: Request, res: Response) => {
 
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
-
     const { limit, offset } = _req.params;
     const { filter } = _req.query;
 
@@ -138,11 +150,12 @@ export const getAllEvents = async (_req: Request, res: Response) => {
     const skip = offset ? parseInt(offset as string, 10) : 0;
 
     const now = new Date();
-    const where = filter === 'upcoming' 
-      ? { startDate: { gte: now } }
-      : filter === 'past' 
-      ? { startDate: { lt: now } }
-      : {};
+    const where =
+      filter === 'upcoming'
+        ? { startDate: { gte: now } }
+        : filter === 'past'
+          ? { startDate: { lt: now } }
+          : {};
 
     const [events, total] = await Promise.all([
       prisma.event.findMany({
@@ -153,7 +166,7 @@ export const getAllEvents = async (_req: Request, res: Response) => {
           startDate: filter === 'past' ? 'desc' : 'asc',
         },
       }),
-      prisma.event.count({ where })
+      prisma.event.count({ where }),
     ]);
 
     return res.json({ events, total });
@@ -206,8 +219,10 @@ export const updateEvent = async (req: Request, res: Response) => {
       endDate,
     } = req.body;
 
-    const parsedStartDate = startDate !== undefined ? parseDate(startDate) : undefined;
-    const parsedEndDate = endDate !== undefined ? parseDate(endDate) : undefined;
+    const parsedStartDate =
+      startDate !== undefined ? parseDate(startDate) : undefined;
+    const parsedEndDate =
+      endDate !== undefined ? parseDate(endDate) : undefined;
 
     if (startDate !== undefined && !parsedStartDate) {
       return res.status(400).json({ message: 'Invalid startDate' });
@@ -229,7 +244,9 @@ export const updateEvent = async (req: Request, res: Response) => {
     const nextEndDate = parsedEndDate ?? existingEvent.endDate;
 
     if (nextEndDate <= nextStartDate) {
-      return res.status(400).json({ message: 'endDate must be after startDate' });
+      return res
+        .status(400)
+        .json({ message: 'endDate must be after startDate' });
     }
 
     const updatedEvent = await prisma.event.update({

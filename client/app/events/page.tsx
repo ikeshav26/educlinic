@@ -15,11 +15,9 @@ interface Event {
 }
 
 export default function EventsPage() {
-
   return (
     <div className="w-full bg-white text-[#231f1b] min-h-screen font-sans">
       <section className="py-16 md:py-24 px-4 md:px-8 lg:px-16 xl:px-32 w-full">
-        {/* Page Header */}
         <div className="flex flex-col mb-12 md:mb-16">
           <p className="text-sm font-semibold tracking-[0.15em] text-[#a62025] uppercase mb-2">
             Stay Connected
@@ -28,11 +26,12 @@ export default function EventsPage() {
             Come back home. Or join from anywhere.
           </h1>
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed">
-            Discover and register for the latest workshops, reunions, and professional gatherings. Reconnect with peers and expand your BFCET network.
+            Discover and register for the latest workshops, reunions, and
+            professional gatherings. Reconnect with peers and expand your BFCET
+            network.
           </p>
         </div>
 
-        {/* Client Layout for 30/70 split */}
         <EventsClient />
       </section>
     </div>
