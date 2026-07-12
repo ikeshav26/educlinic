@@ -89,7 +89,7 @@ export default function EventsClient() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
       {/* Left Sidebar (30%) - Calendar & Filters */}
-      <div className="lg:col-span-4 flex flex-col gap-6">
+      <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
         {/* Filter Tabs */}
         <div className="flex bg-gray-50 p-1 rounded-md max-w-fit border border-gray-100">
           <button
@@ -195,7 +195,7 @@ export default function EventsClient() {
                   </div>
                   <div className="mt-5 mt-auto">
                     <Link
-                      href="#"
+                      href={`/events/${event.id}`}
                       className="inline-block bg-[#85161a] text-white text-xs font-medium px-5 py-2 hover:bg-[#6c1215] transition-colors rounded-sm"
                     >
                       View Event
