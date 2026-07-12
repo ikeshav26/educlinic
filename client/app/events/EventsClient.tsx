@@ -93,22 +93,7 @@ export default function EventsClient() {
 
   if (!mounted) return null;
 
-  if (events.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 px-6 bg-white rounded-2xl border border-gray-200 shadow-sm text-center">
-        <div className="bg-gray-50 p-4 rounded-full mb-4">
-          <CalendarX size={32} className="text-gray-400" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">
-          No events scheduled
-        </h3>
-        <p className="text-gray-500 max-w-sm">
-          We are currently planning new events. Check back later for updates and
-          registrations.
-        </p>
-      </div>
-    );
-  }
+  // Removed "No events scheduled" full page message, per user request to show skeletons if no data
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
@@ -135,8 +120,19 @@ export default function EventsClient() {
         </div>
 
         <div className="flex flex-col gap-2 min-h-[300px]">
-          {loading ? (
-            <p className="text-sm text-gray-500 p-4">Loading events...</p>
+          {loading || events.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex gap-4 items-start p-3 rounded-lg border border-transparent animate-pulse"
+              >
+                <div className="min-w-[55px] h-[55px] bg-gray-200 rounded-md"></div>
+                <div className="flex flex-col gap-2 w-full mt-1">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))
           ) : (
             events.map((event) => {
               const { month, day } = formatDate(event.startDate);
@@ -165,12 +161,6 @@ export default function EventsClient() {
               );
             })
           )}
-
-          {!loading && events.length === 0 && (
-            <p className="text-sm text-gray-500 italic p-4 text-center">
-              No {filter} events found.
-            </p>
-          )}
         </div>
 
         {totalPages > 0 && (
@@ -198,8 +188,28 @@ export default function EventsClient() {
 
       <div className="lg:col-span-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 h-full items-start">
-          {events.map((event, index) => {
-            const { fullDate } = formatDate(event.startDate);
+          {loading || events.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <article
+                key={i}
+                className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse h-full"
+              >
+                <div className="relative w-full aspect-square md:aspect-[4/3] bg-gray-200"></div>
+                <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
+                  <div className="h-5 bg-gray-200 rounded w-full mb-1"></div>
+                  <div>
+                    <div className="h-5 bg-gray-200 rounded-full w-20"></div>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mt-1"></div>
+                  <div className="mt-5 mt-auto">
+                    <div className="h-8 bg-gray-200 rounded-sm w-24"></div>
+                  </div>
+                </div>
+              </article>
+            ))
+          ) : (
+            events.map((event, index) => {
+              const { fullDate } = formatDate(event.startDate);
             const isBadUrl = event.imageUrl?.includes('unsplash.com/photos/');
             const image =
               event.imageUrl && !isBadUrl
@@ -242,7 +252,7 @@ export default function EventsClient() {
                 </div>
               </article>
             );
-          })}
+          }))}
         </div>
       </div>
     </div>
