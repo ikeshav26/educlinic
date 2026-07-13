@@ -126,8 +126,8 @@ export function UpcomingEvents() {
             </div>
 
             <div className="flex flex-col gap-2 min-h-[300px]">
-              {loading
-                ? Array.from({ length: 6 }).map((_, i) => (
+              {loading || events.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
                     className="flex gap-4 items-start p-3 rounded-lg border border-transparent animate-pulse"
@@ -139,37 +139,32 @@ export function UpcomingEvents() {
                     </div>
                   </div>
                 ))
-                : events.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500 text-sm">
-                    No {filter} events found.
-                  </div>
-                )
-                  : events.map((event) => {
-                    const { month, day } = formatDate(event.startDate);
-                    return (
-                      <Link key={event.id} href={`/events/${event.id}`}>
-                        <div
-                          className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group"
-                        >
-                          <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                              {month}
-                            </span>
-                            <span className="text-xl font-bold text-[#a62025] leading-none mt-1">
-                              {day}
-                            </span>
-                          </div>
-                          <div className="flex flex-col gap-1 mt-0.5">
-                            <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
-                              {event.name}
-                            </h4>
-                            <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                              <MapPin size={12} /> {event.place}
-                            </span>
-                          </div>
-                        </div></Link>
-                    );
-                  })}
+                : events.map((event) => {
+                  const { month, day } = formatDate(event.startDate);
+                  return (
+                    <Link key={event.id} href={`/events/${event.id}`}>
+                      <div
+                        className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group"
+                      >
+                        <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            {month}
+                          </span>
+                          <span className="text-xl font-bold text-[#a62025] leading-none mt-1">
+                            {day}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1 mt-0.5">
+                          <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
+                            {event.name}
+                          </h4>
+                          <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                            <MapPin size={12} /> {event.place}
+                          </span>
+                        </div>
+                      </div></Link>
+                  );
+                })}
 
             </div>
 
@@ -197,9 +192,9 @@ export function UpcomingEvents() {
           </div>
 
           <div className="lg:col-span-8">
-            {loadingLatest ? (
+            {loadingLatest || latestUpcoming.length === 0 ? (
               <div className="flex flex-col gap-6 h-full">
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 2 }).map((_, i) => (
                   <article
                     key={i}
                     className="flex flex-col sm:flex-row h-[220px] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse rounded-lg overflow-hidden"
@@ -218,14 +213,6 @@ export function UpcomingEvents() {
                   </article>
                 ))}
               </div>
-            ) : latestUpcoming.length === 0 ? (
-              <div className="flex items-center justify-center h-full min-h-[300px] bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-                <div className="text-center px-4">
-                  <Calendar size={48} className="mx-auto text-gray-300 mb-3" />
-                  <h3 className="text-lg font-medium text-gray-800">No Upcoming Events</h3>
-                  <p className="text-sm text-gray-500 mt-1">Check back later for new events!</p>
-                </div>
-              </div>
             ) : (
               <div className="flex flex-col gap-6 h-full">
                 {latestUpcoming.slice(0, 3).map((event) => {
@@ -242,10 +229,10 @@ export function UpcomingEvents() {
                         />
                       </div>
                       <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between relative group">
-                        <div 
-                          className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10" 
-                          onClick={(e) => { 
-                            e.preventDefault(); 
+                        <div
+                          className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10"
+                          onClick={(e) => {
+                            e.preventDefault();
                             const url = `${window.location.origin}/events/${event.id}`;
                             navigator.clipboard.writeText(url);
                             toast.success('Event URL copied to share!');
