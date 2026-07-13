@@ -37,7 +37,7 @@ const navigation: RouteItem[] = [
   {
     name: 'Research',
     subRoutes: [
-      { name: 'Incubation Centre', path: '/research/incubation-centre' },
+      { name: 'Incubation Centre', path: '/research/incubation' },
       { name: 'Research & Development Cell', path: '/research/rnd-cell' },
       { name: 'School of Entrepreneurship', path: '/research/entrepreneurship' },
     ],
