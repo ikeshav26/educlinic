@@ -4,6 +4,7 @@ import { MapPin, Calendar, ChevronLeft, ChevronRight, Share2 } from 'lucide-reac
 import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 interface Event {
   id: number;
@@ -241,7 +242,15 @@ export function UpcomingEvents() {
                         />
                       </div>
                       <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between relative group">
-                        <div className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10" onClick={(e) => { e.preventDefault(); alert('Share clicked'); }}>
+                        <div 
+                          className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10" 
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            const url = `${window.location.origin}/events/${event.id}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success('Event URL copied to share!');
+                          }}
+                        >
                           <Share2 size={20} strokeWidth={2.5} />
                         </div>
 
