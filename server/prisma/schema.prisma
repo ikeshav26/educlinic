@@ -45,23 +45,46 @@ model User {
   schoolCategory SchoolCategory?
   isVerified     Boolean         @default(false)
   createdEvents  Event[]
+  registrations  Registration[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
 
 model Event {
-  id          Int             @id @default(autoincrement())
-  name        String
-  description String?
-  organizedBy String
-  place       String
-  imageUrl    String?         @default("https://unsplash.com/photos/a-large-group-of-people-in-graduation-caps-and-gowns-q6yC7rYyPuU")
-  eventType   EventType
-  visibility  EventVisibility
-  startDate   DateTime
-  endDate     DateTime
-  createdById Int
-  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String?
+  organizedBy   String
+  place         String
+  imageUrl      String?         @default("https://images.unsplash.com/photo-1740065592671-9cb593ee9b78?q=80&w=1173&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  eventType     EventType
+  visibility    EventVisibility
+  startDate     DateTime
+  endDate       DateTime
+  createdById   Int
+  createdBy     User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  registrations Registration[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Registration {
+  id               Int      @id @default(autoincrement())
+  eventId          Int
+  userId           Int
+  name             String
+  email            String
+  countryCode      String?
+  contactNo        String?
+  companyOrCollege String?
+  graduationYear   String?
+  linkedInUrl      String?
+
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([eventId, userId])
 }

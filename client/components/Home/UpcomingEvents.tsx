@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Calendar, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 interface Event {
   id: number;
@@ -20,13 +21,11 @@ interface Event {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const month = date
-    .toLocaleString('default', { month: 'short' })
-    .toUpperCase();
-  const day = date.getDate().toString().padStart(2, '0');
+  const month = date.toLocaleString('default', { month: 'short' });
+  const day = date.getDate().toString();
   const year = date.getFullYear().toString();
   const time = date.toLocaleString('default', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
@@ -35,7 +34,7 @@ const formatDate = (dateString: string) => {
     day,
     year,
     time,
-    fullDate: `${month} ${day}, ${year} - ${time}`,
+    fullDate: `${month} ${day}, ${year}`,
   };
 };
 
@@ -46,6 +45,25 @@ export function UpcomingEvents() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const ITEMS_PER_PAGE = 4;
+
+  const [latestUpcoming, setLatestUpcoming] = useState<Event[]>([]);
+  const [loadingLatest, setLoadingLatest] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestUpcoming = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:4000/api/events/all-events/2/0?filter=upcoming`
+        );
+        setLatestUpcoming(res.data.events || []);
+      } catch (err) {
+        console.error('Failed to fetch latest upcoming events:', err);
+      } finally {
+        setLoadingLatest(false);
+      }
+    };
+    fetchLatestUpcoming();
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -70,12 +88,6 @@ export function UpcomingEvents() {
 
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  const placeholderImages = [
-    '/gallery/gallery-5.jpg',
-    '/gallery/gallery-6.jpg',
-    '/gallery/gallery-7.jpg',
-  ];
 
   return (
     <section className="bg-white py-12 md:py-20 w-full">
@@ -114,8 +126,8 @@ export function UpcomingEvents() {
             </div>
 
             <div className="flex flex-col gap-2 min-h-[300px]">
-              {loading || events.length === 0
-                ? Array.from({ length: 4 }).map((_, i) => (
+              {loading
+                ? Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
                     className="flex gap-4 items-start p-3 rounded-lg border border-transparent animate-pulse"
@@ -127,32 +139,37 @@ export function UpcomingEvents() {
                     </div>
                   </div>
                 ))
-                : events.map((event) => {
-                  const { month, day } = formatDate(event.startDate);
-                  return (
-                    <div
-                      key={event.id}
-                      className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group"
-                    >
-                      <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                          {month}
-                        </span>
-                        <span className="text-xl font-bold text-[#a62025] leading-none mt-1">
-                          {day}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-1 mt-0.5">
-                        <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
-                          {event.name}
-                        </h4>
-                        <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <MapPin size={12} /> {event.place}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                : events.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500 text-sm">
+                    No {filter} events found.
+                  </div>
+                )
+                  : events.map((event) => {
+                    const { month, day } = formatDate(event.startDate);
+                    return (
+                      <Link key={event.id} href={`/events/${event.id}`}>
+                        <div
+                          className="flex gap-4 items-start p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 cursor-pointer transition-all group"
+                        >
+                          <div className="flex flex-col items-center justify-center min-w-[55px] py-1.5 bg-gray-50 border border-gray-100 rounded-md group-hover:border-[#a62025]/30 group-hover:bg-[#a62025]/5 transition-colors">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                              {month}
+                            </span>
+                            <span className="text-xl font-bold text-[#a62025] leading-none mt-1">
+                              {day}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-1 mt-0.5">
+                            <h4 className="text-[15px] font-medium text-gray-800 leading-snug group-hover:text-[#a62025] transition-colors line-clamp-2">
+                              {event.name}
+                            </h4>
+                            <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin size={12} /> {event.place}
+                            </span>
+                          </div>
+                        </div></Link>
+                    );
+                  })}
 
             </div>
 
@@ -180,78 +197,93 @@ export function UpcomingEvents() {
           </div>
 
           <div className="lg:col-span-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 h-full">
-              {loading || events.length === 0
-                ? Array.from({ length: 2 }).map((_, i) => (
+            {loadingLatest ? (
+              <div className="flex flex-col gap-6 h-full">
+                {Array.from({ length: 3 }).map((_, i) => (
                   <article
                     key={i}
-                    className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse"
+                    className="flex flex-col sm:flex-row h-[220px] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse rounded-lg overflow-hidden"
                   >
-                    <div className="relative w-full aspect-square md:aspect-[4/3] bg-gray-200"></div>
-                    <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
-                      <div className="h-5 bg-gray-200 rounded w-full mb-1"></div>
-                      <div>
-                        <div className="h-5 bg-gray-200 rounded-full w-20"></div>
+                    <div className="w-full sm:w-[35%] bg-gray-200"></div>
+                    <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between">
+                      <div className="flex flex-col gap-3">
+                        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                       </div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mt-1"></div>
-                      <div className="mt-5">
-                        <div className="h-8 bg-gray-200 rounded-sm w-24"></div>
+                      <div className="mt-8">
+                        <div className="h-10 bg-gray-200 rounded w-32"></div>
                       </div>
                     </div>
                   </article>
-                ))
-                : events.slice(0, 2).map((event, index) => {
-                  const { fullDate } = formatDate(event.startDate);
-                  const isBadUrl = event.imageUrl?.includes(
-                    'unsplash.com/photos/'
-                  );
-                  const image =
-                    event.imageUrl && !isBadUrl
-                      ? event.imageUrl
-                      : placeholderImages[index % placeholderImages.length];
+                ))}
+              </div>
+            ) : latestUpcoming.length === 0 ? (
+              <div className="flex items-center justify-center h-full min-h-[300px] bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+                <div className="text-center px-4">
+                  <Calendar size={48} className="mx-auto text-gray-300 mb-3" />
+                  <h3 className="text-lg font-medium text-gray-800">No Upcoming Events</h3>
+                  <p className="text-sm text-gray-500 mt-1">Check back later for new events!</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6 h-full">
+                {latestUpcoming.slice(0, 3).map((event) => {
+                  const { fullDate, time } = formatDate(event.startDate);
 
                   return (
-                    <article
-                      key={event.id}
-                      className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100"
-                    >
-                      <div className="relative w-full aspect-square md:aspect-[4/3] overflow-hidden bg-white">
+                    <div key={event.id} className="flex flex-col sm:flex-row bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[220px]">
+                      <div className="relative w-full sm:w-[35%] min-h-[200px] sm:min-h-full overflow-hidden bg-gray-100">
                         <Image
-                          src={image}
+                          src={event.imageUrl as string}
                           alt={event.name}
                           fill
-                          className="object-cover z-10 transition-transform duration-500 "
+                          className="object-cover transition-transform duration-700 hover:scale-105"
                         />
                       </div>
-                      <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
-                        <h3 className="font-medium text-gray-800 text-[15px] line-clamp-1 mb-1">
-                          {event.name}
-                        </h3>
-
-                        <div>
-                          <span className="inline-block bg-[#85161a] text-white text-[11px] font-medium px-3 py-1 rounded-full">
-                            {event.eventType}
-                          </span>
+                      <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between relative group">
+                        <div 
+                          className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10" 
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            const url = `${window.location.origin}/events/${event.id}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success('Event URL copied to share!');
+                          }}
+                        >
+                          <Share2 size={20} strokeWidth={2.5} />
                         </div>
 
-                        <div className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm mt-1">
-                          <Calendar size={14} className="text-gray-400" />
-                          <span>{fullDate}</span>
+                        <div className="pr-10">
+                          <h3 className="text-[17px] md:text-[19px] font-semibold text-gray-900 leading-snug line-clamp-2 mb-5 group-hover:text-[#a62025] transition-colors">
+                            {event.name}
+                          </h3>
+
+                          <div className="flex flex-col gap-3.5">
+                            <div className="flex items-center gap-3 text-[15px] text-gray-700">
+                              <Calendar size={18} className="text-gray-400" strokeWidth={2} />
+                              <span>{fullDate}, {time}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-[15px] text-gray-700">
+                              <MapPin size={18} className="text-gray-400" strokeWidth={2} />
+                              <span className="line-clamp-1">{event.place}</span>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="mt-5">
-                          <Link
-                            href="/events"
-                            className="inline-block bg-[#85161a] text-white text-xs font-medium px-5 py-2 hover:bg-[#6c1215] transition-colors rounded-sm"
-                          >
-                            View Event
-                          </Link>
-                        </div>
+                        <Link href={`/events/${event.id}`}>
+                          <div className="mt-8">
+                            <span className="inline-block cursor-pointer bg-[#a62025] hover:bg-[#85161a] text-white text-[13px] font-semibold px-5 py-2.5 rounded transition-colors shadow-sm">
+                              View Event
+                            </span>
+                          </div>
+                        </Link>
                       </div>
-                    </article>
+                    </div>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

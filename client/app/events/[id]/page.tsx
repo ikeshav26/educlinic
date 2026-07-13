@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Calendar, MapPin, ArrowLeft, Users, Clock, Tag } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { Calendar, MapPin, ArrowLeft, Eye, Share2 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import axios from 'axios';
+import { useUserStore } from '@/store/useUserStore';
+import { toast } from 'react-toastify';
 
 interface Event {
   id: number;
@@ -23,13 +24,13 @@ interface Event {
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
+    weekday: 'short',
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   };
   const time = date.toLocaleString('default', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
@@ -41,50 +42,17 @@ const formatDate = (dateString: string) => {
 
 export default function EventDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated, user } = useUserStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const placeholderImages = [
     '/gallery/gallery-5.jpg',
     '/gallery/gallery-6.jpg',
     '/gallery/gallery-7.jpg',
   ];
-
-  const dummyEvents: Record<string, Partial<Event>> = {
-    '1': {
-      name: 'IITDAA 1st Executive Meeting held on 23rd May, 2026',
-      description:
-        'First executive committee meeting of IIT Delhi Alumni Association. Discussing roadmap and upcoming events.',
-      organizedBy: 'IITD Alumni Association',
-      place: 'Seminar Hall, IIT Delhi Campus',
-      eventType: 'OFFLINE',
-      visibility: 'GLOBAL',
-      startDate: '2026-05-23T10:00:00.000Z',
-      endDate: '2026-05-23T16:00:00.000Z',
-    },
-    '2': {
-      name: 'Farewell to IIT Delhi Alumni Graduating Batch 2026',
-      description:
-        'Celebrating the achievements and bidding farewell to the graduating batch of 2026. Join us for a night of memories and networking.',
-      organizedBy: 'IIT Delhi Alumni Relations',
-      place: 'Convocation Hall, Main Campus',
-      eventType: 'OFFLINE',
-      visibility: 'GLOBAL',
-      startDate: '2026-06-15T18:00:00.000Z',
-      endDate: '2026-06-15T22:00:00.000Z',
-    },
-    '3': {
-      name: 'Annual General Meeting 2026',
-      description:
-        'The Annual General Meeting for all members to discuss progress, financial reports, and future plans.',
-      organizedBy: 'IITDAA',
-      place: 'Virtual Meeting via Zoom',
-      eventType: 'ONLINE',
-      visibility: 'GLOBAL',
-      startDate: '2026-07-20T14:00:00.000Z',
-      endDate: '2026-07-20T17:00:00.000Z',
-    },
-  };
 
   useEffect(() => {
     if (!id) return;
@@ -97,30 +65,7 @@ export default function EventDetailPage() {
         });
         setEvent(res.data.event);
       } catch (err) {
-        console.warn(
-          'Could not fetch event from server, using fallback data:',
-          err
-        );
-        const eventIdStr = id as string;
-        const fallback: Event = {
-          id: Number(id),
-          name: dummyEvents[eventIdStr]?.name || `Special Alumni Event #${id}`,
-          description:
-            dummyEvents[eventIdStr]?.description ||
-            'This exclusive event is organized to reconnect alumni, share insights, and discuss future opportunities. Join us to build stronger networks, participate in panel discussions, and collaborate on new initiatives.',
-          organizedBy:
-            dummyEvents[eventIdStr]?.organizedBy || 'BFCET Alumni Association',
-          place:
-            dummyEvents[eventIdStr]?.place || 'Main Auditorium, BFCET Campus',
-          eventType: dummyEvents[eventIdStr]?.eventType || 'OFFLINE',
-          visibility: dummyEvents[eventIdStr]?.visibility || 'GLOBAL',
-          startDate:
-            dummyEvents[eventIdStr]?.startDate || new Date().toISOString(),
-          endDate:
-            dummyEvents[eventIdStr]?.endDate ||
-            new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
-        };
-        setEvent(fallback);
+        console.warn('Could not fetch event from server:', err);
       } finally {
         setLoading(false);
       }
@@ -129,9 +74,27 @@ export default function EventDetailPage() {
     fetchEventDetails();
   }, [id]);
 
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/register/${id}`,
+        data,
+        { withCredentials: true }
+      );
+      toast.success('Successfully registered!');
+      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to register');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-[#a62025]/30 border-t-[#a62025] rounded-full animate-spin"></div>
           <p className="text-gray-500 font-medium animate-pulse">
@@ -144,7 +107,7 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200 shadow-xl p-8 text-center">
           <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <Calendar size={32} />
@@ -153,22 +116,20 @@ export default function EventDetailPage() {
             Event Not Found
           </h2>
           <p className="text-gray-600 mb-6 leading-relaxed">
-            The event you are looking for does not exist or may have been
-            removed.
+            The event you are looking for does not exist or may have been removed.
           </p>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 bg-[#a62025] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#85161a] transition-colors"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 bg-[#a62025] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#85161a] transition-colors cursor-pointer"
           >
-            <ArrowLeft size={18} /> Back to Events
-          </Link>
+            <ArrowLeft size={18} /> Back
+          </button>
         </div>
       </div>
     );
   }
 
   const { fullDate: startFull, time: startTime } = formatDate(event.startDate);
-  const { fullDate: endFull, time: endTime } = formatDate(event.endDate);
 
   const isBadUrl = event.imageUrl?.includes('unsplash.com/photos/');
   const eventImage =
@@ -177,179 +138,200 @@ export default function EventDetailPage() {
       : placeholderImages[event.id % placeholderImages.length];
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen font-sans pb-16 md:pb-24">
-      <div className="relative w-full h-[35vh] md:h-[50vh] bg-black overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-105"
-          style={{ backgroundImage: `url(${eventImage})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-black/30 z-10" />
-        <div className="absolute top-6 left-6 md:left-12 z-20">
-          <Link
-            href="/events"
-            className="flex items-center gap-2 text-white bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 hover:bg-black/60 transition-all font-medium text-sm"
+    <div className="w-full bg-white min-h-screen font-sans pb-16 md:pb-24">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8 pt-6 md:pt-10">
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-[#a62025] font-medium transition-colors text-[14px] cursor-pointer"
           >
-            <ArrowLeft size={16} /> Back to Events
-          </Link>
+            <ArrowLeft size={16} /> Back
+          </button>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-24 md:-mt-36 relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-8 bg-white rounded-2xl border border-gray-200/80 shadow-md overflow-hidden">
-            <div className="relative w-full aspect-video md:aspect-[21/9] overflow-hidden bg-gray-100 border-b border-gray-100">
-              <Image
-                src={eventImage}
-                alt={event.name}
-                fill
-                priority
-                className="object-cover"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className="relative w-full aspect-video md:aspect-[2.5/1] overflow-hidden flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg">
+              <div
+                className="absolute inset-0 bg-cover bg-center blur-xl opacity-60 scale-110"
+                style={{ backgroundImage: `url(${eventImage})` }}
               />
+              <div className="relative w-full h-full z-10 p-2">
+                <Image
+                  src={eventImage as string}
+                  alt={event.name}
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
 
-            <div className="p-6 md:p-10">
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="inline-flex items-center gap-1 bg-[#a62025]/10 text-[#a62025] text-xs font-semibold px-3 py-1 rounded-full border border-[#a62025]/10">
-                  <Tag size={12} /> {event.eventType}
-                </span>
-                <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200">
-                  <Users size={12} /> {event.visibility}
-                </span>
+            <div className="border border-gray-200 rounded-lg p-6 md:p-8">
+              <h3 className="text-xl font-semibold text-gray-900 mb-5">
+                About
+              </h3>
+              <div className="text-[14px] md:text-[15px] text-gray-700 leading-relaxed whitespace-pre-line font-medium">
+                {event.description || 'No description provided for this event.'}
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-4 flex flex-col lg:sticky lg:top-8">
+            <div className="border border-gray-200 rounded-lg p-6 bg-white shadow-sm flex flex-col">
+              <div className="flex justify-between items-center mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="text-[13px] font-semibold text-emerald-600">
+                    Upcoming Event
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[13px] text-gray-500 font-medium">
+                    <Eye size={15} /> 13
+                  </span>
+                </div>
+                <button className="flex items-center gap-1 text-[13px] text-gray-600 font-medium hover:text-gray-900 transition-colors cursor-pointer">
+                  Share <Share2 size={15} />
+                </button>
               </div>
 
-              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight mb-6">
+              <h1 className="text-[20px] md:text-[22px] font-bold text-gray-900 leading-snug mb-5">
                 {event.name}
               </h1>
-
-              <div className="lg:hidden flex flex-col gap-4 bg-gray-50 p-5 rounded-xl border border-gray-200/60 mb-8">
-                <div className="flex gap-3 items-start">
-                  <div className="p-2 bg-[#a62025]/10 rounded-lg text-[#a62025] mt-0.5">
-                    <Calendar size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                      Date & Time
-                    </h4>
-                    <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                      {startFull}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {startTime} onwards
-                    </p>
-                  </div>
+              <div className="flex flex-col gap-3.5 mb-7">
+                <div className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
+                  <Calendar size={17} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={2} />
+                  <span>{startFull} {startTime}</span>
                 </div>
-                <div className="flex gap-3 items-start">
-                  <div className="p-2 bg-[#a62025]/10 rounded-lg text-[#a62025] mt-0.5">
-                    <MapPin size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                      Location
-                    </h4>
-                    <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                      {event.place}
-                    </p>
-                  </div>
+                <div className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
+                  <MapPin size={17} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={2} />
+                  <span className="whitespace-pre-line leading-snug">{event.place}</span>
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
-                  About This Event
-                </h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                  {event.description ||
-                    'No description provided for this event.'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
-            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-md p-6 hidden lg:flex flex-col gap-6">
-              <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
-                Event Details
-              </h3>
-              <div className="flex gap-4 items-start">
-                <div className="p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
-                  <Users size={20} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Organized By
-                  </h4>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5 leading-snug">
-                    {event.organizedBy}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
-                  <Calendar size={20} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Date
-                  </h4>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5 leading-snug">
-                    {startFull}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Time
-                  </h4>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5 leading-snug">
-                    {startTime} - {endTime}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
-                  <MapPin size={20} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Location
-                  </h4>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5 leading-snug">
-                    {event.place}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-md p-6 flex flex-col gap-4">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-gray-500 font-medium">
-                  Registration status
-                </span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                  Open
-                </span>
-              </div>
               <button
-                className="w-full bg-[#a62025] hover:bg-[#85161a] active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all shadow-md shadow-[#a62025]/10 text-center cursor-pointer text-sm"
-                onClick={() => alert('Event registration is coming soon!')}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    toast.error('Please make sure you are logged in to register.');
+                  } else {
+                    setIsModalOpen(true);
+                  }
+                }}
+                className="w-full bg-[#a62025] hover:bg-[#85161a] text-white text-center text-[14px] font-semibold py-3.5 rounded border border-transparent shadow-sm cursor-pointer transition-colors"
               >
-                Join Event
+                Register Now
               </button>
-              <p className="text-[11px] text-gray-400 text-center leading-normal">
-                By joining, you agree to receive email notifications regarding
-                updates for this event.
-              </p>
+
             </div>
           </div>
+
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 min-h-[400px]">
+            <div className="px-8 py-5 border-b border-gray-200 flex justify-between items-center bg-white relative">
+              <h2 className="text-[22px] text-gray-900 font-normal truncate pr-10">
+                Registration for {event.name}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-2xl font-light absolute right-6 top-5"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleRegister} className="p-8 md:p-10 flex flex-col bg-white flex-1 overflow-y-auto max-h-[75vh]">
+              <h3 className="text-[#85161a] text-[17px] font-normal tracking-wide mb-10 uppercase">
+                FILL DETAILS
+              </h3>
+
+              <div className="flex flex-col gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end">
+                  <div className="md:col-span-5 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Name <span className="text-gray-400">*</span></label>
+                    <input
+                      type="text"
+                      name="name"
+                      defaultValue={user?.name || ''}
+                      readOnly
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 font-medium cursor-default text-[15px]"
+                    />
+                  </div>
+
+                  <div className="md:col-span-3 relative group">
+                    <label className="text-[#85161a] text-[14px] absolute -top-6 left-0 transition-colors">Country Code <span className="text-[#85161a]">*</span></label>
+                    <select name="countryCode" className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 cursor-pointer text-[15px]">
+                      <option value="+91">+91 India</option>
+                      <option value="+1">+1 USA</option>
+                      <option value="+44">+44 UK</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-4 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Contact No. <span className="text-gray-400">*</span></label>
+                    <input
+                      type="text"
+                      name="contactNo"
+                      required
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 text-[15px]"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end mt-2">
+                  <div className="md:col-span-6 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Personal E-mail <span className="text-gray-400">*</span></label>
+                    <input
+                      type="email"
+                      name="email"
+                      defaultValue={user?.email || ''}
+                      readOnly
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 font-medium cursor-default text-[15px]"
+                    />
+                  </div>
+
+                  <div className="md:col-span-6 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">LinkedIn Profile URL</label>
+                    <input
+                      type="url"
+                      name="linkedInUrl"
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 text-[15px]"
+                      placeholder="https://linkedin.com/in/..."
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end mt-2">
+                  <div className="md:col-span-7 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Company / College</label>
+                    <input
+                      type="text"
+                      name="companyOrCollege"
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 text-[15px]"
+                      placeholder="e.g. Google or BFGI"
+                    />
+                  </div>
+
+                  <div className="md:col-span-5 relative group">
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Graduation Year (or Expected)</label>
+                    <input
+                      type="text"
+                      name="graduationYear"
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 text-[15px]"
+                      placeholder="e.g. 2026"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-16 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-8 py-2.5 text-[15px] text-white bg-[#85161a] hover:bg-[#6c1215] transition-colors cursor-pointer tracking-wider"
+                >
+                  COMPLETE REGISTRATION
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

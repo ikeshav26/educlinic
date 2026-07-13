@@ -6,11 +6,12 @@ import {
   ChevronRight,
   MapPin,
   Calendar,
-  CalendarX,
+  Share2,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 interface Event {
   id: number;
@@ -27,14 +28,12 @@ interface Event {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const month = date
-    .toLocaleString('default', { month: 'short' })
-    .toUpperCase();
-  const day = date.getDate().toString().padStart(2, '0');
+  const month = date.toLocaleString('default', { month: 'short' });
+  const day = date.getDate().toString();
   const year = date.getFullYear().toString();
 
   const time = date.toLocaleString('default', {
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
@@ -44,7 +43,7 @@ const formatDate = (dateString: string) => {
     day,
     year,
     time,
-    fullDate: `${month} ${day}, ${year} - ${time}`,
+    fullDate: `${month} ${day}, ${year}`,
   };
 };
 
@@ -85,15 +84,8 @@ export default function EventsClient() {
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
-  const placeholderImages = [
-    '/gallery/gallery-5.jpg',
-    '/gallery/gallery-6.jpg',
-    '/gallery/gallery-7.jpg',
-  ];
 
   if (!mounted) return null;
-
-  // Removed "No events scheduled" full page message, per user request to show skeletons if no data
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
@@ -187,72 +179,78 @@ export default function EventsClient() {
       </div>
 
       <div className="lg:col-span-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 h-full items-start">
+        <div className="grid grid-cols-1 gap-6 h-full items-start">
           {loading || events.length === 0 ? (
             Array.from({ length: 4 }).map((_, i) => (
               <article
                 key={i}
-                className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse h-full"
+                className="group flex flex-col sm:flex-row h-[220px] bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 animate-pulse"
               >
-                <div className="relative w-full aspect-square md:aspect-[4/3] bg-gray-200"></div>
-                <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
-                  <div className="h-5 bg-gray-200 rounded w-full mb-1"></div>
-                  <div>
-                    <div className="h-5 bg-gray-200 rounded-full w-20"></div>
-                  </div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mt-1"></div>
-                  <div className="mt-5 mt-auto">
-                    <div className="h-8 bg-gray-200 rounded-sm w-24"></div>
-                  </div>
+                <div className="w-full sm:w-[35%] bg-gray-200"></div>
+                <div className="flex-1 p-6 gap-3">
+                  <div className="h-5 bg-gray-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                 </div>
               </article>
             ))
           ) : (
             events.map((event, index) => {
-              const { fullDate } = formatDate(event.startDate);
-            const isBadUrl = event.imageUrl?.includes('unsplash.com/photos/');
-            const image =
-              event.imageUrl && !isBadUrl
-                ? event.imageUrl
-                : placeholderImages[index % placeholderImages.length];
-            return (
-              <article
-                key={event.id}
-                className="group flex flex-col overflow-hidden bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100 h-full"
-              >
-                <div className="relative w-full aspect-square md:aspect-[4/3] overflow-hidden bg-white">
-                  <Image
-                    src={image}
-                    alt={event.name}
-                    fill
-                    className="object-cover z-10 transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="flex flex-col flex-1 p-5 lg:p-6 gap-3 bg-white">
-                  <h3 className="font-medium text-gray-800 text-[15px] line-clamp-1 mb-1">
-                    {event.name}
-                  </h3>
-                  <div>
-                    <span className="inline-block bg-[#85161a] text-white text-[11px] font-medium px-3 py-1 rounded-full">
-                      {event.eventType}
-                    </span>
+              const { fullDate, time } = formatDate(event.startDate);
+              return (
+                <div key={event.id} className="flex flex-col sm:flex-row bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[220px]">
+
+                  <div className="relative w-full sm:w-[35%] min-h-[200px] sm:min-h-full overflow-hidden bg-gray-100">
+                    <Image
+                      src={event.imageUrl as string}
+                      alt={event.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                   </div>
-                  <div className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm mt-1">
-                    <Calendar size={14} className="text-gray-400" />
-                    <span>{fullDate}</span>
-                  </div>
-                  <div className="mt-5 mt-auto">
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="inline-block bg-[#85161a] text-white text-xs font-medium px-5 py-2 hover:bg-[#6c1215] transition-colors rounded-sm"
+
+                  <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between relative">
+                    <div
+                      className="absolute top-6 right-6 text-gray-700 hover:text-black cursor-pointer transition-colors z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const url = `${window.location.origin}/events/${event.id}`;
+                        navigator.clipboard.writeText(url);
+                        toast.success('Event URL copied to share!');
+                      }}
                     >
-                      View Event
+                      <Share2 size={20} strokeWidth={2.5} />
+                    </div>
+
+                    <div className="pr-10">
+                      <h3 className="text-[17px] md:text-[19px] font-semibold text-gray-900 leading-snug line-clamp-2 mb-5">
+                        {event.name}
+                      </h3>
+
+                      <div className="flex flex-col gap-3.5">
+                        <div className="flex items-center gap-3 text-[15px] text-gray-700">
+                          <Calendar size={18} className="text-gray-400" strokeWidth={2} />
+                          <span>{fullDate}, {time}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[15px] text-gray-700">
+                          <MapPin size={18} className="text-gray-400" strokeWidth={2} />
+                          <span className="line-clamp-1">{event.place}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Link href={`/events/${event.id}`}>
+                      <div className="mt-8">
+                        <span className="inline-block cursor-pointer bg-[#a62025] hover:bg-[#85161a] text-white text-[13px] font-semibold px-5 py-2.5 rounded transition-colors shadow-sm">
+                          View Event
+                        </span>
+                      </div>
                     </Link>
                   </div>
+
                 </div>
-              </article>
-            );
-          }))}
+              );
+            }))}
         </div>
       </div>
     </div>
