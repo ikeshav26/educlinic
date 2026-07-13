@@ -6,6 +6,7 @@ import {
   UserRole,
   type UserRole as UserRoleEnum,
 } from '../../generated/prisma/enums.js';
+import cloudinary from '../config/cloudinary.js';
 
 const validEventTypes = new Set<string>(Object.values(EventType));
 const validEventVisibilities = new Set<string>(Object.values(EventVisibility));
@@ -23,13 +24,13 @@ const parseDate = (value: unknown) => {
 
 const canManageEvent = (
   actor: { id: number; role: UserRoleEnum },
-  owner: { id: number; role: UserRoleEnum },
+  owner: { id: number; role: UserRoleEnum }
 ) => actor.id === owner.id || roleRank[actor.role] > roleRank[owner.role];
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      console.log(req.user)
+      console.log(req.user);
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -37,6 +38,7 @@ export const createEvent = async (req: Request, res: Response) => {
       name,
       description,
       organizedBy,
+      imageUrl,
       place,
       eventType,
       visibility,
@@ -44,8 +46,18 @@ export const createEvent = async (req: Request, res: Response) => {
       endDate,
     } = req.body;
 
-    if (!name || !organizedBy || !place || !eventType || !visibility || !startDate || !endDate) {
-      return res.status(400).json({ message: 'All required fields must be provided' });
+    if (
+      !name ||
+      !organizedBy ||
+      !place ||
+      !eventType ||
+      !visibility ||
+      !startDate ||
+      !endDate
+    ) {
+      return res
+        .status(400)
+        .json({ message: 'All required fields must be provided' });
     }
 
     if (!validEventTypes.has(eventType)) {
@@ -64,7 +76,21 @@ export const createEvent = async (req: Request, res: Response) => {
     }
 
     if (parsedEndDate <= parsedStartDate) {
-      return res.status(400).json({ message: 'endDate must be after startDate' });
+      return res
+        .status(400)
+        .json({ message: 'endDate must be after startDate' });
+    }
+
+    let finalImageUrl = undefined;
+    if (imageUrl) {
+      try {
+        const cloudinaryUpload = await cloudinary.uploader.upload(imageUrl, {
+          folder: 'events',
+        });
+        finalImageUrl = cloudinaryUpload.secure_url;
+      } catch (error) {
+        return res.status(500).json({ message: 'Image upload failed', error });
+      }
     }
 
     const event = await prisma.event.create({
@@ -78,6 +104,7 @@ export const createEvent = async (req: Request, res: Response) => {
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         createdById: req.user.id,
+        ...(finalImageUrl && { imageUrl: finalImageUrl }),
       },
     });
 
@@ -116,13 +143,33 @@ export const getEventById = async (req: Request, res: Response) => {
 
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
-    const events = await prisma.event.findMany({
-      orderBy: {
-        startDate: 'asc',
-      },
-    });
+    const { limit, offset } = _req.params;
+    const { filter } = _req.query;
 
-    return res.json({ events });
+    const take = limit ? parseInt(limit as string, 10) : 8;
+    const skip = offset ? parseInt(offset as string, 10) : 0;
+
+    const now = new Date();
+    const where =
+      filter === 'upcoming'
+        ? { startDate: { gte: now } }
+        : filter === 'past'
+          ? { startDate: { lt: now } }
+          : {};
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        take,
+        skip,
+        orderBy: {
+          startDate: filter === 'past' ? 'desc' : 'asc',
+        },
+      }),
+      prisma.event.count({ where }),
+    ]);
+
+    return res.json({ events, total });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -172,8 +219,10 @@ export const updateEvent = async (req: Request, res: Response) => {
       endDate,
     } = req.body;
 
-    const parsedStartDate = startDate !== undefined ? parseDate(startDate) : undefined;
-    const parsedEndDate = endDate !== undefined ? parseDate(endDate) : undefined;
+    const parsedStartDate =
+      startDate !== undefined ? parseDate(startDate) : undefined;
+    const parsedEndDate =
+      endDate !== undefined ? parseDate(endDate) : undefined;
 
     if (startDate !== undefined && !parsedStartDate) {
       return res.status(400).json({ message: 'Invalid startDate' });
@@ -195,7 +244,9 @@ export const updateEvent = async (req: Request, res: Response) => {
     const nextEndDate = parsedEndDate ?? existingEvent.endDate;
 
     if (nextEndDate <= nextStartDate) {
-      return res.status(400).json({ message: 'endDate must be after startDate' });
+      return res
+        .status(400)
+        .json({ message: 'endDate must be after startDate' });
     }
 
     const updatedEvent = await prisma.event.update({

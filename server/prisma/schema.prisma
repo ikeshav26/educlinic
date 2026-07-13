@@ -50,17 +50,18 @@ model User {
 }
 
 model Event {
-  id           Int              @id @default(autoincrement())
-  name         String
-  description  String?
-  organizedBy  String
-  place        String
-  eventType    EventType
-  visibility   EventVisibility
-  startDate    DateTime
-  endDate      DateTime
-  createdById  Int
-  createdBy    User             @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String?
+  organizedBy String
+  place       String
+  imageUrl    String?         @default("https://unsplash.com/photos/a-large-group-of-people-in-graduation-caps-and-gowns-q6yC7rYyPuU")
+  eventType   EventType
+  visibility  EventVisibility
+  startDate   DateTime
+  endDate     DateTime
+  createdById Int
+  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
