@@ -18,7 +18,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: 'Alumni Portal',
+  title: 'BFGI Alumni Association',
   description: 'Alumni Portal',
 };
 
