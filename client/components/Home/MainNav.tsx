@@ -34,12 +34,13 @@ const navigation: RouteItem[] = [
   },
   { name: 'Events', path: '/events' },
   { name: 'Alumni', path: '/alumni' },
+  { name: 'Startups', path: 'https://bfsoe.com/startups/' },
   {
     name: 'Research',
     subRoutes: [
       { name: 'Incubation Centre', path: '/research/incubation' },
       { name: 'Research & Development Cell', path: '/research/rnd-cell' },
-      { name: 'School of Entrepreneurship', path: '/research/entrepreneurship' },
+      { name: 'School of Entrepreneurship', path: 'https://bfsoe.com/' },
     ],
   },
   { name: 'Gallery', path: '/gallery' },
