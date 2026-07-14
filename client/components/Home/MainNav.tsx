@@ -34,15 +34,24 @@ const navigation: RouteItem[] = [
   },
   { name: 'Events', path: '/events' },
   { name: 'Alumni', path: '/alumni' },
+  { name: 'Startups', path: 'https://bfsoe.com/startups/' },
   {
     name: 'Research',
     subRoutes: [
-      { name: 'Incubation Centre', path: '/research/incubation-centre' },
+      { name: 'Incubation Centre', path: '/research/incubation' },
       { name: 'Research & Development Cell', path: '/research/rnd-cell' },
-      { name: 'School of Entrepreneurship', path: '/research/entrepreneurship' },
+      { name: 'School of Entrepreneurship', path: 'https://bfsoe.com/' },
     ],
   },
-  { name: 'Gallery', path: '/gallery' },
+  {
+    name: 'Gallery',
+    subRoutes: [
+      { name: 'Campus Life', path: '/gallery/campus-life' },
+      { name: 'Events', path: '/gallery/events' },
+      { name: 'Global Internship', path: '/gallery/global-internship' },
+      { name: 'Global Summit', path: '/gallery/global-summit' },
+    ],
+  },
   {
     name: 'About',
     subRoutes: [
@@ -97,8 +106,7 @@ const MainNav = () => {
           />
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+        <div className="hidden lg:flex items-center space-x-3 xl:space-x-5">
           {navigation.map((item) => {
             const isActive = item.path ? pathname === item.path : false;
 
@@ -177,7 +185,6 @@ const MainNav = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-2 flex flex-col space-y-2 pb-6 shadow-inner max-h-[70vh] overflow-y-auto">
           {navigation.map((item) => (

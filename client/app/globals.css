@@ -132,3 +132,16 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  @keyframes marquee-seamless {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .animate-marquee {
+    animation: marquee-seamless 40s linear infinite;
+    min-width: 100%;
+  }
+}
+
