@@ -51,7 +51,6 @@ export default function IncubationPage() {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* Hero Slider */}
       <div className="relative w-full h-[400px] md:h-[550px] bg-gray-200 overflow-hidden group">
         {heroImages.map((src, index) => (
           <div
@@ -69,7 +68,6 @@ export default function IncubationPage() {
           </div>
         ))}
 
-        {/* Slider Controls */}
         <button
           onClick={prevSlide}
           className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
@@ -83,7 +81,6 @@ export default function IncubationPage() {
           <ChevronRight size={24} />
         </button>
 
-        {/* Slider Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {heroImages.map((_, index) => (
             <button
@@ -95,7 +92,6 @@ export default function IncubationPage() {
         </div>
       </div>
 
-      {/* Incubation Centre Text Section */}
       <section className="container mx-auto px-4 py-16 max-w-6xl">
         <h1 className="text-3xl md:text-4xl font-bold text-[#142340] mb-8 border-b-2 border-[#142340] pb-2 inline-block">
           Incubation Centre
@@ -116,10 +112,8 @@ export default function IncubationPage() {
         </div>
       </section>
 
-      {/* Vision, Mission, Services */}
       <section className="bg-[#f7f4f2] py-16">
         <div className="container mx-auto px-4 max-w-6xl space-y-12">
-          {/* Vision */}
           <div>
             <h2 className="text-2xl font-bold text-[#142340] mb-4">Vision</h2>
             <p className="text-gray-700 leading-relaxed">
@@ -128,7 +122,6 @@ export default function IncubationPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Mission */}
             <div>
               <h2 className="text-2xl font-bold text-[#142340] mb-6">Mission</h2>
               <ol className="list-decimal list-outside ml-5 space-y-3 text-gray-700 text-sm md:text-base">
@@ -141,7 +134,6 @@ export default function IncubationPage() {
               </ol>
             </div>
 
-            {/* Services */}
             <div>
               <h2 className="text-2xl font-bold text-[#142340] mb-6">Services</h2>
               <ol className="list-decimal list-outside ml-5 space-y-3 text-gray-700 text-sm md:text-base">
@@ -161,7 +153,6 @@ export default function IncubationPage() {
         </div>
       </section>
 
-      {/* Our Startups Marquee */}
       <section className="py-16 bg-white overflow-hidden">
         <div className="container mx-auto px-4 max-w-6xl mb-8">
           <h2 className="text-2xl font-bold text-[#142340] border-b-2 border-yellow-500 pb-2 inline-block">
@@ -198,7 +189,6 @@ export default function IncubationPage() {
         </div>
       </section>
 
-      {/* Collaborations Marquee */}
       <section className="py-8 bg-white overflow-hidden">
         <div className="container mx-auto px-4 max-w-6xl mb-8">
           <h2 className="text-2xl font-bold text-[#142340] border-b-2 border-yellow-500 pb-2 inline-block">
@@ -235,12 +225,10 @@ export default function IncubationPage() {
         </div>
       </section>
 
-      {/* Contact Section */}
       <section className="bg-white py-16 mt-12">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
 
-            {/* Contact Persons */}
             <div className="space-y-8">
               <div>
                 <h3 className="text-xl font-bold text-[#142340] uppercase tracking-wide border-l-4 border-orange-500 pl-3">
@@ -274,7 +262,6 @@ export default function IncubationPage() {
               </div>
             </div>
 
-            {/* Contact Details */}
             <div className="space-y-10 pt-2">
               <div className="flex items-start gap-6">
                 <div className="bg-[#ea3b3b] p-3.5 rounded-full text-white shrink-0 mt-1 shadow-sm">
