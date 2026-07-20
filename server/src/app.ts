@@ -19,13 +19,14 @@ const appMiddleware: express.RequestHandler[] = [
     ],
     credentials: true,
   }),
-  express.json(),
-  express.urlencoded({ extended: true }),
+  express.json({ limit: '25mb' }),
+  express.urlencoded({ limit: '25mb', extended: true }),
   cookieParser(),
   morgan('dev'),
 ];
 
 app.use(appMiddleware);
+
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API is running...');

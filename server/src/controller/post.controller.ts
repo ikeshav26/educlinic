@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../config/db.js';
+import cloudinary from '../config/cloudinary.js';
 
 export const createPost = async (
   req: Request,
@@ -18,11 +19,25 @@ export const createPost = async (
       return;
     }
 
+    let finalImageUrl = imageUrl;
+    if (imageUrl && imageUrl.startsWith('data:image')) {
+      try {
+        const cloudinaryUpload = await cloudinary.uploader.upload(imageUrl, {
+          folder: 'posts',
+        });
+        finalImageUrl = cloudinaryUpload.secure_url;
+      } catch (error) {
+        console.error('Cloudinary upload error:', error);
+        res.status(500).json({ message: 'Image upload failed', error });
+        return;
+      }
+    }
+
     const post = await prisma.post.create({
       data: {
         title,
         content,
-        imageUrl,
+        imageUrl: finalImageUrl,
         createdById: userId,
       },
       include: {
@@ -306,5 +321,33 @@ export const toggleCommentLike = async (
   } catch (error) {
     console.error('Error toggling comment like:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const uploadImage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const { image } = req.body;
+    if (!image) {
+      res.status(400).json({ message: 'Image data is required' });
+      return;
+    }
+
+    const cloudinaryUpload = await cloudinary.uploader.upload(image, {
+      folder: 'editor_images',
+    });
+
+    res.status(200).json({ url: cloudinaryUpload.secure_url });
+  } catch (error) {
+    console.error('Cloudinary image upload error:', error);
+    res.status(500).json({ message: 'Image upload failed', error });
   }
 };

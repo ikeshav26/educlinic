@@ -7,6 +7,7 @@ import {
   togglePostLike,
   createComment,
   toggleCommentLike,
+  uploadImage,
 } from '../controller/post.controller.js';
 
 const router: Router = Router();
@@ -14,6 +15,7 @@ const router: Router = Router();
 router.get('/', authMiddleware(), getAllPosts);
 router.get('/:id', authMiddleware(), getPostById);
 router.post('/', authMiddleware(), createPost);
+router.post('/upload', authMiddleware(), uploadImage);
 router.post('/:id/like', authMiddleware(), togglePostLike);
 router.post('/:id/comments', authMiddleware(), createComment);
 router.post('/comments/:commentId/like', authMiddleware(), toggleCommentLike);
