@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/mockData';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Heart, MessageSquare, Bookmark, Share2, Sparkles, MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { Heart, MessageSquare, Bookmark, Share2, Sparkles, MapPin, Calendar, ArrowLeft, UserCheck } from 'lucide-react';
 import { CommentSection } from './Comments/CommentSection.tsx';
 import MDEditor from '@uiw/react-md-editor';
 
@@ -11,13 +11,33 @@ export const PostDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const postId = Number(id);
-  const { posts, users, toggleLike } = useStore();
+  const { posts, users, toggleLike, toggleFollow, fetchFollowCounts, currentUser } = useStore();
 
   const [unicorns, setUnicorns] = useState<number>(12);
   const [isUnicorned, setIsUnicorned] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const post = posts.find(p => p.id === postId);
+
+  const authorUser = post?.author
+    ? users.find(u => u.id === post.author?.id) || post.author
+    : post?.createdBy;
+
+  const authorId = authorUser?.id;
+  const isMe = authorId === currentUser?.id;
+
+  const loadFollowState = useCallback(async () => {
+    if (!authorId || isMe) return;
+    const counts = await fetchFollowCounts(authorId);
+    setIsFollowing(counts.isFollowing);
+  }, [authorId, isMe, fetchFollowCounts]);
+
+  useEffect(() => {
+    loadFollowState();
+  }, [loadFollowState]);
+
   if (!post) {
     return (
       <div className="p-12 text-center space-y-4">
@@ -29,7 +49,16 @@ export const PostDetail: React.FC = () => {
     );
   }
 
-  const authorUser = post.author ? users.find(u => u.id === post.author?.id) || post.author : post.createdBy;
+  const handleFollowToggle = async () => {
+    if (!authorUser || isMe) return;
+    setFollowLoading(true);
+    const wasFollowing = isFollowing;
+    setIsFollowing(!wasFollowing);
+    await toggleFollow(authorUser.id, wasFollowing);
+    await loadFollowState();
+    setFollowLoading(false);
+  };
+
   const isLiked = post.isLiked;
   const likesCount = post._count?.likes ?? post.likes ?? 0;
   const commentsCount = post.comments?.length ?? 0;
@@ -117,10 +146,18 @@ export const PostDetail: React.FC = () => {
             </div>
 
             <Button
-              className="bg-[#3b49df] hover:bg-[#2f3ab2] text-white rounded-md font-medium text-sm hidden sm:flex"
+              onClick={handleFollowToggle}
+              disabled={followLoading || isMe}
               size="sm"
+              className={`rounded-md font-medium text-sm hidden sm:flex ${
+                isMe
+                  ? 'hidden'
+                  : isFollowing
+                  ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                  : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
+              }`}
             >
-              Follow
+              {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
             </Button>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black text-foreground leading-tight tracking-tight mb-4">
@@ -178,8 +215,18 @@ export const PostDetail: React.FC = () => {
               </h3>
             </div>
 
-            <Button className="w-full bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium mb-4 rounded-md">
-              Follow
+            <Button
+              onClick={handleFollowToggle}
+              disabled={followLoading || isMe}
+              className={`w-full font-medium mb-4 rounded-md ${
+                isMe
+                  ? 'hidden'
+                  : isFollowing
+                  ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                  : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
+              }`}
+            >
+              {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
             </Button>
 
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">

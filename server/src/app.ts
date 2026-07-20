@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes.js';
 import morgan from 'morgan';
 import eventRoutes from './routes/event.routes.js';
 import postRoutes from './routes/post.routes.js';
+import followRoutes from './routes/follow.routes.js';
 import { authMiddleware } from './middleware/auth.js';
 import { UserRole } from '../generated/prisma/enums.js';
 
@@ -35,5 +36,6 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/follow', followRoutes);
 
 export default app;

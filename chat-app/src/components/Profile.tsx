@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../store/mockData';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { MapPin, Calendar, Link as LinkIcon, MessageSquare, Heart, Bookmark, FileText } from 'lucide-react';
+import { MapPin, Calendar, Link as LinkIcon, MessageSquare, Heart, Bookmark, FileText, Users, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '../types';
 
@@ -11,18 +11,50 @@ interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ userId }) => {
-  const { currentUser, users, posts, toggleFollow } = useStore();
+  const { currentUser, users, posts, toggleFollow, fetchFollowCounts } = useStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const profileUser: User | null = userId
     ? users.find(u => u.id === userId) || currentUser
     : currentUser;
 
+  const targetId = profileUser?.id;
+
+  const loadCounts = useCallback(async () => {
+    if (!targetId) return;
+    const counts = await fetchFollowCounts(targetId);
+    setFollowersCount(counts.followersCount);
+    setFollowingCount(counts.followingCount);
+    setIsFollowing(counts.isFollowing);
+  }, [targetId, fetchFollowCounts]);
+
+  useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
+
   if (!profileUser) return null;
 
   const isMe = profileUser.id === currentUser?.id;
   const userPosts = posts.filter(p => (p.author?.id === profileUser.id) || (p.createdBy?.id === profileUser.id));
+
+  const handleFollowToggle = async () => {
+    setFollowLoading(true);
+    // Optimistic update
+    const wasFollowing = isFollowing;
+    setIsFollowing(!wasFollowing);
+    setFollowersCount(c => wasFollowing ? c - 1 : c + 1);
+
+    await toggleFollow(profileUser.id, wasFollowing);
+
+    // Confirm from server
+    await loadCounts();
+    setFollowLoading(false);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -46,10 +78,19 @@ export const Profile: React.FC<ProfileProps> = ({ userId }) => {
                     <MessageSquare className="h-4 w-4" /> Message
                   </Button>
                   <Button
-                    onClick={() => toggleFollow(profileUser.id)}
-                    className="bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium"
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                    className={
+                      isFollowing
+                        ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-medium transition-colors'
+                        : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium'
+                    }
                   >
-                    {profileUser.isFollowed ? 'Following' : 'Follow'}
+                    {isFollowing ? (
+                      <><UserCheck className="h-4 w-4 mr-1" /> Following</>
+                    ) : (
+                      'Follow'
+                    )}
                   </Button>
                 </>
               )}
@@ -77,13 +118,17 @@ export const Profile: React.FC<ProfileProps> = ({ userId }) => {
               <div className="text-xl font-bold text-foreground">{userPosts.length}</div>
               <div className="text-xs text-muted-foreground uppercase font-semibold">Posts published</div>
             </div>
-            <div>
-              <div className="text-xl font-bold text-foreground">148</div>
-              <div className="text-xs text-muted-foreground uppercase font-semibold">Reactions given</div>
+            <div className="cursor-pointer hover:text-[#3b49df] transition-colors group">
+              <div className="text-xl font-bold text-foreground group-hover:text-[#3b49df] flex items-center justify-center gap-1">
+                <Users className="h-4 w-4" />{followersCount}
+              </div>
+              <div className="text-xs text-muted-foreground uppercase font-semibold">Followers</div>
             </div>
-            <div>
-              <div className="text-xl font-bold text-foreground">12</div>
-              <div className="text-xs text-muted-foreground uppercase font-semibold">Tags followed</div>
+            <div className="cursor-pointer hover:text-[#3b49df] transition-colors group">
+              <div className="text-xl font-bold text-foreground group-hover:text-[#3b49df] flex items-center justify-center gap-1">
+                <Users className="h-4 w-4" />{followingCount}
+              </div>
+              <div className="text-xs text-muted-foreground uppercase font-semibold">Following</div>
             </div>
           </div>
         </div>

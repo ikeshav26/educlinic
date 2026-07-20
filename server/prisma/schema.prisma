@@ -50,6 +50,8 @@ model User {
   comments       Comment[]
   postLikes      PostLike[]
   commentLikes   CommentLike[]
+  followers      Follow[]        @relation("UserFollowers")
+  following      Follow[]        @relation("UserFollowing")
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -93,34 +95,33 @@ model Registration {
   @@unique([eventId, userId])
 }
 
-
 model Post {
-  id          Int          @id @default(autoincrement())
-  title       String
-  content     String
-  imageUrl    String?
-  comments    Comment[]
-  likes       PostLike[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        Int        @id @default(autoincrement())
+  title     String
+  content   String
+  imageUrl  String?
+  comments  Comment[]
+  likes     PostLike[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  createdBy   User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy   User @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById Int
 }
 
 model Comment {
-  id          Int           @id @default(autoincrement())
-  content     String
-  post        Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId      Int
-  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId    Int
-  parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  parentId    Int?
-  replies     Comment[]     @relation("CommentReplies")
-  likes       CommentLike[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        Int           @id @default(autoincrement())
+  content   String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  replies   Comment[]     @relation("CommentReplies")
+  likes     CommentLike[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model PostLike {
@@ -143,4 +144,15 @@ model CommentLike {
   createdAt DateTime @default(now())
 
   @@unique([userId, commentId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  Int
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }

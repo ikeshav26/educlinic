@@ -5,6 +5,8 @@ export interface User {
   isFollowed?: boolean;
   bio?: string;
   coverImage?: string;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 export interface Comment {

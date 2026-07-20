@@ -10,7 +10,8 @@ interface StoreState {
   addPost: (title: string, content: string, coverImage: string, tags: string[]) => Promise<void>;
   toggleLike: (postId: number) => Promise<void>;
   addComment: (postId: number, content: string, parentId?: number) => Promise<void>;
-  toggleFollow: (userId: number) => void;
+  toggleFollow: (userId: number, currentlyFollowing: boolean) => Promise<void>;
+  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean }>;
   sendMessage: (chatId: number, content: string) => void;
   updateProfile: (name: string, bio: string, avatar: string, coverImage: string) => void;
 }
@@ -118,7 +119,32 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const toggleFollow = (userId: number) => {
+  const toggleFollow = async (userId: number, currentlyFollowing: boolean) => {
+    try {
+      if (currentlyFollowing) {
+        await fetch(`${API_BASE}/follow`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toUnfollowUserId: userId }),
+          credentials: 'include',
+        });
+      } else {
+        await fetch(`${API_BASE}/follow`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toFollowUserId: userId }),
+          credentials: 'include',
+        });
+      }
+    } catch (err) {
+      console.error('toggleFollow error', err);
+    }
+  };
+
+  const fetchFollowCounts = async (userId: number) => {
+    const res = await fetch(`${API_BASE}/follow/${userId}/counts`, { credentials: 'include' });
+    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false };
+    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean }>;
   };
 
   const sendMessage = (chatId: number, content: string) => {
@@ -128,7 +154,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   return (
-    <StoreContext.Provider value={{ currentUser, users, posts, chats, isLoading, addPost, toggleLike, addComment, toggleFollow, sendMessage, updateProfile }}>
+    <StoreContext.Provider value={{ currentUser, users, posts, chats, isLoading, addPost, toggleLike, addComment, toggleFollow, fetchFollowCounts, sendMessage, updateProfile }}>
       {isLoading ? <div className="flex h-screen items-center justify-center">Loading...</div> : children}
     </StoreContext.Provider>
   );
