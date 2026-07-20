@@ -22,18 +22,17 @@ export const Chat: React.FC = () => {
 
   return (
     <div className="flex h-[calc(100vh-100px)] gap-4 pt-1 max-w-5xl mx-auto">
-      {/* Chat Conversations List */}
       <div className="w-80 shrink-0 bg-card border border-border/80 rounded-md overflow-hidden flex flex-col shadow-2xs">
         <div className="p-3.5 border-b border-border/60 font-bold text-base bg-muted/20 flex items-center gap-2 text-foreground">
           <MessageSquare className="h-4 w-4 text-[#3b49df]" />
           <span>Direct Messages</span>
         </div>
-        
+
         <div className="p-2 border-b border-border/40">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input 
-              placeholder="Search conversations..." 
+            <Input
+              placeholder="Search conversations..."
               className="pl-8 h-8 text-xs bg-muted/40 border-border/60 focus-visible:ring-1 focus-visible:ring-[#3b49df]"
             />
           </div>
@@ -41,12 +40,11 @@ export const Chat: React.FC = () => {
 
         <ScrollArea className="flex-1 divide-y divide-border/40">
           {chats.map(chat => (
-            <div 
+            <div
               key={chat.id}
               onClick={() => setActiveChatId(chat.id)}
-              className={`flex items-center p-3 cursor-pointer hover:bg-muted/40 transition-colors ${
-                activeChatId === chat.id ? 'bg-[#3b49df]/10 border-l-4 border-l-[#3b49df]' : ''
-              }`}
+              className={`flex items-center p-3 cursor-pointer hover:bg-muted/40 transition-colors ${activeChatId === chat.id ? 'bg-[#3b49df]/10 border-l-4 border-l-[#3b49df]' : ''
+                }`}
             >
               <Avatar className="h-9 w-9 mr-3 shrink-0 border border-border/60">
                 <AvatarImage src={chat.participant.avatar} />
@@ -68,7 +66,6 @@ export const Chat: React.FC = () => {
         </ScrollArea>
       </div>
 
-      {/* Active Conversation Pane */}
       <div className="flex-1 bg-card border border-border/80 rounded-md overflow-hidden flex flex-col shadow-2xs">
         {activeChat ? (
           <>
@@ -82,19 +79,18 @@ export const Chat: React.FC = () => {
                 <span className="text-xs text-muted-foreground">Active in DEV Direct Messages</span>
               </div>
             </div>
-            
+
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-3">
                 {activeChat.messages.map(msg => {
                   const isMe = msg.senderId === currentUser?.id;
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div 
-                        className={`max-w-[70%] rounded-md p-3 text-sm leading-relaxed ${
-                          isMe 
-                            ? 'bg-[#3b49df] text-white font-medium shadow-2xs' 
-                            : 'bg-muted/70 text-foreground border border-border/60'
-                        }`}
+                      <div
+                        className={`max-w-[70%] rounded-md p-3 text-sm leading-relaxed ${isMe
+                          ? 'bg-[#3b49df] text-white font-medium shadow-2xs'
+                          : 'bg-muted/70 text-foreground border border-border/60'
+                          }`}
                       >
                         {msg.content}
                       </div>
@@ -105,8 +101,8 @@ export const Chat: React.FC = () => {
             </ScrollArea>
 
             <div className="p-3 border-t border-border/60 flex gap-2 bg-muted/10">
-              <Input 
-                placeholder="Write your message..." 
+              <Input
+                placeholder="Write your message..."
                 className="h-10 text-sm bg-background border-border/80 focus-visible:ring-1 focus-visible:ring-[#3b49df]"
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
@@ -114,9 +110,9 @@ export const Chat: React.FC = () => {
                   if (e.key === 'Enter') handleSend();
                 }}
               />
-              <Button 
-                onClick={handleSend} 
-                size="icon" 
+              <Button
+                onClick={handleSend}
+                size="icon"
                 className="bg-[#3b49df] hover:bg-[#2f3ab2] text-white shrink-0 h-10 w-10"
               >
                 <Send className="h-4 w-4" />

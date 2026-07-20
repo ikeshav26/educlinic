@@ -8,7 +8,6 @@ export const RightSidebar: React.FC = () => {
 
   return (
     <aside className="hidden lg:block w-[320px] shrink-0 pt-1 pl-2 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto space-y-4 text-sm [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      {/* Active Discussions Widget (#discuss) */}
       <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
         <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">
@@ -20,8 +19,8 @@ export const RightSidebar: React.FC = () => {
         <div className="divide-y divide-border/40">
           {trendingPosts.length > 0 ? (
             trendingPosts.map((post) => (
-              <div 
-                key={post.id} 
+              <div
+                key={post.id}
                 className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors"
               >
                 <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
@@ -43,8 +42,7 @@ export const RightSidebar: React.FC = () => {
           )}
         </div>
       </div>
-      
-      {/* Watercooler Widget (#watercooler) */}
+
       <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
         <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">
@@ -75,7 +73,6 @@ export const RightSidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Help & Advice Widget (#help) */}
       <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
         <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">

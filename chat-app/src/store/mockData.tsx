@@ -29,17 +29,14 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   useEffect(() => {
     const initStore = async () => {
       try {
-        // Fetch current user
         const userRes = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
         if (!userRes.ok) {
-          // If unauthorized, redirect to the Next.js app
           window.location.href = 'http://localhost:3000';
           return;
         }
         const userData = await userRes.json();
         setCurrentUser(userData.user);
 
-        // Fetch posts
         const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
@@ -65,8 +62,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       });
       if (res.ok) {
         const newPost = await res.json();
-        // The API returns the post, we might want to refresh posts or just prepend it
-        // For now, let's re-fetch to ensure counts and likes are correct, or just prepend
         const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
         if (postsRes.ok) {
           setPosts(await postsRes.json());
@@ -79,7 +74,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const toggleLike = async (postId: number) => {
     try {
-      // Optimistic update
       setPosts(posts.map(post => {
         if (post.id === postId) {
           const currentlyLiked = post.isLiked;
@@ -97,9 +91,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         method: 'POST',
         credentials: 'include'
       });
-      
+
       if (!res.ok) {
-        // Revert on failure (simplified)
         const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
         if (postsRes.ok) setPosts(await postsRes.json());
       }
@@ -117,7 +110,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         credentials: 'include'
       });
       if (res.ok) {
-        // Refresh posts to get new comments (simplified approach)
         const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
         if (postsRes.ok) setPosts(await postsRes.json());
       }
@@ -127,15 +119,12 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const toggleFollow = (userId: number) => {
-    // not implemented backend
   };
 
   const sendMessage = (chatId: number, content: string) => {
-    // not implemented backend
   };
 
   const updateProfile = (name: string, bio: string, avatar: string, coverImage: string) => {
-    // not implemented backend
   };
 
   return (

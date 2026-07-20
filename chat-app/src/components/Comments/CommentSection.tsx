@@ -34,25 +34,24 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, comments
           <ShieldAlert className="h-3.5 w-3.5" /> Code of Conduct
         </a>
       </div>
-      
-      {/* Top Level Input */}
+
       <div className="flex gap-3 sm:gap-4">
         <Avatar className="h-9 w-9 shrink-0 border border-border/60">
           <AvatarImage src={currentUser?.avatar} />
           <AvatarFallback>{currentUser?.name?.substring(0, 2) || 'ME'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-3 min-w-0">
-          <textarea 
+          <textarea
             className="w-full min-h-[90px] p-3 text-sm rounded-md border border-border/80 bg-background resize-y focus:outline-none focus:ring-2 focus:ring-[#3b49df]/30 text-foreground placeholder:text-muted-foreground/60"
-            placeholder="Add to the discussion..." 
+            placeholder="Add to the discussion..."
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
           />
           <div className="flex justify-end gap-2">
-            <Button 
-              onClick={handleCommentSubmit} 
-              disabled={!commentInput.trim()} 
-              size="sm" 
+            <Button
+              onClick={handleCommentSubmit}
+              disabled={!commentInput.trim()}
+              size="sm"
               className="bg-[#3b49df] hover:bg-[#2f3ab2] text-white rounded-md px-5 font-medium"
             >
               Submit
@@ -60,13 +59,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId, comments
           </div>
         </div>
       </div>
-      
-      {/* Comments List */}
+
       <div className="space-y-4 pt-4">
         {comments.map(comment => (
-          <CommentItem 
-            key={comment.id} 
-            comment={comment} 
+          <CommentItem
+            key={comment.id}
+            comment={comment}
             postId={postId}
           />
         ))}

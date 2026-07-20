@@ -19,19 +19,14 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-clip flex flex-col font-sans">
       <Navbar />
-      
+
       <div className="container mx-auto max-w-[1280px] px-2 sm:px-4 py-4 flex-1 flex justify-center gap-4">
-        {/* Left Sidebar: hidden on mobile */}
         {!isCreatePost && !isPostDetail && (
           <Sidebar />
         )}
-        
-        {/* Main Content Area */}
         <main className={`flex-1 min-w-0 ${isCreatePost ? 'max-w-4xl' : (isPostDetail ? 'max-w-full' : 'max-w-[680px]')}`}>
           <Outlet />
         </main>
-
-        {/* Right Sidebar: hidden on mobile & tablet, only shown on feed */}
         {location.pathname === '/' && !isPostDetail && <RightSidebar />}
       </div>
     </div>

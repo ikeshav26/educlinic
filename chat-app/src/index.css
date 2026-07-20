@@ -49,7 +49,6 @@
 }
 
 :root {
-  /* DEV.to Light Theme */
   --background: #f5f5f5;
   --foreground: #171717;
   --card: #ffffff;
@@ -85,7 +84,6 @@
 }
 
 .dark {
-  /* DEV.to Dark Theme */
   --background: #0e1217;
   --foreground: #f3f4f6;
   --card: #171e29;
@@ -131,17 +129,15 @@
   html {
     @apply font-sans;
   }
-}
 
-/* Custom DEV.to badge & card utilities */
-.dev-card {
-  @apply bg-card border border-border/80 rounded-md shadow-xs transition-shadow hover:shadow-sm;
-}
+  .dev-card {
+    @apply bg-card border border-border/80 rounded-md shadow-xs transition-shadow hover:shadow-sm;
+  }
 
-.dev-tag {
-  @apply text-sm text-muted-foreground hover:text-foreground hover:bg-[#3b49df]/10 hover:border-[#3b49df]/30 px-2 py-1 rounded transition-colors cursor-pointer border border-transparent;
-}
+  .dev-tag {
+    @apply text-sm text-muted-foreground hover:text-foreground hover:bg-[#3b49df]/10 hover:border-[#3b49df]/30 px-2 py-1 rounded transition-colors cursor-pointer border border-transparent;
+  }
 
-.dev-reaction-btn {
-  @apply flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer;
-}
+  .dev-reaction-btn {
+    @apply flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer;
+  }

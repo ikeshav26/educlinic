@@ -4,8 +4,8 @@ import { Heart, MessageSquare } from 'lucide-react';
 import type { Comment } from '../../types';
 import { useStore } from '../../store/mockData';
 
-export const CommentItem: React.FC<{ 
-  comment: Comment; 
+export const CommentItem: React.FC<{
+  comment: Comment;
   postId: number;
   depth?: number;
 }> = ({ comment, postId, depth = 0 }) => {
@@ -59,14 +59,12 @@ export const CommentItem: React.FC<{
           </div>
         </div>
 
-        {/* Comment Content */}
         <div className="text-sm text-foreground/90 leading-relaxed pl-9 whitespace-pre-wrap">
           {comment.content}
         </div>
 
-        {/* Action Row */}
         <div className="flex items-center gap-4 pl-9 pt-1 text-xs text-muted-foreground">
-          <button 
+          <button
             onClick={handleLikeToggle}
             className={`flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer ${isLiked ? 'text-red-500 font-medium' : ''}`}
           >
@@ -74,7 +72,7 @@ export const CommentItem: React.FC<{
             <span>{likeCount} likes</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setIsReplying(!isReplying)}
             className="flex items-center gap-1 hover:text-[#3b49df] transition-colors cursor-pointer"
           >
@@ -84,10 +82,9 @@ export const CommentItem: React.FC<{
         </div>
       </div>
 
-      {/* Reply Input Box */}
       {isReplying && (
         <div className="flex gap-2 pl-6 pt-2">
-          <textarea 
+          <textarea
             className="flex-1 min-h-[60px] p-2.5 text-xs sm:text-sm rounded-md border border-border/80 bg-background resize-y focus:outline-none focus:ring-1 focus:ring-[#3b49df]"
             placeholder={`Reply to ${comment.author.name}...`}
             value={replyContent}
@@ -95,14 +92,14 @@ export const CommentItem: React.FC<{
             autoFocus
           />
           <div className="flex flex-col gap-1">
-            <button 
+            <button
               className="bg-[#3b49df] text-white text-xs px-3 py-1.5 rounded-md font-medium hover:bg-[#2f3ab2] disabled:opacity-50"
               disabled={!replyContent.trim()}
               onClick={handleReplySubmit}
             >
               Submit
             </button>
-            <button 
+            <button
               className="text-xs text-muted-foreground hover:text-foreground py-1"
               onClick={() => setIsReplying(false)}
             >
@@ -112,15 +109,14 @@ export const CommentItem: React.FC<{
         </div>
       )}
 
-      {/* Threaded Replies */}
       {hasReplies && showReplies && (
         <div className="space-y-2 pt-1">
           {replies.map(reply => (
-            <CommentItem 
-              key={reply.id} 
-              comment={reply} 
+            <CommentItem
+              key={reply.id}
+              comment={reply}
               postId={postId}
-              depth={depth + 1} 
+              depth={depth + 1}
             />
           ))}
         </div>

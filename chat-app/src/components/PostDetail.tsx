@@ -3,16 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/mockData';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Card, CardContent } from './ui/card';
 import { Heart, MessageSquare, Bookmark, Share2, Sparkles, MapPin, Calendar, ArrowLeft } from 'lucide-react';
 import { CommentSection } from './Comments/CommentSection.tsx';
+import MDEditor from '@uiw/react-md-editor';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const postId = Number(id);
   const { posts, users, toggleLike } = useStore();
-  
+
   const [unicorns, setUnicorns] = useState<number>(12);
   const [isUnicorned, setIsUnicorned] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
@@ -41,10 +41,8 @@ export const PostDetail: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mx-auto w-full max-w-[1240px]">
-      
-      {/* DEV.to Left Sticky Reaction Rail (Desktop) */}
       <aside className="hidden lg:flex flex-col items-center gap-6 w-14 shrink-0 pt-6 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto text-muted-foreground [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <button 
+        <button
           onClick={() => toggleLike(post.id)}
           className="flex flex-col items-center gap-1 group cursor-pointer"
         >
@@ -54,7 +52,7 @@ export const PostDetail: React.FC = () => {
           <span className="text-xs font-semibold">{likesCount}</span>
         </button>
 
-        <button 
+        <button
           onClick={handleUnicornToggle}
           className="flex flex-col items-center gap-1 group cursor-pointer"
         >
@@ -64,7 +62,7 @@ export const PostDetail: React.FC = () => {
           <span className="text-xs font-semibold">{unicorns}</span>
         </button>
 
-        <button 
+        <button
           onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
           className="flex flex-col items-center gap-1 group cursor-pointer"
         >
@@ -74,7 +72,7 @@ export const PostDetail: React.FC = () => {
           <span className="text-xs font-semibold">{commentsCount}</span>
         </button>
 
-        <button 
+        <button
           onClick={() => setIsBookmarked(!isBookmarked)}
           className="flex flex-col items-center gap-1 group cursor-pointer"
         >
@@ -90,17 +88,15 @@ export const PostDetail: React.FC = () => {
         </button>
       </aside>
 
-      {/* Main Article Container */}
       <article className="flex-1 min-w-0 bg-card rounded-md border border-border/80 overflow-hidden shadow-2xs">
         {(post.coverImage || post.imageUrl) && (
-          <div 
+          <div
             className="w-full h-64 sm:h-80 md:h-96 bg-muted"
             style={{ backgroundImage: `url(${post.coverImage || post.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           />
         )}
-        
+
         <div className="p-4 sm:p-8 md:p-12">
-          {/* Author Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border border-border/60 cursor-pointer" onClick={() => navigate('/profile')}>
@@ -108,7 +104,7 @@ export const PostDetail: React.FC = () => {
                 <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DEV'}</AvatarFallback>
               </Avatar>
               <div>
-                <div 
+                <div
                   className="font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors"
                   onClick={() => navigate('/profile')}
                 >
@@ -119,26 +115,22 @@ export const PostDetail: React.FC = () => {
                 </div>
               </div>
             </div>
-            
-            <Button 
+
+            <Button
               className="bg-[#3b49df] hover:bg-[#2f3ab2] text-white rounded-md font-medium text-sm hidden sm:flex"
               size="sm"
             >
               Follow
             </Button>
           </div>
-          
-          {/* Article Title */}
           <h1 className="text-3xl sm:text-5xl font-black text-foreground leading-tight tracking-tight mb-4">
             {post.title || "Untitled Article"}
           </h1>
-          
-          {/* Tag Badges */}
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-8">
               {post.tags.map(tag => (
-                <span 
-                  key={tag} 
+                <span
+                  key={tag}
                   className="text-sm text-muted-foreground hover:text-foreground hover:bg-[#3b49df]/10 hover:border-[#3b49df]/30 px-2.5 py-1 rounded transition-colors cursor-pointer border border-transparent font-mono"
                 >
                   #{tag}
@@ -146,14 +138,11 @@ export const PostDetail: React.FC = () => {
               ))}
             </div>
           )}
-          
-          {/* Article Body */}
-          <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed font-sans space-y-4 pt-2">
-            <p className="text-lg leading-relaxed whitespace-pre-wrap">{post.content}</p>
+
+          <div data-color-mode="light" className="mt-6 mb-8 w-full max-w-none prose-styles">
+            <MDEditor.Markdown source={post.content} style={{ whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} />
           </div>
         </div>
-
-        {/* Mobile Reactions Bar */}
         <div className="lg:hidden flex items-center justify-around py-3 border-t border-border/60 bg-muted/20 px-4">
           <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className={isLiked ? 'text-red-500' : ''}>
             <Heart className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`} /> {likesCount}
@@ -168,14 +157,11 @@ export const PostDetail: React.FC = () => {
             <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-[#3b49df] text-[#3b49df]' : ''}`} />
           </Button>
         </div>
-
-        {/* Comments Section */}
         <div className="border-t border-border/60">
           <CommentSection postId={post.id} comments={post.comments || []} commentsCount={commentsCount} />
         </div>
       </article>
 
-      {/* DEV.to Right Sidebar - Author Info Card */}
       <aside className="hidden lg:flex flex-col gap-4 w-80 shrink-0 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs border-t-[32px] border-t-[#3b49df]">
           <div className="p-5">
@@ -184,22 +170,22 @@ export const PostDetail: React.FC = () => {
                 <AvatarImage src={authorUser?.avatar} />
                 <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DEV'}</AvatarFallback>
               </Avatar>
-              <h3 
+              <h3
                 className="font-bold text-xl text-foreground hover:text-[#3b49df] cursor-pointer transition-colors pb-0.5"
                 onClick={() => navigate('/profile')}
               >
                 {authorUser?.name || 'DEV Contributor'}
               </h3>
             </div>
-            
+
             <Button className="w-full bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium mb-4 rounded-md">
               Follow
             </Button>
-            
+
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
               {authorUser?.bio || 'Full-stack software developer sharing insights on web technologies, architecture, and developer tooling.'}
             </p>
-            
+
             <div className="space-y-2 text-xs text-muted-foreground border-t border-border/40 pt-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5" />
@@ -212,8 +198,7 @@ export const PostDetail: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        {/* More from Author */}
+
         <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
           <div className="p-4 border-b border-border/60 font-bold text-sm bg-muted/20">
             More from <span className="text-[#3b49df]">{authorUser?.name || 'Author'}</span>
@@ -224,8 +209,8 @@ export const PostDetail: React.FC = () => {
               { title: 'Understanding TypeScript Generics with Practical Examples', tag: 'typescript' },
               { title: 'How we scaled our API to handle 10M requests/day', tag: 'backend' },
             ].map((item, idx) => (
-              <a 
-                key={idx} 
+              <a
+                key={idx}
                 className="p-4 block hover:bg-muted/40 cursor-pointer transition-colors group"
                 onClick={() => navigate('/')}
               >

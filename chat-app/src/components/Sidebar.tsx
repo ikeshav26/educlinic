@@ -1,14 +1,14 @@
 import React from 'react';
-import { 
-  Home, 
-  MessageSquare, 
-  User as UserIcon, 
-  Bookmark, 
-  Hash, 
-  HelpCircle, 
-  Sparkles, 
-  Info, 
-  ShieldCheck, 
+import {
+  Home,
+  MessageSquare,
+  User as UserIcon,
+  Bookmark,
+  Hash,
+  HelpCircle,
+  Sparkles,
+  Info,
+  ShieldCheck,
   BookOpen,
   Heart,
   Code2
@@ -50,7 +50,6 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="hidden md:block w-[240px] shrink-0 pt-1 pr-2 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto space-y-5 text-sm [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      {/* DEV Community Callout Card */}
       {!currentUser && (
         <div className="bg-card border border-border/80 rounded-md p-4 space-y-3 shadow-2xs">
           <h2 className="font-bold text-base leading-tight">
@@ -70,17 +69,15 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
 
-      {/* Main Navigation */}
       <nav className="flex flex-col space-y-0.5">
         {mainNavItems.map(item => {
           const isActive = location.pathname === item.path;
           return (
-            <Button 
+            <Button
               key={item.name}
-              variant="ghost" 
-              className={`justify-start w-full font-normal h-10 px-3 hover:bg-[#3b49df]/10 hover:text-[#3b49df] transition-colors rounded-md ${
-                isActive ? 'font-bold bg-[#3b49df]/10 text-[#3b49df]' : 'text-foreground/90'
-              }`}
+              variant="ghost"
+              className={`justify-start w-full font-normal h-10 px-3 hover:bg-[#3b49df]/10 hover:text-[#3b49df] transition-colors rounded-md ${isActive ? 'font-bold bg-[#3b49df]/10 text-[#3b49df]' : 'text-foreground/90'
+                }`}
               onClick={() => navigate(item.path)}
             >
               <item.icon className="mr-3 h-5 w-5 shrink-0" strokeWidth={isActive ? 2.2 : 1.75} />
@@ -90,14 +87,13 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Secondary Items */}
       <div className="pt-2">
         <h3 className="mb-2 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Other</h3>
         <nav className="flex flex-col space-y-0.5">
           {secondaryItems.map(item => (
-            <Button 
+            <Button
               key={item.name}
-              variant="ghost" 
+              variant="ghost"
               className="justify-start w-full font-normal h-9 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-md transition-colors"
             >
               <item.icon className="mr-3 h-4 w-4 shrink-0" strokeWidth={1.5} />
@@ -107,14 +103,13 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Popular Tags Section */}
       <div className="pt-2">
         <div className="flex items-center justify-between px-3 mb-2">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Popular Tags</h3>
         </div>
         <div className="flex flex-col space-y-0.5">
           {popularTags.map(tag => (
-            <a 
+            <a
               key={tag.name}
               href={`#${tag.name}`}
               className="flex items-center justify-between px-3 py-1.5 rounded-md text-foreground/80 hover:text-[#3b49df] hover:bg-[#3b49df]/10 transition-colors group cursor-pointer"
@@ -126,7 +121,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer info */}
       <div className="px-3 pt-4 border-t border-border/60 text-xs text-muted-foreground space-y-2 leading-relaxed">
         <p className="flex items-center gap-1">
           <Code2 className="h-3.5 w-3.5 text-[#3b49df]" />
