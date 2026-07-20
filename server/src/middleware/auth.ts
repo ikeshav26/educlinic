@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
-import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { prisma } from '../config/db.js';
 import { env } from '../config/env.js';
+import { getSession } from '../config/cache.js';
 import type { User } from '../../generated/prisma/browser.js';
 import {
   UserRole,
@@ -12,11 +12,6 @@ type AuthenticatedUser = Pick<
   User,
   'id' | 'name' | 'email' | 'role' | 'schoolCategory'
 >;
-
-type AuthTokenPayload = JwtPayload & {
-  id: number;
-  role: string;
-};
 
 const roleRank: Record<UserRoleEnum, number> = {
   [UserRole.USER]: 0,
@@ -38,35 +33,28 @@ export const authMiddleware =
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       console.log(req.cookies);
-      const cookieToken = req.cookies?.token;
+      const cookieSessionId = req.cookies?.sessionId;
       const authHeader = req.headers.authorization;
-      const bearerToken = authHeader?.startsWith('Bearer ')
+      const bearerSessionId = authHeader?.startsWith('Bearer ')
         ? authHeader.slice(7)
         : undefined;
-      const token = cookieToken ?? bearerToken;
+      const sessionId = cookieSessionId ?? bearerSessionId;
 
-      if (!token) {
+      if (!sessionId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
-      const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
-      console.log(decoded);
+      const session = await getSession(sessionId);
+      console.log(session);
 
-      if (
-        typeof decoded !== 'object' ||
-        decoded === null ||
-        !('id' in decoded) ||
-        !('role' in decoded)
-      ) {
+      if (!session) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
       }
-
-      const payload = decoded as AuthTokenPayload;
 
       const user = await prisma.user.findUnique({
-        where: { id: payload.id },
+        where: { id: session.id },
         select: {
           id: true,
           name: true,

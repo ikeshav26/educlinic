@@ -316,7 +316,6 @@ export const deleteEvent = async (req: Request, res: Response) => {
   }
 };
 
-
 export const registerEvent = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -324,10 +323,10 @@ export const registerEvent = async (req: Request, res: Response) => {
     const eventId = Number(id);
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
     if (Number.isNaN(eventId)) {
-      return res.status(400).json({ message: "Invalid event id" });
+      return res.status(400).json({ message: 'Invalid event id' });
     }
 
     const {
@@ -337,12 +336,12 @@ export const registerEvent = async (req: Request, res: Response) => {
       contactNo,
       companyOrCollege,
       graduationYear,
-      linkedInUrl
+      linkedInUrl,
     } = req.body;
 
     const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: 'Event not found' });
     }
 
     const existingRegistration = await prisma.registration.findUnique({
@@ -355,7 +354,9 @@ export const registerEvent = async (req: Request, res: Response) => {
     });
 
     if (existingRegistration) {
-      return res.status(400).json({ message: "You are already registered for this event" });
+      return res
+        .status(400)
+        .json({ message: 'You are already registered for this event' });
     }
 
     const newRegistration = await prisma.registration.create({
@@ -368,15 +369,14 @@ export const registerEvent = async (req: Request, res: Response) => {
         contactNo,
         companyOrCollege,
         graduationYear,
-        linkedInUrl
-      }
+        linkedInUrl,
+      },
     });
 
     return res.status(201).json({
-      message: "Successfully registered for the event",
-      registration: newRegistration
+      message: 'Successfully registered for the event',
+      registration: newRegistration,
     });
-
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Internal Server Error' });

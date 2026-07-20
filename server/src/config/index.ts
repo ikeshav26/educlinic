@@ -5,5 +5,6 @@ export const config = {
     httpOnly: true,
     sameSite: 'none' as const,
     secure: true,
+    domain: process.env.COOKIE_DOMAIN || undefined,
   } as CookieOptions,
 };

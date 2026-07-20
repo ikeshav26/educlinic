@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes.js';
 import morgan from 'morgan';
 import eventRoutes from './routes/event.routes.js';
+import postRoutes from './routes/post.routes.js';
 import { authMiddleware } from './middleware/auth.js';
 import { UserRole } from '../generated/prisma/enums.js';
 
@@ -11,7 +12,11 @@ const app: express.Application = express();
 
 const appMiddleware: express.RequestHandler[] = [
   cors({
-    origin: 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ],
     credentials: true,
   }),
   express.json(),
@@ -28,5 +33,6 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/posts', postRoutes);
 
 export default app;

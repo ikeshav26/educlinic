@@ -61,3 +61,47 @@ export const deleteUserCache = async (email: string): Promise<void> => {
     logger.error('Failed to delete user cache!');
   }
 };
+
+export interface SessionData {
+  id: number;
+  role: string;
+}
+
+export const generateSessionKey = (sessionId: string) => `session:${sessionId}`;
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
+
+export const storeSession = async (
+  sessionId: string,
+  data: SessionData
+): Promise<void> => {
+  const key = generateSessionKey(sessionId);
+  try {
+    await redis.set(key, JSON.stringify(data), { EX: SESSION_TTL_SECONDS });
+  } catch (error) {
+    logger.error('Failed to store session in Redis!');
+  }
+};
+
+export const getSession = async (
+  sessionId: string
+): Promise<SessionData | null> => {
+  const key = generateSessionKey(sessionId);
+  try {
+    const redisValue = await redis.get(key);
+    if (redisValue) {
+      return JSON.parse(redisValue) as SessionData;
+    }
+  } catch (error) {
+    logger.error('Failed to get session from Redis!');
+  }
+  return null;
+};
+
+export const deleteSession = async (sessionId: string): Promise<void> => {
+  const key = generateSessionKey(sessionId);
+  try {
+    await redis.del(key);
+  } catch (error) {
+    logger.error('Failed to delete session from Redis!');
+  }
+};
