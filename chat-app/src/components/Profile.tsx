@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { MapPin, Calendar, Link as LinkIcon, MessageSquare, Heart, Bookmark, FileText, Users, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '../types';
+import { stripHtml } from '../utils/text';
 
 interface ProfileProps {
   userId?: number;
@@ -167,10 +168,10 @@ export const Profile: React.FC<ProfileProps> = ({ userId }) => {
                 onClick={() => navigate(`/post/${post.id}`)}
               >
                 <h3 className="text-xl font-extrabold text-foreground hover:text-[#3b49df] transition-colors mb-2">
-                  {post.title || post.content}
+                  {post.title || stripHtml(post.content)}
                 </h3>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
-                  {post.content}
+                  {stripHtml(post.content)}
                 </p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-3">
                   <span>{new Date(post.createdAt).toLocaleDateString()}</span>

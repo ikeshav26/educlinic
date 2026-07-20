@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from '../store/mockData';
 import { MessageSquare, TrendingUp, HelpCircle, Coffee } from 'lucide-react';
+import { stripHtml } from '../utils/text';
 
 export const RightSidebar: React.FC = () => {
   const { posts } = useStore();
@@ -24,7 +25,7 @@ export const RightSidebar: React.FC = () => {
                 className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors"
               >
                 <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
-                  {post.title || post.content}
+                  {post.title || stripHtml(post.content)}
                 </h4>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                   <span>{post.comments.length} comments</span>

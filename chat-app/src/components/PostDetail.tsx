@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Heart, MessageSquare, Bookmark, Share2, Sparkles, MapPin, Calendar, ArrowLeft, UserCheck } from 'lucide-react';
 import { CommentSection } from './Comments/CommentSection.tsx';
 import MDEditor from '@uiw/react-md-editor';
+import 'react-quill-new/dist/quill.snow.css';
+import { isHtml } from '../utils/text';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams();
@@ -176,9 +178,18 @@ export const PostDetail: React.FC = () => {
             </div>
           )}
 
-          <div data-color-mode="light" className="mt-6 mb-8 w-full max-w-none prose-styles">
-            <MDEditor.Markdown source={post.content} style={{ whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} />
-          </div>
+          {isHtml(post.content) ? (
+            <div className="ql-snow mt-6 mb-8 w-full max-w-none">
+              <div
+                className="ql-editor !p-0 font-sans text-foreground leading-relaxed text-base sm:text-lg space-y-4 [&_img]:rounded-md [&_img]:max-h-[500px] [&_img]:mx-auto [&_blockquote]:border-l-4 [&_blockquote]:border-[#3b49df] [&_blockquote]:pl-4 [&_blockquote]:italic [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:text-xl [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </div>
+          ) : (
+            <div data-color-mode="light" className="mt-6 mb-8 w-full max-w-none prose-styles">
+              <MDEditor.Markdown source={post.content} style={{ whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} />
+            </div>
+          )}
         </div>
         <div className="lg:hidden flex items-center justify-around py-3 border-t border-border/60 bg-muted/20 px-4">
           <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className={isLiked ? 'text-red-500' : ''}>

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Input } from './ui/input';
 import { Heart, MessageSquare, Bookmark, Flame, Sparkles, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { stripHtml } from '../utils/text';
 
 export const Feed: React.FC = () => {
   const { posts, users, currentUser, toggleLike, addComment } = useStore();
@@ -118,7 +119,7 @@ export const Feed: React.FC = () => {
                   className="text-xl sm:text-2xl font-extrabold text-foreground hover:text-[#3b49df] cursor-pointer transition-colors leading-snug tracking-tight mb-2"
                   onClick={() => navigate(`/post/${post.id}`)}
                 >
-                  {post.title || post.content}
+                  {post.title || stripHtml(post.content)}
                 </h2>
 
                 {post.tags && post.tags.length > 0 && (
@@ -135,7 +136,7 @@ export const Feed: React.FC = () => {
                 )}
 
                 <p className="line-clamp-2 text-sm text-muted-foreground leading-relaxed my-2">
-                  {post.content}
+                  {stripHtml(post.content)}
                 </p>
 
                 <div className="flex items-center justify-between pt-3 mt-2">
