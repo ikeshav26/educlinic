@@ -1,54 +1,103 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useStore } from '../store/mockData';
+import { MessageSquare, TrendingUp, HelpCircle, Coffee } from 'lucide-react';
 
 export const RightSidebar: React.FC = () => {
   const { posts } = useStore();
-  const trendingPosts = posts.slice(0, 3); // mock trending
+  const trendingPosts = posts.slice(0, 3);
 
   return (
-    <aside className="hidden lg:block w-[300px] h-full pt-4 pl-4 sticky top-14 self-start space-y-4">
-      <Card className="bg-transparent shadow-none border-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-bold hover:text-primary cursor-pointer transition-colors">#discuss</CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">Discussion threads targeting the whole community</p>
-        </CardHeader>
-        <CardContent className="pt-2 px-0">
-          {trendingPosts.length > 0 ? trendingPosts.map((post) => (
-            <div key={post.id} className="group cursor-pointer px-6 py-4 hover:bg-card rounded-md transition-colors border-b border-border/40 last:border-0">
-              <h4 className="text-[15px] text-foreground/90 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                {post.title || post.content}
-              </h4>
-              <p className="text-xs text-muted-foreground mt-2">
-                {post.comments.length} comments
-              </p>
-            </div>
-          )) : (
-            <div className="text-sm text-muted-foreground px-6 py-4">No discussions yet.</div>
+    <aside className="hidden lg:block w-[320px] shrink-0 pt-1 pl-2 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto space-y-4 text-sm [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      {/* Active Discussions Widget (#discuss) */}
+      <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
+          <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">
+            <MessageSquare className="h-4 w-4 text-[#3b49df]" />
+            <span>#discuss</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Community</span>
+        </div>
+        <div className="divide-y divide-border/40">
+          {trendingPosts.length > 0 ? (
+            trendingPosts.map((post) => (
+              <div 
+                key={post.id} 
+                className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors"
+              >
+                <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+                  {post.title || post.content}
+                </h4>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                  <span>{post.comments.length} comments</span>
+                  {post.tags && post.tags[0] && (
+                    <>
+                      <span>•</span>
+                      <span className="text-muted-foreground">#{post.tags[0]}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-muted-foreground p-4">No active discussions right now.</div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       
-      <Card className="bg-transparent shadow-none border-none mt-4">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-bold hover:text-primary cursor-pointer transition-colors">#watercooler</CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">Light, non-technical conversations.</p>
-        </CardHeader>
-        <CardContent className="pt-2 px-0">
-           <div className="group cursor-pointer px-6 py-4 hover:bg-card rounded-md transition-colors border-b border-border/40">
-              <h4 className="text-[15px] text-foreground/90 group-hover:text-primary transition-colors leading-snug">
-                What are you building this weekend?
-              </h4>
-              <p className="text-xs text-muted-foreground mt-2">12 comments</p>
-           </div>
-           <div className="group cursor-pointer px-6 py-4 hover:bg-card rounded-md transition-colors border-b border-border/40">
-              <h4 className="text-[15px] text-foreground/90 group-hover:text-primary transition-colors leading-snug">
-                Music Monday: What are you listening to?
-              </h4>
-              <p className="text-xs text-muted-foreground mt-2">34 comments</p>
-           </div>
-        </CardContent>
-      </Card>
+      {/* Watercooler Widget (#watercooler) */}
+      <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
+          <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">
+            <Coffee className="h-4 w-4 text-amber-500" />
+            <span>#watercooler</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Relax</span>
+        </div>
+        <div className="divide-y divide-border/40">
+          <div className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors">
+            <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+              What are you building or hacking on this weekend?
+            </h4>
+            <p className="text-xs text-muted-foreground mt-2">24 comments</p>
+          </div>
+          <div className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors">
+            <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+              Music Monday: What track is keeping you in the flow? 🎧
+            </h4>
+            <p className="text-xs text-muted-foreground mt-2">48 comments</p>
+          </div>
+          <div className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors">
+            <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+              Which developer tool can you absolutely not live without?
+            </h4>
+            <p className="text-xs text-muted-foreground mt-2">19 comments</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Help & Advice Widget (#help) */}
+      <div className="bg-card border border-border/80 rounded-md overflow-hidden shadow-2xs">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between bg-muted/20">
+          <div className="flex items-center gap-2 font-bold text-base text-foreground hover:text-[#3b49df] cursor-pointer transition-colors">
+            <HelpCircle className="h-4 w-4 text-emerald-600" />
+            <span>#explainlikeimfive</span>
+          </div>
+        </div>
+        <div className="divide-y divide-border/40">
+          <div className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors">
+            <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+              Explain Docker containers to me like I'm 5 years old
+            </h4>
+            <p className="text-xs text-muted-foreground mt-2">31 comments</p>
+          </div>
+          <div className="group cursor-pointer p-4 hover:bg-muted/40 transition-colors">
+            <h4 className="text-sm font-medium text-foreground group-hover:text-[#3b49df] transition-colors leading-snug">
+              What is WebAssembly and why should I care?
+            </h4>
+            <p className="text-xs text-muted-foreground mt-2">15 comments</p>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 };
