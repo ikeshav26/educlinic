@@ -11,12 +11,35 @@ interface ProfilePageProps {
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId }) => {
   const { currentUser, toggleFollow, fetchFollowCounts } = useStore();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const urlUserId = searchParams.get('id') ? parseInt(searchParams.get('id')!) : undefined;
   
   const targetId = propsUserId || urlUserId || currentUser?.id;
+  const isMe = targetId === currentUser?.id;
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
+  const urlTab = searchParams.get('tab') as 'posts' | 'followers' | 'following' | null;
+  const initialTab = urlTab && ['posts', 'followers', 'following'].includes(urlTab) ? urlTab : 'posts';
+  
+  const [activeTab, setActiveTabState] = useState<'posts' | 'followers' | 'following'>(isMe ? initialTab : 'posts');
+
+  useEffect(() => {
+    const currentUrlTab = searchParams.get('tab') as 'posts' | 'followers' | 'following' | null;
+    const tabToSet = currentUrlTab && ['posts', 'followers', 'following'].includes(currentUrlTab) ? currentUrlTab : 'posts';
+    setActiveTabState(isMe ? tabToSet : 'posts');
+  }, [searchParams, isMe]);
+
+  const setActiveTab = (tab: 'posts' | 'followers' | 'following') => {
+    setActiveTabState(tab);
+    setSearchParams(prev => {
+      if (tab === 'posts') {
+        prev.delete('tab');
+      } else {
+        prev.set('tab', tab);
+      }
+      return prev;
+    });
+  };
+
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -45,7 +68,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
     fetchUser();
   }, [targetId, currentUser]);
 
-  const profileUser: User | null = (targetId === currentUser?.id) ? currentUser : fetchedUser;
+  const profileUser: User | null = isMe ? currentUser : fetchedUser;
 
   const loadCounts = useCallback(async () => {
     if (!targetId) return;
@@ -60,8 +83,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
   }, [loadCounts]);
 
   if (!profileUser) return null;
-
-  const isMe = profileUser.id === currentUser?.id;
 
   const handleFollowToggle = async () => {
     setFollowLoading(true);
@@ -84,6 +105,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
         followingCount={followingCount}
         userPostsCount={totalPosts}
         onFollowToggle={handleFollowToggle}
+        setActiveTab={setActiveTab}
       />
       <ProfilePostList
         activeTab={activeTab}

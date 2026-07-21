@@ -71,16 +71,22 @@ export const getAllPosts = async (
     const skip = (page - 1) * limit;
     const authorId = req.query.authorId ? parseInt(req.query.authorId as string) : undefined;
     const tag = req.query.tag as string | undefined;
+    const search = req.query.search as string | undefined;
     const sortBy = req.query.sortBy as string | undefined;
 
-    const whereClause: any = {};
-    if (authorId) whereClause.createdById = authorId;
-    if (tag) {
-      whereClause.content = {
-        contains: `#${tag}`,
-        mode: 'insensitive'
-      };
+    const AND: any[] = [];
+    if (authorId) AND.push({ createdById: authorId });
+    if (tag) AND.push({ content: { contains: `#${tag}`, mode: 'insensitive' } });
+    if (search) {
+      AND.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } }
+        ]
+      });
     }
+
+    const whereClause = AND.length > 0 ? { AND } : {};
 
     let orderByClause: any = { createdAt: 'desc' };
     if (sortBy === 'likes') {

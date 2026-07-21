@@ -130,6 +130,20 @@
     @apply font-sans;
   }
 
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    @apply cursor-pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  button[disabled] {
+    @apply cursor-not-allowed;
+  }
+
   .dev-card {
     @apply bg-card border border-border/80 rounded-md shadow-xs transition-shadow hover:shadow-sm;
   }

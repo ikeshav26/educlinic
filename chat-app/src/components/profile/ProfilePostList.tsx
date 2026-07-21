@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Post } from '../../types';
-import { FileText, Bookmark, Heart, MessageSquare, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
+import { FileText, Heart, MessageSquare, Trash2, MoreHorizontal, Users, UserPlus, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/mockData';
 import { Toast } from '../ui/Toast';
 import { PostSkeleton } from '../feed/PostSkeleton';
 import { stripHtml } from '../../utils/text';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { getAvatarUrl } from '../../lib/utils';
+import { Button } from '../ui/button';
 
-type ProfileTab = 'posts' | 'saved';
+export type ProfileTab = 'posts' | 'followers' | 'following';
 
 interface ProfilePostListProps {
   activeTab: ProfileTab;
@@ -32,6 +35,27 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
   const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  
+  const [followUsers, setFollowUsers] = useState<any[]>([]);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [toggleLoadingIds, setToggleLoadingIds] = useState<Set<number>>(new Set());
+  const { toggleFollow } = useStore();
+
+  const fetchFollowData = useCallback(async (type: 'followers' | 'following') => {
+    try {
+      setFollowLoading(true);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const res = await fetch(`${apiUrl}/follow/${profileUserId}/${type}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setFollowUsers(data[type] || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [profileUserId]);
 
   const fetchPosts = useCallback(async (pageNum: number, isInitial = false) => {
     try {
@@ -53,9 +77,13 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
   }, [profileUserId, setTotalPosts]);
 
   useEffect(() => {
-    setPage(1);
-    fetchPosts(1, true);
-  }, [fetchPosts]);
+    if (activeTab === 'posts') {
+      setPage(1);
+      fetchPosts(1, true);
+    } else if (activeTab === 'followers' || activeTab === 'following') {
+      fetchFollowData(activeTab);
+    }
+  }, [fetchPosts, fetchFollowData, activeTab]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -75,10 +103,10 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
 
   return (
     <>
-      <div className="flex items-center border-b border-border/60 gap-4">
+      <div className="flex items-center border-b border-border/60 gap-8">
         <button
           onClick={() => setActiveTab('posts')}
-          className={`pb-3 font-semibold text-base transition-colors flex items-center gap-2 border-b-2 ${activeTab === 'posts'
+          className={`pb-3 font-semibold text-base transition-colors flex items-center gap-2 border-b-2 cursor-pointer ${activeTab === 'posts'
             ? 'border-[#3b49df] text-[#3b49df]'
             : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
@@ -86,15 +114,26 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
           <FileText className="h-4 w-4" /> Posts
         </button>
         {isMe && (
-          <button
-            onClick={() => setActiveTab('saved')}
-            className={`pb-3 font-semibold text-base transition-colors flex items-center gap-2 border-b-2 ${activeTab === 'saved'
-              ? 'border-[#3b49df] text-[#3b49df]'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-          >
-            <Bookmark className="h-4 w-4" /> Reading List
-          </button>
+          <>
+            <button
+              onClick={() => setActiveTab('followers')}
+              className={`pb-3 font-semibold text-base transition-colors flex items-center gap-2 border-b-2 cursor-pointer ${activeTab === 'followers'
+                ? 'border-[#3b49df] text-[#3b49df]'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              <Users className="h-4 w-4" /> Followers
+            </button>
+            <button
+              onClick={() => setActiveTab('following')}
+              className={`pb-3 font-semibold text-base transition-colors flex items-center gap-2 border-b-2 cursor-pointer ${activeTab === 'following'
+                ? 'border-[#3b49df] text-[#3b49df]'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              <UserCheck className="h-4 w-4" /> Following
+            </button>
+          </>
         )}
       </div>
 
@@ -180,9 +219,56 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
           </>
         )}
 
-        {activeTab === 'saved' && (
-          <div className="text-center p-12 bg-card rounded-md border border-dashed border-border/80">
-            <p className="text-muted-foreground text-sm">Your reading list is empty.</p>
+        {(activeTab === 'followers' || activeTab === 'following') && isMe && (
+          <div className="flex flex-col gap-4">
+            {followLoading ? (
+              [1, 2, 3, 4].map(n => <div key={n} className="bg-card border border-border/80 rounded-md h-20 animate-pulse" />)
+            ) : followUsers.length > 0 ? (
+              followUsers.map(user => {
+                const isFollowing = activeTab === 'following' || toggleLoadingIds.has(user.id);
+                const isFollowLoading = toggleLoadingIds.has(user.id);
+                
+                return (
+                  <div 
+                    key={user.id} 
+                    className="bg-card border border-border/80 rounded-md p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/profile?id=${user.id}`)}
+                  >
+                    <Avatar className="h-14 w-14 shrink-0">
+                      <AvatarImage src={getAvatarUrl(user.name, user.avatar)} />
+                      <AvatarFallback className="bg-muted font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h3 className="font-bold text-foreground hover:text-[#3b49df] truncate transition-colors text-base">
+                        {user.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.schoolCategory?.replace(/_/g, ' ') || 'Student at EduClinic'}
+                      </p>
+                    </div>
+
+                    {/* Since it's isMe viewing our own followers/following list, they might want to follow/unfollow. 
+                        But we'll keep it simple: if we are viewing 'following', we are following them. 
+                        If we are viewing 'followers', we might not be. For simplicity, just an View Profile button or minimal follow button */}
+                    <Button 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile?id=${user.id}`);
+                      }}
+                      className="shrink-0 rounded-full"
+                    >
+                      View Profile
+                    </Button>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-full py-16 text-center text-muted-foreground bg-card border border-dashed border-border/80 rounded-md">
+                No users found.
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -20,6 +20,7 @@ export const FeedPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeTag = searchParams.get('tag');
+  const activeSearch = searchParams.get('search');
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -62,7 +63,8 @@ export const FeedPage: React.FC = () => {
       else setIsFetchingMore(true);
 
       const tagQuery = activeTag ? `&tag=${encodeURIComponent(activeTag)}` : '';
-      const res = await fetch(`http://localhost:4000/api/posts?page=${pageNum}&limit=5${tagQuery}`, {
+      const searchQuery = activeSearch ? `&search=${encodeURIComponent(activeSearch)}` : '';
+      const res = await fetch(`http://localhost:4000/api/posts?page=${pageNum}&limit=5${tagQuery}${searchQuery}`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -76,12 +78,12 @@ export const FeedPage: React.FC = () => {
       setLoading(false);
       setIsFetchingMore(false);
     }
-  }, [activeTag]);
+  }, [activeTag, activeSearch]);
 
   useEffect(() => {
     setPage(1);
     fetchPosts(1, true);
-  }, [fetchPosts, activeTag]);
+  }, [fetchPosts, activeTag, activeSearch]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -104,11 +106,15 @@ export const FeedPage: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-5 pb-8">
-      {activeTag && (
+      {(activeTag || activeSearch) && (
         <div className="bg-card border border-border/80 rounded-md p-4 shadow-2xs flex items-center justify-between">
           <div>
             <h2 className="font-bold text-lg">
-              Showing posts for <span className="text-[#3b49df]">#{activeTag}</span>
+              {activeTag ? (
+                <>Showing posts for <span className="text-[#3b49df]">#{activeTag}</span></>
+              ) : (
+                <>Search results for "<span className="text-[#3b49df]">{activeSearch}</span>"</>
+              )}
             </h2>
             <p className="text-sm text-muted-foreground">Discover what the community is saying.</p>
           </div>

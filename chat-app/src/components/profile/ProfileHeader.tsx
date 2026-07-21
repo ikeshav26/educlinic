@@ -15,6 +15,7 @@ interface ProfileHeaderProps {
   followingCount: number;
   userPostsCount: number;
   onFollowToggle: () => void;
+  setActiveTab: (tab: 'posts' | 'followers' | 'following') => void;
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -26,6 +27,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   followingCount,
   userPostsCount,
   onFollowToggle,
+  setActiveTab,
 }) => {
   const navigate = useNavigate();
 
@@ -88,18 +90,18 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         <div className="grid grid-cols-3 gap-2 border-t border-border/60 mt-6 pt-4 text-center">
-          <div>
-            <div className="text-xl font-bold text-foreground">{userPostsCount}</div>
+          <div className="cursor-pointer hover:text-[#3b49df] transition-colors group" onClick={() => setActiveTab('posts')}>
+            <div className="text-xl font-bold text-foreground group-hover:text-[#3b49df]">{userPostsCount}</div>
             <div className="text-xs text-muted-foreground uppercase font-semibold">Posts published</div>
           </div>
-          <div className="cursor-pointer hover:text-[#3b49df] transition-colors group">
-            <div className="text-xl font-bold text-foreground group-hover:text-[#3b49df] flex items-center justify-center gap-1">
+          <div className={`group ${isMe ? 'cursor-pointer hover:text-[#3b49df] transition-colors' : ''}`} onClick={() => isMe && setActiveTab('followers')}>
+            <div className={`text-xl font-bold text-foreground flex items-center justify-center gap-1 ${isMe ? 'group-hover:text-[#3b49df]' : ''}`}>
               <Users className="h-4 w-4" />{followersCount}
             </div>
             <div className="text-xs text-muted-foreground uppercase font-semibold">Followers</div>
           </div>
-          <div className="cursor-pointer hover:text-[#3b49df] transition-colors group">
-            <div className="text-xl font-bold text-foreground group-hover:text-[#3b49df] flex items-center justify-center gap-1">
+          <div className={`group ${isMe ? 'cursor-pointer hover:text-[#3b49df] transition-colors' : ''}`} onClick={() => isMe && setActiveTab('following')}>
+            <div className={`text-xl font-bold text-foreground flex items-center justify-center gap-1 ${isMe ? 'group-hover:text-[#3b49df]' : ''}`}>
               <Users className="h-4 w-4" />{followingCount}
             </div>
             <div className="text-xs text-muted-foreground uppercase font-semibold">Following</div>
