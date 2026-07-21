@@ -1,9 +1,9 @@
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { useStore } from '../store/mockData';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useStore } from '../../store/mockData';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {

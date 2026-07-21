@@ -10,12 +10,11 @@ import {
   Info,
   ShieldCheck,
   BookOpen,
-  Heart,
   Code2
 } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useStore } from '../store/mockData';
+import { useStore } from '../../store/mockData';
 
 export const Sidebar: React.FC = () => {
   const location = useLocation();

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StoreProvider } from './store/mockData';
-import { Navbar } from './components/Navbar';
-import { Sidebar } from './components/Sidebar';
-import { Feed } from './components/Feed';
-import { Chat } from './components/Chat';
-import { Profile } from './components/Profile';
-import { CreatePost } from './components/CreatePost';
-import { RightSidebar } from './components/RightSidebar';
+import { Navbar } from './components/layout/Navbar';
+import { Sidebar } from './components/layout/Sidebar';
+import { RightSidebar } from './components/layout/RightSidebar';
+import { FeedPage } from './pages/FeedPage';
+import { ChatPage } from './pages/ChatPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { CreatePostPage } from './pages/CreatePostPage';
+import { PostDetailPage } from './pages/PostDetailPage';
 
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
-import { PostDetail } from './components/PostDetail';
 
 const Layout = () => {
   const location = useLocation();
@@ -37,11 +37,11 @@ const AppContent: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Feed />} />
-        <Route path="chat" element={<Chat />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="create-post" element={<CreatePost />} />
-        <Route path="post/:id" element={<PostDetail />} />
+        <Route index element={<FeedPage />} />
+        <Route path="chat" element={<ChatPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="create-post" element={<CreatePostPage />} />
+        <Route path="post/:id" element={<PostDetailPage />} />
       </Route>
     </Routes>
   );

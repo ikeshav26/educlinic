@@ -1,7 +1,7 @@
 import React from 'react';
-import { useStore } from '../store/mockData';
-import { MessageSquare, TrendingUp, HelpCircle, Coffee } from 'lucide-react';
-import { stripHtml } from '../utils/text';
+import { useStore } from '../../store/mockData';
+import { MessageSquare, HelpCircle, Coffee } from 'lucide-react';
+import { stripHtml } from '../../utils/text';
 
 export const RightSidebar: React.FC = () => {
   const { posts } = useStore();
