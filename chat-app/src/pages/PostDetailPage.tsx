@@ -69,7 +69,7 @@ export const PostDetailPage: React.FC = () => {
 
   const isLiked = post.isLiked;
   const likesCount = post._count?.likes ?? post.likes ?? 0;
-  const commentsCount = post.comments?.length ?? 0;
+  const commentsCount = post._count?.comments ?? post.comments?.length ?? 0;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mx-auto w-full max-w-[1240px]">

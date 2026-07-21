@@ -3,25 +3,49 @@ import { useStore } from '../store/mockData';
 import type { User } from '../types';
 import { ProfileHeader } from '../components/profile/ProfileHeader';
 import { ProfilePostList } from '../components/profile/ProfilePostList';
+import { useSearchParams } from 'react-router-dom';
 
 interface ProfilePageProps {
   userId?: number;
 }
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
-  const { currentUser, users, posts, toggleFollow, fetchFollowCounts } = useStore();
+export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId }) => {
+  const { currentUser, toggleFollow, fetchFollowCounts } = useStore();
+  const [searchParams] = useSearchParams();
+  const urlUserId = searchParams.get('id') ? parseInt(searchParams.get('id')!) : undefined;
+  
+  const targetId = propsUserId || urlUserId || currentUser?.id;
+
   const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [totalPosts, setTotalPosts] = useState(0);
+  
+  const [fetchedUser, setFetchedUser] = useState<User | null>(null);
 
-  const profileUser: User | null = userId
-    ? users.find(u => u.id === userId) || currentUser
-    : currentUser;
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (targetId && targetId !== currentUser?.id) {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+          const res = await fetch(`${apiUrl}/users/${targetId}`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            setFetchedUser(data.user);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        setFetchedUser(null);
+      }
+    };
+    fetchUser();
+  }, [targetId, currentUser]);
 
-  const targetId = profileUser?.id;
+  const profileUser: User | null = (targetId === currentUser?.id) ? currentUser : fetchedUser;
 
   const loadCounts = useCallback(async () => {
     if (!targetId) return;

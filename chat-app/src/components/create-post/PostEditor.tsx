@@ -58,7 +58,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({ content, onChange }) => 
     toolbar: {
       container: [
         [{ 'header': [2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
         ['link', 'image'],
         ['clean']
