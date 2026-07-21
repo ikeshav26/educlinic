@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast as hotToast } from 'react-hot-toast';
 
 export default function RNDCellPage() {
   const heroImages = [
@@ -12,6 +13,39 @@ export default function RNDCellPage() {
   ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const handleExternalLink = (e: React.MouseEvent, url: string, name?: string) => {
+    if (url.startsWith('http')) {
+      e.preventDefault();
+      hotToast((t) => (
+        <div className="flex flex-col gap-4 min-w-[280px] p-2">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1.5">External Link</h3>
+            <p className="text-[15px] text-gray-600">
+              Continue to {name ? <b>{name}</b> : 'external site'}?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2.5">
+            <button
+              onClick={() => hotToast.dismiss(t.id)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                hotToast.dismiss(t.id);
+                window.open(url, '_blank');
+              }}
+              className="px-4 py-2 text-sm font-medium bg-[#d60000] text-white hover:bg-[#b30000] transition-colors cursor-pointer rounded-none"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      ), { duration: 6000, position: 'bottom-right', style: { borderRadius: '0px' } });
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -136,7 +170,7 @@ export default function RNDCellPage() {
               ].map((policy, i) => (
                 <div key={i} className="group bg-white py-8 px-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 text-center flex flex-col items-center justify-between min-h-[160px]">
                   <h4 className="font-bold text-[#b91c1c] mb-5 text-base">{policy.title}</h4>
-                  <Link href={policy.link} className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-colors inline-block w-full">
+                  <Link href={policy.link} onClick={(e) => handleExternalLink(e, policy.link, policy.title)} className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-colors inline-block w-full">
                     Click here to view
                   </Link>
                 </div>
@@ -163,6 +197,8 @@ export default function RNDCellPage() {
                       if (item.link === '#') {
                         e.preventDefault();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        handleExternalLink(e, item.link, item.title);
                       }
                     }}
                     className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-colors inline-block w-full"
@@ -191,6 +227,7 @@ export default function RNDCellPage() {
               </div>
               <Link
                 href="https://www.bfcet.com/p/"
+                onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/p/', 'Patents')}
                 className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-10 py-3 rounded-full text-sm font-semibold transition-colors inline-block"
               >
                 Click here
@@ -204,6 +241,7 @@ export default function RNDCellPage() {
               </div>
               <Link
                 href="https://www.bfcet.com/research-development-old/journals/"
+                onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/research-development-old/journals/', 'Journals')}
                 className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-10 py-3 rounded-full text-sm font-semibold transition-colors inline-block"
               >
                 Click here
@@ -217,6 +255,7 @@ export default function RNDCellPage() {
               </div>
               <Link
                 href="https://www.bfcet.com/research-development-old/books/"
+                onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/research-development-old/books/', 'Books')}
                 className="bg-[#333333] cursor-pointer hover:bg-[#222222] text-white px-10 py-3 rounded-full text-sm font-semibold transition-colors inline-block"
               >
                 Click here
@@ -249,7 +288,7 @@ export default function RNDCellPage() {
           </p>
 
           <button className="bg-white text-black px-8 py-2.5 rounded-full font-bold shadow-md hover:shadow-lg transition-shadow border border-gray-100 text-sm">
-            <Link href="https://www.bfcet.com/mouc/">Read More</Link>
+            <Link href="https://www.bfcet.com/mouc/" onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/mouc/', 'MoUs & Collaborations')}>Read More</Link>
           </button>
         </div>
       </section>
@@ -266,7 +305,7 @@ export default function RNDCellPage() {
                   Conference is an opportunity to celebrate the spirit of sharing knowledge and ideas for the welfare of humanity. Conferences bring together thought leaders, policymakers, researchers, scholars, and students to share, exchange, and deliberate on the existent knowledge and potential opportunities in their specific fields. Conferences also provide a great platform to participants to collaborate with their peers across the globe.
                 </p>
                 <button className="bg-white text-black px-8 py-2.5 rounded-full font-bold shadow-md hover:shadow-lg transition-shadow border border-gray-100 text-sm">
-                  <Link href="https://www.bfcet.com/research-development/conferences/">Read More</Link>
+                  <Link href="https://www.bfcet.com/research-development/conferences/" onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/research-development/conferences/', 'Conferences')}>Read More</Link>
                 </button>
               </div>
               <div className="md:w-1/2 w-full">
@@ -289,7 +328,7 @@ export default function RNDCellPage() {
                   We give gigantic importance to our facilities & learning resources and continuously ensure that our staff and students have full access to everything they need to help them succeed in their work and study. To develop discipline-specific/ multi-disciplinary technical skills BFCET organizes faculty devdelopment programme which emphasizes on imparting the practical skills in order to make them ready for the challenges in the digitalized transformation of technical education.
                 </p>
                 <button className="bg-white text-black px-8 py-2.5 rounded-full font-bold shadow-md hover:shadow-lg transition-shadow border border-gray-100 text-sm">
-                  <Link href="https://www.bfcet.com/research-development-old/faculty-development-programme/">Read More</Link>
+                  <Link href="https://www.bfcet.com/research-development-old/faculty-development-programme/" onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/research-development-old/faculty-development-programme/', 'FDPs')}>Read More</Link>
                 </button>
               </div>
               <div className="md:w-1/2 w-full">
@@ -311,7 +350,7 @@ export default function RNDCellPage() {
             BFCET has partnered with Global Tech players such as INTEL, FESTO, EdGate Technologies, Qvolv Technologies, Schneider Electric, and IHub Awadh for Centre of Excellence to cultivate synergistic alliances, stay abreast of market needs, and implement an industry-relevant curriculum. Artificial Intelligence, Internet of Things, Industrial Automation, Cyber Physical System, AR/VR/MR Labs established in collaboration with these industry giants play a decisive role in enriching the potential of students and faculty members.
           </p>
           <button className="bg-white text-black px-8 py-2.5 rounded-full font-bold shadow-md hover:shadow-lg transition-shadow border border-gray-100 text-sm mb-12">
-            <Link href="https://www.bfcet.com/industry-partners/">Read More</Link>
+            <Link href="https://www.bfcet.com/industry-partners/" onClick={(e) => handleExternalLink(e, 'https://www.bfcet.com/industry-partners/', 'Centre of Excellence')}>Read More</Link>
           </button>
         </div>
 

@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/useUserStore';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { toast as hotToast } from 'react-hot-toast';
 import { UserStore } from '@/store/useUserStore';
 
 type RouteItem = {
@@ -86,6 +87,42 @@ const MainNav = () => {
     }
   };
 
+  const handleLinkClick = (e: React.MouseEvent, url: string, name: string, isMobile = false) => {
+    if (url.startsWith('http')) {
+      e.preventDefault();
+      if (isMobile) setIsMenuOpen(false);
+      hotToast((t) => (
+        <div className="flex flex-col gap-4 min-w-[280px] p-2">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1.5">External Link</h3>
+            <p className="text-[15px] text-gray-600">
+              Continue to <b>{name}</b>?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2.5">
+            <button
+              onClick={() => hotToast.dismiss(t.id)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                hotToast.dismiss(t.id);
+                window.open(url, '_blank');
+              }}
+              className="px-4 py-2 text-sm font-medium bg-[#d60000] text-white hover:bg-[#b30000] transition-colors cursor-pointer rounded-none"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      ), { duration: 6000, position: 'bottom-right', style: { borderRadius: '0px' } });
+    } else {
+      if (isMobile) setIsMenuOpen(false);
+    }
+  };
+
   return (
     <div className="bg-white w-full shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32 py-2 flex items-center justify-between">
@@ -118,6 +155,7 @@ const MainNav = () => {
                 {item.path ? (
                   <Link
                     href={item.path}
+                    onClick={item.path.startsWith('http') ? (e) => handleLinkClick(e, item.path!, item.name) : undefined}
                     className={`inline-flex items-center text-[15px] font-semibold pb-1 border-b-2 transition-colors ${isActive
                       ? 'border-[#d60000] text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-[#d60000] hover:border-[#d60000]'
@@ -145,6 +183,7 @@ const MainNav = () => {
                           <Link
                             key={sub.name}
                             href={sub.path}
+                            onClick={sub.path.startsWith('http') ? (e) => handleLinkClick(e, sub.path, sub.name) : undefined}
                             className="block px-6 py-2 text-[14px] text-gray-600 hover:text-[#d60000] transition-colors"
                           >
                             {sub.name}
@@ -225,11 +264,11 @@ const MainNav = () => {
                 {item.path ? (
                   <Link
                     href={item.path}
-                    className={`text-base font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${pathname === item.path
+                    className={`block text-base font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${pathname === item.path
                       ? 'bg-red-50 text-[#d60000]'
                       : 'text-gray-700 hover:bg-red-50 hover:text-[#d60000]'
                       }`}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(e) => item.path?.startsWith('http') ? handleLinkClick(e, item.path, item.name, true) : setIsMenuOpen(false)}
                   >
                     {item.name}
                   </Link>
@@ -256,11 +295,11 @@ const MainNav = () => {
                         <Link
                           key={sub.name}
                           href={sub.path}
-                          className={`text-sm py-2 px-3 rounded-md transition-colors duration-200 ${pathname === sub.path
+                          className={`block text-sm py-2 px-3 rounded-md transition-colors duration-200 ${pathname === sub.path
                             ? 'bg-red-50 text-[#d60000] font-medium'
                             : 'text-gray-500 hover:bg-red-50 hover:text-[#d60000]'
                             }`}
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={(e) => sub.path.startsWith('http') ? handleLinkClick(e, sub.path, sub.name, true) : setIsMenuOpen(false)}
                         >
                           {sub.name}
                         </Link>
