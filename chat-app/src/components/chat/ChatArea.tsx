@@ -7,6 +7,7 @@ import { MoreVertical, Phone, Video, Send, Image as ImageIcon, Smile, Paperclip,
 import type { Chat, User } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { ChatMessage } from './ChatMessage';
+import { Skeleton } from '../ui/skeleton';
 
 interface ChatAreaProps {
   activeChat: Chat | undefined;
@@ -14,6 +15,7 @@ interface ChatAreaProps {
   newMessage: string;
   setNewMessage: (msg: string) => void;
   handleSend: () => void;
+  isLoading?: boolean;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -22,7 +24,39 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   newMessage,
   setNewMessage,
   handleSend,
+  isLoading,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col h-full bg-card relative">
+        <div className="p-3.5 border-b border-border/60 flex items-center bg-muted/20 gap-3">
+          <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-10 w-64 rounded-2xl rounded-tl-sm bg-muted" />
+              <Skeleton className="h-10 w-48 rounded-2xl rounded-tl-sm bg-muted" />
+            </div>
+            <div className="flex flex-col gap-2 items-end">
+              <Skeleton className="h-10 w-72 rounded-2xl rounded-tr-sm bg-[#3b49df]/20" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-16 w-80 rounded-2xl rounded-tl-sm bg-muted" />
+            </div>
+          </div>
+        </ScrollArea>
+        <div className="p-4 bg-card border-t border-border/60">
+          <Skeleton className="h-12 w-full rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 bg-card border border-border/80 rounded-md overflow-hidden flex flex-col shadow-2xs">
       {activeChat ? (

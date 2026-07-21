@@ -13,10 +13,16 @@ export const createPost = async (
       return;
     }
 
-    const { title, content, imageUrl } = req.body;
+    const { title, content, imageUrl, tags } = req.body;
     if (!title || !content) {
       res.status(400).json({ message: 'Title and content are required' });
       return;
+    }
+
+    let finalContent = content;
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      const tagString = tags.map((t: string) => `<span class="text-[#3b49df] bg-[#3b49df]/10 px-2 py-0.5 rounded font-mono font-medium">#${t}</span>`).join(' ');
+      finalContent = `${content}\n\n<div class="mt-4 flex gap-2">${tagString}</div>`;
     }
 
     let finalImageUrl = imageUrl;
@@ -36,7 +42,7 @@ export const createPost = async (
     const post = await prisma.post.create({
       data: {
         title,
-        content,
+        content: finalContent,
         imageUrl: finalImageUrl,
         createdById: userId,
       },
@@ -64,31 +70,49 @@ export const getAllPosts = async (
     const limit = parseInt(req.query.limit as string || '20');
     const skip = (page - 1) * limit;
     const authorId = req.query.authorId ? parseInt(req.query.authorId as string) : undefined;
+    const tag = req.query.tag as string | undefined;
+    const sortBy = req.query.sortBy as string | undefined;
 
-    const whereClause = authorId ? { createdById: authorId } : {};
+    const whereClause: any = {};
+    if (authorId) whereClause.createdById = authorId;
+    if (tag) {
+      whereClause.content = {
+        contains: `#${tag}`,
+        mode: 'insensitive'
+      };
+    }
+
+    let orderByClause: any = { createdAt: 'desc' };
+    if (sortBy === 'likes') {
+      orderByClause = {
+        likes: {
+          _count: 'desc'
+        }
+      };
+    }
 
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where: whereClause,
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderByClause,
         skip,
         take: limit,
-      include: {
-        createdBy: {
-          select: { id: true, name: true, createdAt: true },
-        },
-        _count: {
-          select: { comments: true, likes: true },
-        },
-        ...(userId && {
-          likes: {
-            where: { userId },
+        include: {
+          createdBy: {
+            select: { id: true, name: true, createdAt: true },
           },
-        }),
-      },
-    }),
-    prisma.post.count({ where: whereClause })
-  ]);
+          _count: {
+            select: { comments: true, likes: true },
+          },
+          ...(userId && {
+            likes: {
+              where: { userId },
+            },
+          }),
+        },
+      }),
+      prisma.post.count({ where: whereClause })
+    ]);
 
     const formattedPosts = posts.map((post) => ({
       ...post,

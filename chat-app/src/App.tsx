@@ -8,6 +8,7 @@ import { ChatPage } from './pages/ChatPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CreatePostPage } from './pages/CreatePostPage';
 import { PostDetailPage } from './pages/PostDetailPage';
+import { ConnectPage } from './pages/ConnectPage';
 
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 
@@ -38,6 +39,7 @@ const AppContent: React.FC = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<FeedPage />} />
+        <Route path="connect" element={<ConnectPage />} />
         <Route path="chat" element={<ChatPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="create-post" element={<CreatePostPage />} />

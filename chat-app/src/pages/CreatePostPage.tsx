@@ -14,11 +14,21 @@ export const CreatePostPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
-  const [tags, setTags] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const parsedTags = tags
-    ? tags.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
-    : [];
+  const predefinedTags = [
+    'campus', 'events', 'coding', 'sports', 'placements', 
+    'hackathon', 'clubs', 'interview', 'experience', 'roadmap', 
+    'information', 'ai', 'discussions', 'projects', 'internships', 
+    'research', 'opportunities', 'help', 'announcements'
+  ];
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : 
+      prev.length < 4 ? [...prev, tag] : prev
+    );
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,7 +41,7 @@ export const CreatePostPage: React.FC = () => {
 
   const handlePublish = () => {
     if (title.trim() && content.trim()) {
-      addPost(title, content, coverImage, parsedTags);
+      addPost(title, content, coverImage, selectedTags);
       navigate('/');
     }
   };
@@ -64,22 +74,27 @@ export const CreatePostPage: React.FC = () => {
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        <div className="border-b border-border/40 pb-4">
-          <Input
-            placeholder="Add up to 4 tags (comma separated)... e.g. webdev, javascript, react"
-            className="border-none shadow-none px-0 focus-visible:ring-0 text-sm font-mono text-muted-foreground placeholder:text-muted-foreground/50"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-          />
-          {parsedTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {parsedTags.map(tag => (
-                <span key={tag} className="text-xs bg-[#3b49df]/10 text-[#3b49df] px-2 py-0.5 rounded font-mono">
+        <div className="border-b border-border/40 pb-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">Select up to 4 tags:</p>
+          <div className="flex flex-wrap gap-2">
+            {predefinedTags.map(tag => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  disabled={!isSelected && selectedTags.length >= 4}
+                  className={`text-xs px-3 py-1.5 rounded-full font-mono transition-colors ${
+                    isSelected 
+                      ? 'bg-[#3b49df] text-white' 
+                      : 'bg-muted hover:bg-muted/80 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed'
+                  }`}
+                >
                   #{tag}
-                </span>
-              ))}
-            </div>
-          )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <PostEditor content={content} onChange={setContent} />
@@ -93,12 +108,11 @@ export const CreatePostPage: React.FC = () => {
             >
               Publish
             </Button>
-            <Button variant="secondary" className="rounded-md">Save draft</Button>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { setTitle(''); setContent(''); setCoverImage(''); setTags(''); }}
+            onClick={() => { setTitle(''); setContent(''); setCoverImage(''); setSelectedTags([]); }}
             className="text-muted-foreground"
           >
             Revert changes

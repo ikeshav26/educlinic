@@ -28,7 +28,7 @@ export const PostContent: React.FC<PostContentProps> = ({ post }) => {
             {post.tags.map(tag => (
               <span
                 key={tag}
-                className="text-sm text-muted-foreground hover:text-foreground hover:bg-[#3b49df]/10 hover:border-[#3b49df]/30 px-2.5 py-1 rounded transition-colors cursor-pointer border border-transparent font-mono"
+                className="text-sm text-[#3b49df] bg-[#3b49df]/10 hover:bg-[#3b49df]/20 px-2.5 py-1 rounded transition-colors cursor-pointer font-mono font-medium"
               >
                 #{tag}
               </span>

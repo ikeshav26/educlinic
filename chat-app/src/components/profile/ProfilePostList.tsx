@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { Post } from '../../types';
 import { FileText, Bookmark, Heart, MessageSquare, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { stripHtml } from '../../utils/text';
 import { useStore } from '../../store/mockData';
 import { Toast } from '../ui/Toast';
+import { PostSkeleton } from '../feed/PostSkeleton';
+import { stripHtml } from '../../utils/text';
 
 type ProfileTab = 'posts' | 'saved';
 
@@ -160,8 +161,9 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
             )}
 
             {loading && (
-              <div className="flex justify-center p-4 text-muted-foreground">
-                <Loader2 className="h-6 w-6 animate-spin" />
+              <div className="space-y-4">
+                <PostSkeleton />
+                <PostSkeleton />
               </div>
             )}
 

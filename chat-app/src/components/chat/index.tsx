@@ -4,7 +4,7 @@ import { ChatSidebar } from './ChatSidebar';
 import { ChatArea } from './ChatArea';
 
 export const Chat: React.FC = () => {
-  const { chats, currentUser, sendMessage } = useStore();
+  const { chats, currentUser, sendMessage, isLoading } = useStore();
   const [activeChatId, setActiveChatId] = useState<number | null>(chats.length > 0 ? chats[0].id : null);
   const [newMessage, setNewMessage] = useState('');
 
@@ -23,6 +23,7 @@ export const Chat: React.FC = () => {
         chats={chats}
         activeChatId={activeChatId}
         setActiveChatId={setActiveChatId}
+        isLoading={isLoading}
       />
       <ChatArea
         activeChat={activeChat}
@@ -30,6 +31,7 @@ export const Chat: React.FC = () => {
         newMessage={newMessage}
         setNewMessage={setNewMessage}
         handleSend={handleSend}
+        isLoading={isLoading}
       />
     </div>
   );
