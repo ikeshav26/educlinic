@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/mockData';
 import { Button } from '../components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Heart, MessageSquare, Bookmark, ArrowLeft, UserCheck } from 'lucide-react';
+import { Heart, MessageSquare, Share2, ArrowLeft, UserCheck } from 'lucide-react';
+import { getAvatarUrl } from '../lib/utils';
 import { CommentSection } from '../components/comments/CommentSection';
 import { PostDetailSidebar } from '../components/post-detail/PostDetailSidebar';
 import { PostContent } from '../components/post-detail/PostContent';
 import { PostAuthorCard } from '../components/post-detail/PostAuthorCard';
 import { PostMoreFromAuthor } from '../components/post-detail/PostMoreFromAuthor';
+import { Toast } from '../components/ui/Toast';
 
 export const PostDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -16,11 +18,9 @@ export const PostDetailPage: React.FC = () => {
   const postId = Number(id);
   const { posts, users, toggleLike, toggleFollow, fetchFollowCounts, currentUser } = useStore();
 
-  const [unicorns, setUnicorns] = useState<number>(12);
-  const [isUnicorned, setIsUnicorned] = useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
 
   const post = posts.find(p => p.id === postId);
 
@@ -40,6 +40,11 @@ export const PostDetailPage: React.FC = () => {
   useEffect(() => {
     loadFollowState();
   }, [loadFollowState]);
+
+  const handleShareMobile = useCallback(() => {
+    const url = `${window.location.origin}/post/${postId}`;
+    navigator.clipboard.writeText(url).then(() => setToastVisible(true));
+  }, [postId]);
 
   if (!post) {
     return (
@@ -66,23 +71,14 @@ export const PostDetailPage: React.FC = () => {
   const likesCount = post._count?.likes ?? post.likes ?? 0;
   const commentsCount = post.comments?.length ?? 0;
 
-  const handleUnicornToggle = () => {
-    setIsUnicorned(prev => !prev);
-    setUnicorns(prev => isUnicorned ? prev - 1 : prev + 1);
-  };
-
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mx-auto w-full max-w-[1240px]">
       <PostDetailSidebar
+        postId={post.id}
         isLiked={isLiked}
         likesCount={likesCount}
         commentsCount={commentsCount}
-        unicorns={unicorns}
-        isUnicorned={isUnicorned}
-        isBookmarked={isBookmarked}
         onLike={() => toggleLike(post.id)}
-        onUnicorn={handleUnicornToggle}
-        onBookmark={() => setIsBookmarked(prev => !prev)}
       />
 
       <article className="flex-1 min-w-0 bg-card rounded-md border border-border/80 overflow-hidden shadow-2xs">
@@ -94,7 +90,7 @@ export const PostDetailPage: React.FC = () => {
                 className="h-11 w-11 border border-border/60 cursor-pointer"
                 onClick={() => navigate('/profile')}
               >
-                <AvatarImage src={authorUser?.avatar} />
+                <AvatarImage src={getAvatarUrl(authorUser?.name, authorUser?.avatar)} />
                 <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DEV'}</AvatarFallback>
               </Avatar>
               <div>
@@ -110,20 +106,20 @@ export const PostDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <Button
-              onClick={handleFollowToggle}
-              disabled={followLoading || isMe}
-              size="sm"
-              className={`rounded-md font-medium text-sm hidden sm:flex ${
-                isMe
-                  ? 'hidden'
-                  : isFollowing
-                  ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-                  : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
-              }`}
-            >
-              {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
-            </Button>
+            {!isMe && (
+              <Button
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+                size="sm"
+                className={`rounded-md font-medium text-sm hidden sm:flex ${
+                  isFollowing
+                    ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                    : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
+                }`}
+              >
+                {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -131,22 +127,19 @@ export const PostDetailPage: React.FC = () => {
 
         {/* Mobile action bar */}
         <div className="lg:hidden flex items-center justify-around py-3 border-t border-border/60 bg-muted/20 px-4">
-          <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className={isLiked ? 'text-red-500' : ''}>
+          <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className={isLiked ? 'text-red-500 font-semibold' : ''}>
             <Heart className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`} /> {likesCount}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleUnicornToggle}>
-            🦄 {unicorns}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}>
             <MessageSquare className="h-5 w-5 mr-1" /> {commentsCount}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setIsBookmarked(prev => !prev)}>
-            <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-[#3b49df] text-[#3b49df]' : ''}`} />
+          <Button variant="ghost" size="sm" onClick={handleShareMobile}>
+            <Share2 className="h-5 w-5 mr-1" /> Share
           </Button>
         </div>
 
         <div className="border-t border-border/60">
-          <CommentSection postId={post.id} comments={post.comments || []} commentsCount={commentsCount} />
+          <CommentSection postId={post.id} postOwnerId={authorId} comments={post.comments || []} commentsCount={commentsCount} />
         </div>
       </article>
 
@@ -160,6 +153,12 @@ export const PostDetailPage: React.FC = () => {
         />
         <PostMoreFromAuthor authorUser={authorUser} />
       </aside>
+
+      <Toast
+        message="Share link copied!"
+        visible={toastVisible}
+        onDismiss={() => setToastVisible(false)}
+      />
     </div>
   );
 };

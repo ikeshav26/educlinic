@@ -2,8 +2,9 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { MessageSquare, Search } from 'lucide-react';
+import { MessageSquare, Search, Plus } from 'lucide-react';
 import type { Chat } from '../../types';
+import { getAvatarUrl } from '../../lib/utils';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -38,9 +39,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ chats, activeChatId, s
               activeChatId === chat.id ? 'bg-[#3b49df]/10 border-l-4 border-l-[#3b49df]' : ''
             }`}
           >
-            <Avatar className="h-9 w-9 mr-3 shrink-0 border border-border/60">
-              <AvatarImage src={chat.participant.avatar} />
-              <AvatarFallback>{chat.participant.name.substring(0, 2)}</AvatarFallback>
+            <Avatar className="h-12 w-12 border-2 border-transparent group-hover:border-[#3b49df]/20 transition-colors">
+              <AvatarImage src={getAvatarUrl(chat.participant.name, chat.participant.avatar)} />
+              <AvatarFallback className="bg-muted text-foreground">{chat.participant.name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden min-w-0">
               <div className="font-semibold text-sm truncate text-foreground">{chat.participant.name}</div>

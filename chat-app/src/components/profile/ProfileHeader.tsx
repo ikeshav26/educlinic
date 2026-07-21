@@ -3,6 +3,7 @@ import type { User } from '../../types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users } from 'lucide-react';
+import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfileHeaderProps {
@@ -31,14 +32,14 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   return (
     <div className="bg-card border border-border/80 rounded-md shadow-2xs overflow-hidden">
       <div
-        className="h-36 sm:h-48 w-full bg-[#3b49df] relative"
+        className="h-36 sm:h-48 w-full bg-black relative"
         style={profileUser.coverImage ? { backgroundImage: `url(${profileUser.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       />
 
       <div className="px-6 pb-6 relative pt-0">
         <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-16 sm:-mt-20 mb-4 gap-4">
           <Avatar className="h-28 w-28 sm:h-32 sm:w-32 border-4 border-card ring-2 ring-border/40 shadow-md bg-card shrink-0">
-            <AvatarImage src={profileUser.avatar} />
+            <AvatarImage src={getAvatarUrl(profileUser.name, profileUser.avatar)} />
             <AvatarFallback>{profileUser.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
 

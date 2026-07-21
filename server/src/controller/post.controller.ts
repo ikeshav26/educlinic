@@ -42,7 +42,7 @@ export const createPost = async (
       },
       include: {
         createdBy: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, createdAt: true },
         },
       },
     });
@@ -60,12 +60,22 @@ export const getAllPosts = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
+    const page = parseInt(req.query.page as string || '1');
+    const limit = parseInt(req.query.limit as string || '20');
+    const skip = (page - 1) * limit;
+    const authorId = req.query.authorId ? parseInt(req.query.authorId as string) : undefined;
 
-    const posts = await prisma.post.findMany({
-      orderBy: { createdAt: 'desc' },
+    const whereClause = authorId ? { createdById: authorId } : {};
+
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
       include: {
         createdBy: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, createdAt: true },
         },
         _count: {
           select: { comments: true, likes: true },
@@ -75,24 +85,25 @@ export const getAllPosts = async (
             where: { userId },
           },
         }),
-        comments: {
-          where: { parentId: null },
-          orderBy: { createdAt: 'asc' },
-          include: {
-            author: { select: { id: true, name: true } },
-          },
-        },
       },
-    });
+    }),
+    prisma.post.count({ where: whereClause })
+  ]);
 
     const formattedPosts = posts.map((post) => ({
       ...post,
       isLiked: userId ? post.likes && post.likes.length > 0 : false,
       likes: undefined,
-      comments: post.comments || [],
+      comments: [],
     }));
 
-    res.status(200).json(formattedPosts);
+    res.status(200).json({
+      posts: formattedPosts,
+      page,
+      limit,
+      total,
+      hasMore: skip + posts.length < total
+    });
   } catch (error) {
     console.error('Error fetching posts:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -116,7 +127,7 @@ export const getPostById = async (
       where: { id: parseInt(id as string) },
       include: {
         createdBy: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, createdAt: true },
         },
         _count: {
           select: { likes: true },
@@ -126,27 +137,7 @@ export const getPostById = async (
             where: { userId },
           },
         }),
-        comments: {
-          where: { parentId: null },
-          orderBy: { createdAt: 'asc' },
-          include: {
-            author: { select: { id: true, name: true } },
-            _count: { select: { likes: true } },
-            ...(userId && {
-              likes: { where: { userId } },
-            }),
-            replies: {
-              orderBy: { createdAt: 'asc' },
-              include: {
-                author: { select: { id: true, name: true } },
-                _count: { select: { likes: true } },
-                ...(userId && {
-                  likes: { where: { userId } },
-                }),
-              },
-            },
-          },
-        },
+
       },
     });
 
@@ -155,18 +146,11 @@ export const getPostById = async (
       return;
     }
 
-    const formatComment = (comment: any) => ({
-      ...comment,
-      isLiked: userId ? comment.likes && comment.likes.length > 0 : false,
-      likes: undefined,
-      replies: comment.replies ? comment.replies.map(formatComment) : undefined,
-    });
-
     const formattedPost = {
       ...post,
       isLiked: userId ? post.likes && post.likes.length > 0 : false,
       likes: undefined,
-      comments: post.comments.map(formatComment),
+      comments: [],
     };
 
     res.status(200).json(formattedPost);
@@ -270,6 +254,120 @@ export const createComment = async (
   }
 };
 
+export const getPostComments = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string || '1');
+    const limit = parseInt(req.query.limit as string || '5');
+    const skip = (page - 1) * limit;
+    const userId = req.user?.id;
+
+    if (!id) {
+      res.status(400).json({ message: 'Post ID is required' });
+      return;
+    }
+
+    const postId = parseInt(id as string);
+
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        where: { postId, parentId: null },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: limit,
+        include: {
+          author: { select: { id: true, name: true } },
+          _count: { select: { likes: true, replies: true } },
+          ...(userId && {
+            likes: { where: { userId } },
+          }),
+        },
+      }),
+      prisma.comment.count({
+        where: { postId, parentId: null },
+      }),
+    ]);
+
+    const formattedComments = comments.map(c => ({
+      ...c,
+      isLiked: userId ? c.likes && c.likes.length > 0 : false,
+      likes: undefined,
+      replyCount: c._count.replies,
+    }));
+
+    res.status(200).json({
+      comments: formattedComments,
+      page,
+      limit,
+      total,
+      hasMore: skip + comments.length < total,
+    });
+  } catch (error) {
+    console.error('Error fetching post comments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getCommentReplies = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { commentId } = req.params;
+    const page = parseInt(req.query.page as string || '1');
+    const limit = parseInt(req.query.limit as string || '5');
+    const skip = (page - 1) * limit;
+    const userId = req.user?.id;
+
+    if (!commentId) {
+      res.status(400).json({ message: 'Comment ID is required' });
+      return;
+    }
+
+    const parentId = parseInt(commentId as string);
+
+    const [replies, total] = await Promise.all([
+      prisma.comment.findMany({
+        where: { parentId },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: limit,
+        include: {
+          author: { select: { id: true, name: true } },
+          _count: { select: { likes: true, replies: true } },
+          ...(userId && {
+            likes: { where: { userId } },
+          }),
+        },
+      }),
+      prisma.comment.count({
+        where: { parentId },
+      }),
+    ]);
+
+    const formattedReplies = replies.map(r => ({
+      ...r,
+      isLiked: userId ? r.likes && r.likes.length > 0 : false,
+      likes: undefined,
+      replyCount: r._count.replies,
+    }));
+
+    res.status(200).json({
+      replies: formattedReplies,
+      page,
+      limit,
+      total,
+      hasMore: skip + replies.length < total,
+    });
+  } catch (error) {
+    console.error('Error fetching comment replies:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const toggleCommentLike = async (
   req: Request,
   res: Response
@@ -351,3 +449,95 @@ export const uploadImage = async (
     res.status(500).json({ message: 'Image upload failed', error });
   }
 };
+
+export const deleteComment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { commentId } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    if (!commentId) {
+      res.status(400).json({ message: 'Comment ID is required' });
+      return;
+    }
+
+    const parsedCommentId = parseInt(commentId as string);
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: parsedCommentId },
+      include: { post: { select: { createdById: true } } },
+    });
+
+    if (!comment) {
+      res.status(404).json({ message: 'Comment not found' });
+      return;
+    }
+
+    if (comment.authorId !== userId && comment.post.createdById !== userId) {
+      res.status(403).json({ message: 'You do not have permission to delete this comment' });
+      return;
+    }
+
+    await prisma.comment.delete({
+      where: { id: parsedCommentId },
+    });
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const deletePost = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    if (!id) {
+      res.status(400).json({ message: 'Post ID is required' });
+      return;
+    }
+
+    const parsedPostId = parseInt(id as string);
+
+    const post = await prisma.post.findUnique({
+      where: { id: parsedPostId },
+    });
+
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    if (post.createdById !== userId) {
+      res.status(403).json({ message: 'You do not have permission to delete this post' });
+      return;
+    }
+
+    await prisma.post.delete({
+      where: { id: parsedPostId },
+    });
+
+    res.status(200).json({ message: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+

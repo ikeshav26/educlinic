@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Bell } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { getAvatarUrl } from '../../lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useStore } from '../../store/mockData';
 import { Link, useNavigate } from 'react-router-dom';
@@ -47,7 +48,7 @@ export const Navbar: React.FC = () => {
           </Button>
           <Link to="/profile">
             <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-primary transition-all">
-              <AvatarImage src={currentUser?.avatar} alt={currentUser?.name} />
+              <AvatarImage src={getAvatarUrl(currentUser?.name, currentUser?.avatar)} alt={currentUser?.name} />
               <AvatarFallback>{currentUser?.name?.substring(0, 2)}</AvatarFallback>
             </Avatar>
           </Link>

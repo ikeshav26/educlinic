@@ -3,8 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Send, MessageSquare } from 'lucide-react';
+import { MoreVertical, Phone, Video, Send, Image as ImageIcon, Smile, Paperclip, MessageSquare } from 'lucide-react';
 import type { Chat, User } from '../../types';
+import { getAvatarUrl } from '../../lib/utils';
 import { ChatMessage } from './ChatMessage';
 
 interface ChatAreaProps {
@@ -27,11 +28,11 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       {activeChat ? (
         <>
           <div className="p-3.5 border-b border-border/60 flex items-center bg-muted/20">
-            <Avatar className="h-9 w-9 mr-3 border border-border/60 shrink-0">
-              <AvatarImage src={activeChat.participant.avatar} />
+            <Avatar className="h-10 w-10 border border-border/40">
+              <AvatarImage src={getAvatarUrl(activeChat.participant.name, activeChat.participant.avatar)} />
               <AvatarFallback>{activeChat.participant.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
-            <div>
+            <div className="ml-3">
               <span className="font-bold text-sm text-foreground block">{activeChat.participant.name}</span>
               <span className="text-xs text-muted-foreground">Active in DEV Direct Messages</span>
             </div>

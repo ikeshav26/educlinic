@@ -15,6 +15,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [totalPosts, setTotalPosts] = useState(0);
 
   const profileUser: User | null = userId
     ? users.find(u => u.id === userId) || currentUser
@@ -37,9 +38,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   if (!profileUser) return null;
 
   const isMe = profileUser.id === currentUser?.id;
-  const userPosts = posts.filter(p =>
-    p.author?.id === profileUser.id || p.createdBy?.id === profileUser.id
-  );
 
   const handleFollowToggle = async () => {
     setFollowLoading(true);
@@ -60,14 +58,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
         followLoading={followLoading}
         followersCount={followersCount}
         followingCount={followingCount}
-        userPostsCount={userPosts.length}
+        userPostsCount={totalPosts}
         onFollowToggle={handleFollowToggle}
       />
       <ProfilePostList
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isMe={isMe}
-        userPosts={userPosts}
+        profileUserId={profileUser.id}
+        setTotalPosts={setTotalPosts}
       />
     </div>
   );
