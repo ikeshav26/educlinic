@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ArrowRight, Menu, X, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/useUserStore';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { toast as hotToast } from 'react-hot-toast';
 import { UserStore } from '@/store/useUserStore';
 
 type RouteItem = {
@@ -53,18 +54,21 @@ const navigation: RouteItem[] = [
     ],
   },
   {
-    name: 'About',
-    subRoutes: [
-      { name: 'About BGFIAA', path: '/about/bgfiaa' },
-      { name: 'TEAM', path: '/about/team' },
-      { name: 'Noticeboard', path: '/about/noticeboard' },
-    ],
+    name: 'About', path: '/about'
   },
   { name: 'Contact Us', path: '/contact' },
 ];
 
 const MainNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      setExpandedMenu(null);
+    }
+  }, [isMenuOpen]);
+
   const pathname = usePathname();
   const isAuthenticated = useUserStore((state: UserStore) => state.isAuthenticated);
   const router = useRouter();
@@ -80,6 +84,42 @@ const MainNav = () => {
       router.push('/');
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const handleLinkClick = (e: React.MouseEvent, url: string, name: string, isMobile = false) => {
+    if (url.startsWith('http')) {
+      e.preventDefault();
+      if (isMobile) setIsMenuOpen(false);
+      hotToast((t) => (
+        <div className="flex flex-col gap-4 min-w-[280px] p-2">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1.5">External Link</h3>
+            <p className="text-[15px] text-gray-600">
+              Continue to <b>{name}</b>?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2.5">
+            <button
+              onClick={() => hotToast.dismiss(t.id)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                hotToast.dismiss(t.id);
+                window.open(url, '_blank');
+              }}
+              className="px-4 py-2 text-sm font-medium bg-[#d60000] text-white hover:bg-[#b30000] transition-colors cursor-pointer rounded-none"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      ), { duration: 6000, position: 'bottom-right', style: { borderRadius: '0px' } });
+    } else {
+      if (isMobile) setIsMenuOpen(false);
     }
   };
 
@@ -115,6 +155,7 @@ const MainNav = () => {
                 {item.path ? (
                   <Link
                     href={item.path}
+                    onClick={item.path.startsWith('http') ? (e) => handleLinkClick(e, item.path!, item.name) : undefined}
                     className={`inline-flex items-center text-[15px] font-semibold pb-1 border-b-2 transition-colors ${isActive
                       ? 'border-[#d60000] text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-[#d60000] hover:border-[#d60000]'
@@ -142,6 +183,7 @@ const MainNav = () => {
                           <Link
                             key={sub.name}
                             href={sub.path}
+                            onClick={sub.path.startsWith('http') ? (e) => handleLinkClick(e, sub.path, sub.name) : undefined}
                             className="block px-6 py-2 text-[14px] text-gray-600 hover:text-[#d60000] transition-colors"
                           >
                             {sub.name}
@@ -178,75 +220,120 @@ const MainNav = () => {
 
           <button
             className="lg:hidden text-gray-700 hover:text-[#d60000] focus:outline-none"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMenuOpen(true)}
           >
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            <Menu size={28} />
           </button>
         </div>
       </div>
 
+      {/* Overlay Backdrop */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-100 px-4 py-2 flex flex-col space-y-2 pb-6 shadow-inner max-h-[70vh] overflow-y-auto">
-          {navigation.map((item) => (
-            <div key={item.name} className="flex flex-col">
-              {item.path ? (
-                <Link
-                  href={item.path}
-                  className={`text-base font-medium py-3 px-3 rounded ${pathname === item.path
-                    ? 'bg-red-50 text-[#d60000]'
-                    : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <div className="text-base font-medium py-3 px-3 rounded text-gray-800 flex items-center justify-between">
-                  {item.name}
-                  <ChevronDown size={18} className="text-gray-400" />
-                </div>
-              )}
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-[60]"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
 
-              {item.subRoutes && (
-                <div className="pl-6 flex flex-col space-y-1 mb-2 border-l-2 border-gray-100 ml-4">
-                  {item.subRoutes.map((sub) => (
-                    <Link
-                      key={sub.name}
-                      href={sub.path}
-                      className={`text-sm py-2.5 px-3 rounded ${pathname === sub.path
-                        ? 'bg-red-50 text-[#d60000]'
-                        : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
+      {/* Sidebar */}
+      <div
+        className={`lg:hidden fixed top-0 left-0 h-full w-[280px] sm:w-[320px] bg-white z-[70] transform transition-transform duration-300 ease-in-out flex flex-col shadow-2xl ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <Image
+            src="/logo1.png"
+            alt="BABA FARID GROUP OF INSTITUTIONS"
+            width={150}
+            height={45}
+            className="w-32 sm:w-40 h-auto object-contain"
+          />
+          <button
+            onClick={() => setIsMenuOpen(false)}
+            className="text-gray-500 hover:text-[#d60000] focus:outline-none p-1"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col space-y-1">
+          {navigation.map((item) => {
+            const isExpanded = expandedMenu === item.name;
+            return (
+              <div key={item.name} className="flex flex-col">
+                {item.path ? (
+                  <Link
+                    href={item.path}
+                    className={`block text-base font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${pathname === item.path
+                      ? 'bg-red-50 text-[#d60000]'
+                      : 'text-gray-700 hover:bg-red-50 hover:text-[#d60000]'
+                      }`}
+                    onClick={(e) => item.path?.startsWith('http') ? handleLinkClick(e, item.path, item.name, true) : setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setExpandedMenu(isExpanded ? null : item.name)}
+                    className={`text-base font-medium py-3 px-4 rounded-lg flex items-center justify-between w-full transition-colors duration-200 ${isExpanded ? 'bg-red-50 text-[#d60000]' : 'text-gray-800 hover:bg-red-50 hover:text-[#d60000]'}`}
+                  >
+                    {item.name}
+                    <ChevronDown
+                      size={18}
+                      className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-[#d60000]' : 'text-gray-400'}`}
+                    />
+                  </button>
+                )}
+
+                {/* Subroutes with animation */}
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}
+                >
+                  {item.subRoutes && (
+                    <div className="pl-4 flex flex-col space-y-1 mb-2 border-l-2 border-[#d60000]/20 ml-6 py-1">
+                      {item.subRoutes.map((sub) => (
+                        <Link
+                          key={sub.name}
+                          href={sub.path}
+                          className={`block text-sm py-2 px-3 rounded-md transition-colors duration-200 ${pathname === sub.path
+                            ? 'bg-red-50 text-[#d60000] font-medium'
+                            : 'text-gray-500 hover:bg-red-50 hover:text-[#d60000]'
+                            }`}
+                          onClick={(e) => sub.path.startsWith('http') ? handleLinkClick(e, sub.path, sub.name, true) : setIsMenuOpen(false)}
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
-          {isAuthenticated ? (
-            <button
-              onClick={() => {
-                handleLogout();
-                setIsMenuOpen(false);
-              }}
-              className="bg-[#d60000] hover:bg-[#b30000] text-white cursor-pointer px-4 py-3 mt-4 rounded flex items-center justify-center space-x-2 font-medium w-full"
-            >
-              <span>Logout</span>
-              <ArrowRight size={18} />
-            </button>
-          ) : (
-            <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
-              <button className="bg-[#d60000] hover:bg-[#b30000] text-white px-4 py-3 mt-4 rounded flex items-center justify-center space-x-2 font-medium w-full">
-                <span>Join Network</span>
+              </div>
+            )
+          })}
+
+          <div className="pt-4 border-t border-gray-100 mt-2 pb-6">
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="bg-[#d60000] hover:bg-[#b30000] text-white cursor-pointer px-4 py-3 rounded flex items-center justify-center space-x-2 font-medium w-full transition"
+              >
+                <span>Logout</span>
                 <ArrowRight size={18} />
               </button>
-            </Link>
-          )}
+            ) : (
+              <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                <button className="bg-[#d60000] hover:bg-[#b30000] text-white px-4 py-3 rounded flex items-center justify-center space-x-2 font-medium w-full transition">
+                  <span>Join Network</span>
+                  <ArrowRight size={18} />
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

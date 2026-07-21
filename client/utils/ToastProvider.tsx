@@ -1,6 +1,7 @@
 'use client';
 
 import { ToastContainer } from 'react-toastify';
+import { Toaster } from 'react-hot-toast';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface ToastProviderProps {
@@ -12,6 +13,7 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     <>
       {children}
       <ToastContainer position="bottom-right" autoClose={3000} theme="light" />
+      <Toaster />
     </>
   );
 }

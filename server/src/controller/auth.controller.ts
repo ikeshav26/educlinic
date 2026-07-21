@@ -1,8 +1,13 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { generateToken } from '../utils/token.js';
+import crypto from 'crypto';
 import { config } from '../config/index.js';
-import { cacheUser, getUserFromCache } from '../config/cache.js';
+import {
+  cacheUser,
+  getUserFromCache,
+  storeSession,
+  deleteSession,
+} from '../config/cache.js';
 import type { User } from '../../generated/prisma/browser.js';
 import { prisma } from '../config/db.js';
 
@@ -34,8 +39,9 @@ export const register = async (req: Request, res: Response) => {
       },
     });
 
-    const token = await generateToken({ id: newUser.id, role: newUser.role });
-    res.cookie('token', token!, { ...config.cookieOptions });
+    const sessionId = crypto.randomUUID();
+    await storeSession(sessionId, { id: newUser.id, role: newUser.role });
+    res.cookie('sessionId', sessionId, { ...config.cookieOptions });
 
     res.json({
       message: 'User registered successfully',
@@ -80,8 +86,9 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Credentials mismatch' });
     }
 
-    const token = await generateToken({ id: user.id, role: user.role });
-    res.cookie('token', token!, { ...config.cookieOptions });
+    const sessionId = crypto.randomUUID();
+    await storeSession(sessionId, { id: user.id, role: user.role });
+    res.cookie('sessionId', sessionId, { ...config.cookieOptions });
 
     res.json({
       message: 'User logged in successfully',
@@ -101,8 +108,25 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    res.clearCookie('token');
+    const sessionId = req.cookies?.sessionId;
+    if (sessionId) {
+      await deleteSession(sessionId);
+    }
+    res.clearCookie('sessionId');
     res.json({ message: 'User logged out successfully' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    res.json({ user });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Internal Server Error' });

@@ -5,6 +5,7 @@ import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import ToastProvider from '@/utils/ToastProvider';
 import SplashScreen from '@/components/SplashScreen';
+import AuthProvider from '@/components/AuthProvider';
 
 const roboto = Roboto({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -34,10 +35,12 @@ export default function RootLayout({
       suppressHydrationWarning={true}
     >
       <body className="min-h-full flex flex-col">
-        <SplashScreen />
-        <ConditionalNavbar />
-        <ToastProvider>{children}</ToastProvider>
-        <ConditionalFooter />
+        <AuthProvider>
+          <SplashScreen />
+          <ConditionalNavbar />
+          <ToastProvider>{children}</ToastProvider>
+          <ConditionalFooter />
+        </AuthProvider>
       </body>
     </html>
   );

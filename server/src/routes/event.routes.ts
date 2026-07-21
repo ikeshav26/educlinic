@@ -5,7 +5,7 @@ import {
   getAllEvents,
   getEventById,
   updateEvent,
-  registerEvent
+  registerEvent,
 } from '../controller/event.controller.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { UserRole } from '../../generated/prisma/enums.js';

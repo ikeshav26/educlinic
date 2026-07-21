@@ -1,11 +1,29 @@
-import React from 'react';
+'use client';
 
-const page = () => {
+import React, { useEffect } from 'react';
+import { useUserStore } from '@/store/useUserStore';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
+
+const AlumniPage = () => {
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      window.location.href = 'http://localhost:5173';
+    } else {
+      toast.error('Login first to connect with Alumni');
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+
   return (
     <div className="flex items-center justify-center h-screen text-2xl font-bold">
-      coming soon...(alumni)
+      Redirecting...
     </div>
   );
 };
 
-export default page;
+export default AlumniPage;
+
