@@ -37,12 +37,19 @@ export interface Post {
 export interface Message {
   id: number;
   senderId: number;
+  receiverId?: number;
   content: string;
+  isRead?: boolean;
   createdAt: string;
+  sender?: { id: number; name: string };
+  receiver?: { id: number; name: string };
 }
 
 export interface Chat {
   id: number;
   participant: User;
   messages: Message[];
+  lastMessage?: Message;
+  unreadCount?: number;
 }
+

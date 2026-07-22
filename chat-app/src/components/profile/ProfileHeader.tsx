@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users } from 'lucide-react';
 import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '../../store/mockData';
 
 interface ProfileHeaderProps {
   profileUser: User;
@@ -30,6 +31,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   setActiveTab,
 }) => {
   const navigate = useNavigate();
+  const { startDirectMessage } = useStore();
+
+  const handleMessageClick = () => {
+    startDirectMessage({
+      id: profileUser.id,
+      name: profileUser.name,
+      avatar: profileUser.avatar,
+      bio: profileUser.bio,
+    });
+    navigate(`/chat?userId=${profileUser.id}`);
+  };
 
   return (
     <div className="bg-card border border-border/80 rounded-md shadow-2xs overflow-hidden">
@@ -48,7 +60,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex gap-2 shrink-0">
             {!isMe && (
               <>
-                <Button onClick={() => navigate('/chat')} variant="outline" className="border-border/80 gap-2">
+                <Button onClick={handleMessageClick} variant="outline" className="border-border/80 gap-2">
                   <MessageSquare className="h-4 w-4" /> Message
                 </Button>
                 <Button

@@ -110,35 +110,35 @@ export default function MapComponent() {
           </Marker>
         ))}
 
-        {Array.from({ length: 132 }).map((_, i) => (
+        {Array.from({ length: 13 }).map((_, i) => (
           <Marker
             key={`p1-${i}`}
             position={[24.0 + Math.random() * 2, 54.0 + Math.random() * 2]}
             icon={customIcon}
           />
         ))}
-        {Array.from({ length: 2407 }).map((_, i) => (
+        {Array.from({ length: 24 }).map((_, i) => (
           <Marker
             key={`p2-${i}`}
             position={[19.0 + Math.random() * 2, 72.0 + Math.random() * 2]}
             icon={customIcon}
           />
         ))}
-        {Array.from({ length: 14516 }).map((_, i) => (
+        {Array.from({ length: 145 }).map((_, i) => (
           <Marker
             key={`p3-${i}`}
             position={[30.0 + Math.random() * 3, 75.0 + Math.random() * 3]}
             icon={customIcon}
           />
         ))}
-        {Array.from({ length: 2070 }).map((_, i) => (
+        {Array.from({ length: 20 }).map((_, i) => (
           <Marker
             key={`p4-${i}`}
             position={[17.0 + Math.random() * 3, 78.0 + Math.random() * 3]}
             icon={customIcon}
           />
         ))}
-        {Array.from({ length: 1055 }).map((_, i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <Marker
             key={`p5-${i}`}
             position={[23.0 + Math.random() * 2, 88.0 + Math.random() * 2]}
