@@ -1,20 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { User } from '../../types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users } from 'lucide-react';
+import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users, Ban, Share2, GraduationCap } from 'lucide-react';
 import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '../../store/mockData';
+import { Toast } from '../ui/Toast';
+import { EditProfileModal } from './EditProfileModal';
 
 interface ProfileHeaderProps {
   profileUser: User;
   isMe: boolean;
   isFollowing: boolean;
+  blockedByMe: boolean;
+  hasBlockedMe: boolean;
   followLoading: boolean;
+  blockLoading: boolean;
   followersCount: number;
   followingCount: number;
   userPostsCount: number;
   onFollowToggle: () => void;
+  onBlockToggle: () => void;
   setActiveTab: (tab: 'posts' | 'followers' | 'following') => void;
 }
 
@@ -22,14 +29,54 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profileUser,
   isMe,
   isFollowing,
+  blockedByMe,
+  hasBlockedMe,
   followLoading,
+  blockLoading,
   followersCount,
   followingCount,
   userPostsCount,
   onFollowToggle,
+  onBlockToggle,
   setActiveTab,
 }) => {
   const navigate = useNavigate();
+  const { startDirectMessage } = useStore();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleShareProfile = async () => {
+    try {
+      const url = `${window.location.origin}/profile?id=${profileUser.id}`;
+      await navigator.clipboard.writeText(url);
+      setToastMessage("Profile URL copied to clipboard!");
+      setShowToast(true);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  };
+
+  const handleMessageClick = () => {
+    if (blockedByMe || hasBlockedMe) {
+      setToastMessage("You cannot message this user due to a block.");
+      setShowToast(true);
+      return;
+    }
+    if (!isFollowing) {
+      setToastMessage("You must follow this user to send a message.");
+      setShowToast(true);
+      return;
+    }
+
+    startDirectMessage({
+      id: profileUser.id,
+      name: profileUser.name,
+      avatar: profileUser.avatar,
+      bio: profileUser.bio,
+    });
+    navigate(`/chat?userId=${profileUser.id}`);
+  };
 
   return (
     <div className="bg-card border border-border/80 rounded-md shadow-2xs overflow-hidden">
@@ -48,44 +95,94 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex gap-2 shrink-0">
             {!isMe && (
               <>
-                <Button onClick={() => navigate('/chat')} variant="outline" className="border-border/80 gap-2">
+                <Button 
+                  onClick={handleMessageClick} 
+                  variant="outline" 
+                  className={`border-border/80 gap-2 ${blockedByMe || hasBlockedMe ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                   <MessageSquare className="h-4 w-4" /> Message
                 </Button>
-                <Button
-                  onClick={onFollowToggle}
-                  disabled={followLoading}
-                  className={
-                    isFollowing
-                      ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-medium transition-colors'
-                      : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium'
-                  }
-                >
-                  {isFollowing ? (
-                    <><UserCheck className="h-4 w-4 mr-1" /> Following</>
-                  ) : (
-                    'Follow'
-                  )}
-                </Button>
+                
+                {blockedByMe ? (
+                  <Button
+                    onClick={onBlockToggle}
+                    disabled={blockLoading}
+                    variant="destructive"
+                    className="gap-2 font-medium"
+                  >
+                    <Ban className="h-4 w-4" /> Unblock
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={onFollowToggle}
+                      disabled={followLoading || hasBlockedMe}
+                      className={
+                        isFollowing
+                          ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-medium transition-colors'
+                          : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium'
+                      }
+                    >
+                      {isFollowing ? (
+                        <><UserCheck className="h-4 w-4 mr-1" /> Following</>
+                      ) : (
+                        'Follow'
+                      )}
+                    </Button>
+                    <Button
+                      onClick={onBlockToggle}
+                      disabled={blockLoading}
+                      variant="outline"
+                      className="border-border/80 text-muted-foreground hover:text-red-500 hover:border-red-200 transition-colors px-2"
+                      title="Block User"
+                    >
+                      <Ban className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </>
             )}
-            {isMe && (
-              <Button variant="outline" className="border-border/80 font-medium">Edit Profile</Button>
+            {isMe && (!profileUser.bio || !profileUser.gender || !profileUser.socialLink) && (
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="text-sm font-medium text-[#3b49df] hover:text-[#2f3ab2] transition-colors flex items-center gap-1.5 mr-1"
+              >
+                <div className="h-2 w-2 rounded-full bg-[#3b49df] animate-pulse" />
+                Complete your profile
+              </button>
             )}
+            {isMe && (
+              <Button onClick={() => setIsEditModalOpen(true)} variant="outline" className="border-border/80 font-medium">Edit Profile</Button>
+            )}
+            <Button onClick={handleShareProfile} variant="outline" className="border-border/80 text-muted-foreground hover:text-[#3b49df] hover:border-[#3b49df]/50 transition-colors px-3">
+              <Share2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
         <div className="space-y-3 text-center sm:text-left mt-2">
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{profileUser.name}</h1>
-          <p className="text-base text-muted-foreground max-w-2xl leading-relaxed">
-            {profileUser.bio || '404 bio not found. Passionate developer sharing technical insights, code snippets, and software engineering practices.'}
-          </p>
+          {profileUser.bio && (
+            <p className="text-base text-muted-foreground max-w-2xl leading-relaxed mt-2">
+              {profileUser.bio}
+            </p>
+          )}
 
           <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-muted-foreground text-xs sm:text-sm pt-2">
-            <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-[#3b49df]" /> San Francisco, CA</span>
-            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-[#3b49df]" /> Joined Jan 2024</span>
-            <a href="#" className="flex items-center gap-1.5 hover:text-[#3b49df] transition-colors">
-              <LinkIcon className="h-4 w-4" /> dev.to/{profileUser.name.toLowerCase().replace(/\s/g, '')}
-            </a>
+            {profileUser.gender && (
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 border border-border/50 text-foreground/80 font-medium">{profileUser.gender}</span>
+            )}
+            {profileUser.schoolCategory && (
+              <span className="flex items-center gap-1.5"><GraduationCap className="h-4 w-4 text-[#3b49df]" /> {profileUser.schoolCategory.replace('_', ' ')}</span>
+            )}
+            {profileUser.createdAt && (
+              <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-[#3b49df]" /> Joined {new Date(profileUser.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
+            )}
+            {profileUser.socialLink && (
+              <a href={profileUser.socialLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#3b49df] transition-colors">
+                <LinkIcon className="h-4 w-4" /> {profileUser.socialLink.replace(/^https?:\/\//, '')}
+              </a>
+            )}
           </div>
         </div>
 
@@ -108,6 +205,14 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
         </div>
       </div>
+      <Toast message={toastMessage} visible={showToast} onDismiss={() => setShowToast(false)} />
+      {isMe && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          user={profileUser}
+        />
+      )}
     </div>
   );
 };

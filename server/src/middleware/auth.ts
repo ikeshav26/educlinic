@@ -10,7 +10,7 @@ import {
 
 type AuthenticatedUser = Pick<
   User,
-  'id' | 'name' | 'email' | 'role' | 'schoolCategory'
+  'id' | 'name' | 'email' | 'role' | 'schoolCategory' | 'bio' | 'gender' | 'socialLink' | 'createdAt'
 >;
 
 const roleRank: Record<UserRoleEnum, number> = {
@@ -61,6 +61,10 @@ export const authMiddleware =
           email: true,
           role: true,
           schoolCategory: true,
+          bio: true,
+          gender: true,
+          socialLink: true,
+          createdAt: true,
         },
       });
 

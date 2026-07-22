@@ -4,6 +4,8 @@ import { stripHtml } from '../../utils/text';
 import type { Post } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 export const RightSidebar: React.FC = () => {
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [discussionPosts, setDiscussionPosts] = useState<Post[]>([]);
@@ -13,7 +15,7 @@ export const RightSidebar: React.FC = () => {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/posts?limit=2&sortBy=likes', {
+        const res = await fetch(`${API_BASE}/posts?limit=2&sortBy=likes`, {
           credentials: 'include'
         });
         if (res.ok) {
@@ -27,7 +29,7 @@ export const RightSidebar: React.FC = () => {
 
     const fetchDiscussions = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/posts?limit=2&tag=discussions', {
+        const res = await fetch(`${API_BASE}/posts?limit=2&tag=discussions`, {
           credentials: 'include'
         });
         if (res.ok) {
@@ -41,7 +43,7 @@ export const RightSidebar: React.FC = () => {
 
     const fetchHelp = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/posts?limit=2&tag=help', {
+        const res = await fetch(`${API_BASE}/posts?limit=2&tag=help`, {
           credentials: 'include'
         });
         if (res.ok) {

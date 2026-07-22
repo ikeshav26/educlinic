@@ -1,10 +1,13 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.js';
-import { getAllUsers, getUserById } from '../controller/user.controller.js';
+import { getAllUsers, getUserById, blockUser, unblockUser, updateProfile } from '../controller/user.controller.js';
 
 const router: express.Router = express.Router();
 
 router.get('/', authMiddleware(), getAllUsers);
 router.get('/:id', authMiddleware(), getUserById);
+router.post('/:id/block', authMiddleware(), blockUser);
+router.post('/:id/unblock', authMiddleware(), unblockUser);
+router.put('/profile', authMiddleware(), updateProfile);
 
 export default router;

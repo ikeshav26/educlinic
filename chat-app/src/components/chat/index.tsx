@@ -1,28 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../../store/mockData';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatArea } from './ChatArea';
+import type { Chat as ChatType } from '../../types';
 
 export const Chat: React.FC = () => {
-  const { chats, currentUser, sendMessage, isLoading } = useStore();
-  const [activeChatId, setActiveChatId] = useState<number | null>(chats.length > 0 ? chats[0].id : null);
+  const {
+    chats,
+    currentUser,
+    sendMessage,
+    fetchMessagesWithUser,
+    markAsRead,
+    isLoading,
+  } = useStore();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userIdParam = searchParams.get('userId');
+
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
-  const activeChat = chats.find(c => c.id === activeChatId);
+  const handleSetActiveChatId = (id: number) => {
+    setActiveChatId(id);
+    setSearchParams({ userId: id.toString() });
+  };
 
-  const handleSend = () => {
+  // Auto-select chat from query params or first chat in list
+  useEffect(() => {
+    if (userIdParam) {
+      const parsedId = parseInt(userIdParam, 10);
+      if (!isNaN(parsedId) && parsedId !== activeChatId) {
+        setActiveChatId(parsedId);
+        return;
+      }
+    }
+
+    if (activeChatId === null && chats.length > 0) {
+      handleSetActiveChatId(chats[0].id);
+    }
+  }, [userIdParam, chats.length]);
+
+  // Load message history when active chat changes
+  useEffect(() => {
+    if (activeChatId) {
+      setMessagesLoading(true);
+      fetchMessagesWithUser(activeChatId).finally(() => {
+        setMessagesLoading(false);
+      });
+      markAsRead(activeChatId);
+    }
+  }, [activeChatId]);
+
+  const activeChat: ChatType | undefined = chats.find(c => c.id === activeChatId);
+
+  const handleSend = async () => {
     if (activeChatId && newMessage.trim()) {
-      sendMessage(activeChatId, newMessage);
+      const msgText = newMessage.trim();
       setNewMessage('');
+      await sendMessage(activeChatId, msgText);
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-100px)] gap-4 pt-1 max-w-5xl mx-auto">
+    <div className="flex h-[calc(100vh-80px)] w-full bg-card rounded-xl shadow-sm ring-1 ring-border/20 overflow-hidden">
       <ChatSidebar
         chats={chats}
         activeChatId={activeChatId}
-        setActiveChatId={setActiveChatId}
+        setActiveChatId={handleSetActiveChatId}
         isLoading={isLoading}
       />
       <ChatArea
@@ -31,7 +77,7 @@ export const Chat: React.FC = () => {
         newMessage={newMessage}
         setNewMessage={setNewMessage}
         handleSend={handleSend}
-        isLoading={isLoading}
+        isLoading={isLoading || messagesLoading}
       />
     </div>
   );

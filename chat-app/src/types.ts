@@ -7,6 +7,10 @@ export interface User {
   coverImage?: string;
   followersCount?: number;
   followingCount?: number;
+  gender?: string | null;
+  socialLink?: string | null;
+  schoolCategory?: string;
+  createdAt?: string;
 }
 
 export interface Comment {
@@ -37,12 +41,22 @@ export interface Post {
 export interface Message {
   id: number;
   senderId: number;
+  receiverId?: number;
   content: string;
+  isRead?: boolean;
+  isEdited?: boolean;
   createdAt: string;
+  sender?: { id: number; name: string };
+  receiver?: { id: number; name: string };
 }
 
 export interface Chat {
   id: number;
   participant: User;
   messages: Message[];
+  lastMessage?: Message;
+  unreadCount?: number;
+  blockedByMe?: boolean;
+  hasBlockedMe?: boolean;
+  nextCursor?: number | null;
 }

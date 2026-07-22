@@ -16,6 +16,8 @@ const Layout = () => {
   const location = useLocation();
   const isCreatePost = location.pathname === '/create-post';
   const isPostDetail = location.pathname.startsWith('/post/');
+  const isChat = location.pathname === '/chat';
+  const isConnect = location.pathname === '/connect';
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-clip flex flex-col font-sans">
@@ -25,7 +27,7 @@ const Layout = () => {
         {!isCreatePost && !isPostDetail && (
           <Sidebar />
         )}
-        <main className={`flex-1 min-w-0 ${isCreatePost ? 'max-w-4xl' : (isPostDetail ? 'max-w-full' : 'max-w-[680px]')}`}>
+        <main className={`flex-1 min-w-0 ${isCreatePost ? 'max-w-4xl' : (isPostDetail || isChat || isConnect ? 'max-w-full' : 'max-w-[680px]')}`}>
           <Outlet />
         </main>
         {location.pathname === '/' && !isPostDetail && <RightSidebar />}

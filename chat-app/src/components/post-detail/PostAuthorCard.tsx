@@ -47,18 +47,17 @@ export const PostAuthorCard: React.FC<PostAuthorCardProps> = ({
           <Button
             onClick={onFollowToggle}
             disabled={followLoading}
-            className={`w-full font-medium mb-4 rounded-md ${
-              isFollowing
-                ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-                : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
-            }`}
+            className={`w-full font-medium mb-4 rounded-md ${isFollowing
+              ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+              : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
+              }`}
           >
             {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
           </Button>
         )}
 
         <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-          {authorUser?.bio || 'Full-stack software developer sharing insights on web technologies, architecture, and developer tooling.'}
+          {authorUser?.bio}
         </p>
 
         <div className="space-y-2 text-xs text-muted-foreground border-t border-border/40 pt-4">

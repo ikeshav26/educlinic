@@ -62,10 +62,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         <div className="p-4 sm:p-6">
-          {/* Author Header */}
           <div className="flex items-center gap-3 mb-3">
             <div className="relative shrink-0">
-              <Avatar className="h-10 w-10 border border-border/50 cursor-pointer transition-transform hover:scale-105" onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}>
+              <Avatar className="h-10 w-10 border border-border/50 cursor-pointer transition-transform hover:scale-105" onClick={(e) => { e.stopPropagation(); if (authorUser?.id) navigate(`/profile?id=${authorUser.id}`); else navigate('/profile'); }}>
                 <AvatarImage src={getAvatarUrl(authorUser?.name, authorUser?.avatar)} />
                 <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DE'}</AvatarFallback>
               </Avatar>
@@ -75,12 +74,9 @@ export const PostCard: React.FC<PostCardProps> = ({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
                   className="font-semibold text-sm text-foreground hover:text-[#3b49df] cursor-pointer transition-colors leading-tight"
-                  onClick={() => navigate('/profile')}
+                  onClick={(e) => { e.stopPropagation(); if (authorUser?.id) navigate(`/profile?id=${authorUser.id}`); else navigate('/profile'); }}
                 >
                   {authorUser?.name || 'DEV Contributor'}
-                </span>
-                <span className="text-xs text-muted-foreground font-normal">
-                  for <span className="font-medium text-foreground/80 hover:text-[#3b49df] cursor-pointer">Google Developer Experts</span>
                 </span>
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
@@ -118,11 +114,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                 {/* Likes count */}
                 <button
                   onClick={onLike}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
-                    post.isLiked
-                      ? 'bg-red-500/10 text-red-600 font-semibold'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
-                  }`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${post.isLiked
+                    ? 'bg-red-500/10 text-red-600 font-semibold'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                    }`}
                 >
                   <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
                   <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>

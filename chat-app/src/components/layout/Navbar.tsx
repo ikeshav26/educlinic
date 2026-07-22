@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { getAvatarUrl } from '../../lib/utils';
@@ -78,9 +78,7 @@ export const Navbar: React.FC = () => {
           >
             Create Post
           </Button>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hidden sm:flex">
-            <Bell className="h-5 w-5" />
-          </Button>
+
           <Link to="/profile">
             <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-primary transition-all">
               <AvatarImage src={getAvatarUrl(currentUser?.name, currentUser?.avatar)} alt={currentUser?.name} />

@@ -3,7 +3,7 @@ import AuthContent from '@/components/Login/AuthContent';
 import AuthForm from '@/components/Login/AuthForm';
 import AuthNav from '@/components/Login/AuthNav';
 import { useUserStore } from '@/store/useUserStore';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { UserStore } from '@/store/useUserStore';
@@ -13,11 +13,14 @@ const LoginPage = () => {
     (state: UserStore) => state.isAuthenticated
   );
   const router = useRouter();
+  const wasAlreadyAuthenticated = useRef(authenticated);
 
   useEffect(() => {
     if (authenticated) {
       router.push('/');
-      toast.info('You are already Logged In');
+      if (wasAlreadyAuthenticated.current) {
+        toast.info('You are already Logged In', { toastId: 'auth-already-logged-in' });
+      }
     }
   }, [authenticated, router]);
   return (
