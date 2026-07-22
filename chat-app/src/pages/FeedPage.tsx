@@ -7,6 +7,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { X } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 export const FeedPage: React.FC = () => {
   const { users, currentUser, addComment, addPost } = useStore();
   const [feedPosts, setFeedPosts] = useState<Post[]>([]);
@@ -48,7 +50,7 @@ export const FeedPage: React.FC = () => {
     }));
 
     try {
-      await fetch(`http://localhost:4000/api/posts/${postId}/like`, {
+      await fetch(`${API_BASE}/posts/${postId}/like`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -64,7 +66,7 @@ export const FeedPage: React.FC = () => {
 
       const tagQuery = activeTag ? `&tag=${encodeURIComponent(activeTag)}` : '';
       const searchQuery = activeSearch ? `&search=${encodeURIComponent(activeSearch)}` : '';
-      const res = await fetch(`http://localhost:4000/api/posts?page=${pageNum}&limit=5${tagQuery}${searchQuery}`, {
+      const res = await fetch(`${API_BASE}/posts?page=${pageNum}&limit=5${tagQuery}${searchQuery}`, {
         credentials: 'include'
       });
       if (res.ok) {

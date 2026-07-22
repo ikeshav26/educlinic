@@ -35,9 +35,10 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
   const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  
+
   const [followUsers, setFollowUsers] = useState<any[]>([]);
   const [followLoading, setFollowLoading] = useState(false);
+
 
   const fetchFollowData = useCallback(async (type: 'followers' | 'following') => {
     try {
@@ -280,7 +281,7 @@ const FollowUserItem: React.FC<{ user: any }> = ({ user }) => {
   };
 
   return (
-    <div 
+    <div
       className="bg-card border border-border/80 rounded-md p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => navigate(`/profile?id=${user.id}`)}
     >
@@ -288,7 +289,7 @@ const FollowUserItem: React.FC<{ user: any }> = ({ user }) => {
         <AvatarImage src={getAvatarUrl(user.name, user.avatar)} />
         <AvatarFallback className="bg-muted font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
-      
+
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         <h3 className="font-bold text-foreground hover:text-[#3b49df] truncate transition-colors text-base">
           {user.name}
@@ -316,7 +317,7 @@ const FollowUserItem: React.FC<{ user: any }> = ({ user }) => {
         )
       )}
       {user.id === currentUser?.id && (
-        <Button 
+        <Button
           size="sm"
           variant="outline"
           onClick={(e) => {
