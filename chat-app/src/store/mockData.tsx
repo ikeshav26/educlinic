@@ -14,7 +14,7 @@ interface StoreState {
   deletePost: (postId: number) => Promise<boolean>;
   deleteComment: (commentId: number) => Promise<boolean>;
   toggleFollow: (userId: number, currentlyFollowing: boolean) => Promise<void>;
-  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; isFollowingMe: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
   blockUser: (userId: number) => Promise<void>;
   unblockUser: (userId: number) => Promise<void>;
   clearChat: (partnerId: number) => Promise<void>;
@@ -26,9 +26,10 @@ interface StoreState {
   updateProfile: (name: string, bio: string, gender: string, socialLink: string) => Promise<void>;
   editMessage: (messageId: number, content: string) => Promise<void>;
   deleteMessage: (messageId: number) => Promise<void>;
+  latestFollowUpdate: { followerId: number; followingId: number; isFollowing: boolean } | null;
 }
 
-const StoreContext = createContext<StoreState | undefined>(undefined);
+export const StoreContext = createContext<StoreState | undefined>(undefined);
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -38,6 +39,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [posts, setPosts] = useState<Post[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [latestFollowUpdate, setLatestFollowUpdate] = useState<{ followerId: number; followingId: number; isFollowing: boolean } | null>(null);
 
   // Initialize store and authenticate user
   useEffect(() => {
@@ -203,12 +205,17 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setChats(prev => prev.map(chat => chat.id === partnerId ? { ...chat, messages: [] } : chat));
       };
 
+      const handleFollowUpdated = (data: { followerId: number, followingId: number, isFollowing: boolean }) => {
+        setLatestFollowUpdate(data);
+      };
+
       socket.on('receive_message', handleReceiveMessage);
       socket.on('message_edited', handleEditMessage);
       socket.on('message_deleted', handleDeleteMessage);
       socket.on('chat_blocked', handleChatBlocked);
       socket.on('chat_unblocked', handleChatUnblocked);
       socket.on('chat_cleared', handleChatCleared);
+      socket.on('follow_updated', handleFollowUpdated);
 
       return () => {
         socket.off('receive_message', handleReceiveMessage);
@@ -217,6 +224,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         socket.off('chat_blocked', handleChatBlocked);
         socket.off('chat_unblocked', handleChatUnblocked);
         socket.off('chat_cleared', handleChatCleared);
+        socket.off('follow_updated', handleFollowUpdated);
       };
     } else {
       disconnectSocket();
@@ -503,8 +511,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const fetchFollowCounts = async (userId: number) => {
     const res = await fetch(`${API_BASE}/follow/${userId}/counts`, { credentials: 'include' });
-    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false, blockedByMe: false, hasBlockedMe: false };
-    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false, isFollowingMe: false, blockedByMe: false, hasBlockedMe: false };
+    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; isFollowingMe: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
   };
 
   const blockUser = async (userId: number) => {
@@ -586,6 +594,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         updateProfile,
         editMessage,
         deleteMessage,
+        latestFollowUpdate,
       }}
     >
       {isLoading ? <div className="flex h-screen items-center justify-center">Loading...</div> : children}

@@ -4,10 +4,10 @@ import { prisma } from "../config/db.js";
 export const followUser = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
-        const { toFollowUserId } = req.body;
+        const toFollowUserId = parseInt(req.body.toFollowUserId, 10);
 
-        if (!toFollowUserId) {
-            return res.status(400).json({ message: "Please provide the user id to follow" });
+        if (!toFollowUserId || isNaN(toFollowUserId)) {
+            return res.status(400).json({ message: "Please provide a valid user id to follow" });
         }
         if (userId === toFollowUserId) {
             return res.status(400).json({ message: "You cannot follow yourself" });
@@ -39,6 +39,20 @@ export const followUser = async (req: Request, res: Response) => {
             },
         });
 
+        const io = req.app.get('io');
+        if (io) {
+            io.to(`user:${toFollowUserId}`).emit('follow_updated', {
+                followerId: userId,
+                followingId: toFollowUserId,
+                isFollowing: true
+            });
+            io.to(`user:${userId}`).emit('follow_updated', {
+                followerId: userId,
+                followingId: toFollowUserId,
+                isFollowing: true
+            });
+        }
+
         return res.status(200).json({ message: "User followed successfully" });
     } catch (err) {
         console.error(err);
@@ -49,10 +63,10 @@ export const followUser = async (req: Request, res: Response) => {
 export const unfollowUser = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
-        const { toUnfollowUserId } = req.body;
+        const toUnfollowUserId = parseInt(req.body.toUnfollowUserId, 10);
 
-        if (!toUnfollowUserId) {
-            return res.status(400).json({ message: "Please provide the user id to unfollow" });
+        if (!toUnfollowUserId || isNaN(toUnfollowUserId)) {
+            return res.status(400).json({ message: "Please provide a valid user id to unfollow" });
         }
 
         const follow = await prisma.follow.findUnique({
@@ -75,6 +89,20 @@ export const unfollowUser = async (req: Request, res: Response) => {
                 },
             },
         });
+
+        const io = req.app.get('io');
+        if (io) {
+            io.to(`user:${toUnfollowUserId}`).emit('follow_updated', {
+                followerId: userId,
+                followingId: toUnfollowUserId,
+                isFollowing: false
+            });
+            io.to(`user:${userId}`).emit('follow_updated', {
+                followerId: userId,
+                followingId: toUnfollowUserId,
+                isFollowing: false
+            });
+        }
 
         return res.status(200).json({ message: "User unfollowed successfully" });
     } catch (err) {
@@ -181,13 +209,17 @@ export const getFollowCounts = async (req: Request, res: Response) => {
 
         const currentUserId = req.user?.id;
         let isFollowing = false;
+        let isFollowingMe = false;
         let blockedByMe = false;
         let hasBlockedMe = false;
 
         if (currentUserId) {
-            const [followStatus, myBlock, theirBlock] = await Promise.all([
+            const [followStatus, followMeStatus, myBlock, theirBlock] = await Promise.all([
                 prisma.follow.findUnique({
                     where: { followerId_followingId: { followerId: currentUserId, followingId: targetUserId } },
+                }),
+                prisma.follow.findUnique({
+                    where: { followerId_followingId: { followerId: targetUserId, followingId: currentUserId } },
                 }),
                 prisma.block.findUnique({
                     where: { blockerId_blockedId: { blockerId: currentUserId, blockedId: targetUserId } },
@@ -197,11 +229,12 @@ export const getFollowCounts = async (req: Request, res: Response) => {
                 }),
             ]);
             isFollowing = !!followStatus;
+            isFollowingMe = !!followMeStatus;
             blockedByMe = !!myBlock;
             hasBlockedMe = !!theirBlock;
         }
 
-        return res.status(200).json({ followersCount, followingCount, isFollowing, blockedByMe, hasBlockedMe });
+        return res.status(200).json({ followersCount, followingCount, isFollowing, isFollowingMe, blockedByMe, hasBlockedMe });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Internal server error" });

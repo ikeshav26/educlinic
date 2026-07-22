@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
 import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2, Ban, Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
 import type { Chat, User, Message } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -42,9 +43,50 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   handleSend,
   isLoading,
 }) => {
-  const { fetchMessagesWithUser, editMessage, unblockUser, blockUser, clearChat } = useStore();
+  const { fetchMessagesWithUser, editMessage, unblockUser, blockUser, clearChat, fetchFollowCounts, toggleFollow, latestFollowUpdate } = useStore();
   const observerTarget = useRef<HTMLDivElement>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const [followStatus, setFollowStatus] = useState<{ isFollowing: boolean; isFollowingMe: boolean } | null>(null);
+  const [isTogglingFollow, setIsTogglingFollow] = useState(false);
+
+  useEffect(() => {
+    if (activeChat?.participant.id) {
+      setFollowStatus(null);
+      fetchFollowCounts(activeChat.participant.id).then(res => {
+        setFollowStatus({ isFollowing: res.isFollowing, isFollowingMe: res.isFollowingMe });
+      });
+    }
+  }, [activeChat?.participant.id, fetchFollowCounts]);
+
+  useEffect(() => {
+    if (latestFollowUpdate && activeChat?.participant.id) {
+      if (latestFollowUpdate.followerId === activeChat.participant.id && latestFollowUpdate.followingId === currentUser?.id) {
+        setFollowStatus(prev => ({
+          isFollowing: prev?.isFollowing ?? false,
+          isFollowingMe: latestFollowUpdate.isFollowing
+        }));
+      }
+      if (latestFollowUpdate.followerId === currentUser?.id && latestFollowUpdate.followingId === activeChat.participant.id) {
+        setFollowStatus(prev => ({
+          isFollowing: latestFollowUpdate.isFollowing,
+          isFollowingMe: prev?.isFollowingMe ?? false
+        }));
+      }
+    }
+  }, [latestFollowUpdate, activeChat?.participant.id, currentUser?.id]);
+
+  const handleToggleFollow = async () => {
+    if (!activeChat || !followStatus) return;
+    setIsTogglingFollow(true);
+    try {
+      await toggleFollow(activeChat.participant.id, followStatus.isFollowing);
+      const updatedStatus = await fetchFollowCounts(activeChat.participant.id);
+      setFollowStatus({ isFollowing: updatedStatus.isFollowing, isFollowingMe: updatedStatus.isFollowingMe });
+    } finally {
+      setIsTogglingFollow(false);
+    }
+  };
 
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -176,7 +218,20 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 <span className="font-semibold text-base text-foreground hover:text-[#3b49df] transition-colors">{activeChat.participant.name}</span>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-muted-foreground">
+            <div className="flex items-center gap-2 sm:gap-4 text-muted-foreground">
+              {followStatus && (
+                <Button
+                  variant={followStatus.isFollowing ? "secondary" : "default"}
+                  size="sm"
+                  onClick={handleToggleFollow}
+                  disabled={isTogglingFollow}
+                  className="hidden sm:flex h-8 w-[100px] text-xs rounded-full font-medium"
+                >
+                  {isTogglingFollow ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                    followStatus.isFollowing ? 'Following' : followStatus.isFollowingMe ? 'Follow Back' : 'Follow'
+                  )}
+                </Button>
+              )}
               {isSearchOpen ? (
                 <div className="flex items-center bg-muted/50 rounded-full px-3 py-1">
                   <Search className="h-4 w-4 text-muted-foreground mr-2" />
@@ -276,6 +331,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             ) : activeChat.hasBlockedMe ? (
               <div className="flex-1 flex items-center justify-center h-12 bg-muted/30 border border-border/50 rounded-full text-sm text-muted-foreground">
                 You cannot send or receive messages anymore due to a block.
+              </div>
+            ) : !followStatus ? (
+              <div className="flex-1 flex items-center justify-center h-12">
+                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (!followStatus.isFollowing || !followStatus.isFollowingMe) ? (
+              <div className="flex-1 flex items-center justify-center h-12 bg-muted/30 border border-border/50 rounded-full text-sm font-medium text-muted-foreground">
+                Both users must follow each other to chat.
               </div>
             ) : (
               <>

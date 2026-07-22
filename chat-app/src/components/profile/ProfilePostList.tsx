@@ -38,8 +38,6 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
   
   const [followUsers, setFollowUsers] = useState<any[]>([]);
   const [followLoading, setFollowLoading] = useState(false);
-  const [toggleLoadingIds, setToggleLoadingIds] = useState<Set<number>>(new Set());
-  const { toggleFollow } = useStore();
 
   const fetchFollowData = useCallback(async (type: 'followers' | 'following') => {
     try {
@@ -219,51 +217,14 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
           </>
         )}
 
-        {(activeTab === 'followers' || activeTab === 'following') && isMe && (
+        {(activeTab === 'followers' || activeTab === 'following') && (
           <div className="flex flex-col gap-4">
             {followLoading ? (
               [1, 2, 3, 4].map(n => <div key={n} className="bg-card border border-border/80 rounded-md h-20 animate-pulse" />)
             ) : followUsers.length > 0 ? (
-              followUsers.map(user => {
-                const isFollowing = activeTab === 'following' || toggleLoadingIds.has(user.id);
-                const isFollowLoading = toggleLoadingIds.has(user.id);
-                
-                return (
-                  <div 
-                    key={user.id} 
-                    className="bg-card border border-border/80 rounded-md p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/profile?id=${user.id}`)}
-                  >
-                    <Avatar className="h-14 w-14 shrink-0">
-                      <AvatarImage src={getAvatarUrl(user.name, user.avatar)} />
-                      <AvatarFallback className="bg-muted font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <h3 className="font-bold text-foreground hover:text-[#3b49df] truncate transition-colors text-base">
-                        {user.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.schoolCategory?.replace(/_/g, ' ') || 'Student at EduClinic'}
-                      </p>
-                    </div>
-
-                    {/* Since it's isMe viewing our own followers/following list, they might want to follow/unfollow. 
-                        But we'll keep it simple: if we are viewing 'following', we are following them. 
-                        If we are viewing 'followers', we might not be. For simplicity, just an View Profile button or minimal follow button */}
-                    <Button 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/profile?id=${user.id}`);
-                      }}
-                      className="shrink-0 rounded-full"
-                    >
-                      View Profile
-                    </Button>
-                  </div>
-                );
-              })
+              followUsers.map(user => (
+                <FollowUserItem key={user.id} user={user} />
+              ))
             ) : (
               <div className="col-span-full py-16 text-center text-muted-foreground bg-card border border-dashed border-border/80 rounded-md">
                 No users found.
@@ -281,5 +242,92 @@ export const ProfilePostList: React.FC<ProfilePostListProps> = ({
         />
       )}
     </>
+  );
+};
+
+const FollowUserItem: React.FC<{ user: any }> = ({ user }) => {
+  const navigate = useNavigate();
+  const { fetchFollowCounts, toggleFollow, latestFollowUpdate, currentUser } = useStore();
+  const [followStatus, setFollowStatus] = useState<{ isFollowing: boolean; isFollowingMe: boolean } | null>(null);
+  const [isToggling, setIsToggling] = useState(false);
+
+  useEffect(() => {
+    fetchFollowCounts(user.id).then(res => setFollowStatus(res));
+  }, [user.id, fetchFollowCounts]);
+
+  useEffect(() => {
+    if (latestFollowUpdate && followStatus) {
+      if (latestFollowUpdate.followerId === user.id && latestFollowUpdate.followingId === currentUser?.id) {
+        setFollowStatus(prev => prev ? { ...prev, isFollowingMe: latestFollowUpdate.isFollowing } : null);
+      }
+      if (latestFollowUpdate.followerId === currentUser?.id && latestFollowUpdate.followingId === user.id) {
+        setFollowStatus(prev => prev ? { ...prev, isFollowing: latestFollowUpdate.isFollowing } : null);
+      }
+    }
+  }, [latestFollowUpdate, user.id, currentUser?.id]);
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!followStatus) return;
+    setIsToggling(true);
+    try {
+      await toggleFollow(user.id, followStatus.isFollowing);
+      const updated = await fetchFollowCounts(user.id);
+      setFollowStatus(updated);
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  return (
+    <div 
+      className="bg-card border border-border/80 rounded-md p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => navigate(`/profile?id=${user.id}`)}
+    >
+      <Avatar className="h-14 w-14 shrink-0">
+        <AvatarImage src={getAvatarUrl(user.name, user.avatar)} />
+        <AvatarFallback className="bg-muted font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+      </Avatar>
+      
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        <h3 className="font-bold text-foreground hover:text-[#3b49df] truncate transition-colors text-base">
+          {user.name}
+        </h3>
+        <p className="text-xs text-muted-foreground truncate">
+          {user.schoolCategory?.replace(/_/g, ' ') || 'Student at EduClinic'}
+        </p>
+      </div>
+
+      {user.id !== currentUser?.id && (
+        followStatus ? (
+          <Button
+            variant={followStatus.isFollowing ? "secondary" : "default"}
+            size="sm"
+            onClick={handleToggle}
+            disabled={isToggling}
+            className="shrink-0 rounded-full min-w-[100px] font-medium"
+          >
+            {isToggling ? "..." : (followStatus.isFollowing ? 'Following' : followStatus.isFollowingMe ? 'Follow Back' : 'Follow')}
+          </Button>
+        ) : (
+          <Button size="sm" variant="secondary" className="shrink-0 rounded-full min-w-[100px]" disabled>
+            ...
+          </Button>
+        )
+      )}
+      {user.id === currentUser?.id && (
+        <Button 
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/profile?id=${user.id}`);
+          }}
+          className="shrink-0 rounded-full"
+        >
+          View Profile
+        </Button>
+      )}
+    </div>
   );
 };

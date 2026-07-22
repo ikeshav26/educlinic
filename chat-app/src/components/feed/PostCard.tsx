@@ -62,10 +62,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         <div className="p-4 sm:p-6">
-          {/* Author Header */}
           <div className="flex items-center gap-3 mb-3">
             <div className="relative shrink-0">
-              <Avatar className="h-10 w-10 border border-border/50 cursor-pointer transition-transform hover:scale-105" onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}>
+              <Avatar className="h-10 w-10 border border-border/50 cursor-pointer transition-transform hover:scale-105" onClick={(e) => { e.stopPropagation(); if (authorUser?.id) navigate(`/profile?id=${authorUser.id}`); else navigate('/profile'); }}>
                 <AvatarImage src={getAvatarUrl(authorUser?.name, authorUser?.avatar)} />
                 <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DE'}</AvatarFallback>
               </Avatar>
@@ -75,7 +74,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
                   className="font-semibold text-sm text-foreground hover:text-[#3b49df] cursor-pointer transition-colors leading-tight"
-                  onClick={() => navigate('/profile')}
+                  onClick={(e) => { e.stopPropagation(); if (authorUser?.id) navigate(`/profile?id=${authorUser.id}`); else navigate('/profile'); }}
                 >
                   {authorUser?.name || 'DEV Contributor'}
                 </span>
