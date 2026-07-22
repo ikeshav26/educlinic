@@ -40,6 +40,7 @@ export interface Message {
   receiverId?: number;
   content: string;
   isRead?: boolean;
+  isEdited?: boolean;
   createdAt: string;
   sender?: { id: number; name: string };
   receiver?: { id: number; name: string };
@@ -51,5 +52,6 @@ export interface Chat {
   messages: Message[];
   lastMessage?: Message;
   unreadCount?: number;
+  nextCursor?: number | null;
 }
 

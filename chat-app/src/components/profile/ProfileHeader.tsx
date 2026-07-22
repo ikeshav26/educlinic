@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { User } from '../../types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -6,6 +6,7 @@ import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users } f
 import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/mockData';
+import { Toast } from '../ui/Toast';
 
 interface ProfileHeaderProps {
   profileUser: User;
@@ -32,8 +33,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const { startDirectMessage } = useStore();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const handleMessageClick = () => {
+    if (!isFollowing) {
+      setToastMessage("You must follow this user to send a message.");
+      setShowToast(true);
+      return;
+    }
+
     startDirectMessage({
       id: profileUser.id,
       name: profileUser.name,
@@ -120,6 +129,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
         </div>
       </div>
+      <Toast message={toastMessage} visible={showToast} onDismiss={() => setShowToast(false)} />
     </div>
   );
 };

@@ -167,6 +167,7 @@ model Message {
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   content    String
   isRead     Boolean  @default(false)
+  isEdited   Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   @@index([senderId, receiverId])

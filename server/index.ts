@@ -19,6 +19,7 @@ const io = new SocketIOServer(httpServer, {
 });
 
 setupChatSocket(io);
+app.set('io', io);
 
 const startAllServices: () => Promise<void> = async () => {
   await Promise.all([connectRedis()]);

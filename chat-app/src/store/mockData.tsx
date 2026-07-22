@@ -16,11 +16,13 @@ interface StoreState {
   toggleFollow: (userId: number, currentlyFollowing: boolean) => Promise<void>;
   fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean }>;
   fetchConversations: () => Promise<void>;
-  fetchMessagesWithUser: (partnerId: number) => Promise<Message[]>;
+  fetchMessagesWithUser: (partnerId: number, cursor?: number) => Promise<Message[]>;
   sendMessage: (receiverId: number, content: string) => Promise<void>;
   markAsRead: (partnerId: number) => Promise<void>;
   startDirectMessage: (partnerUser: User) => Chat;
   updateProfile: (name: string, bio: string, avatar: string, coverImage: string) => void;
+  editMessage: (messageId: number, content: string) => Promise<void>;
+  deleteMessage: (messageId: number) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreState | undefined>(undefined);
@@ -95,20 +97,20 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
           if (existingChatIndex !== -1) {
             const updated = [...prevChats];
-            const chat = updated[existingChatIndex];
+            const [chat] = updated.splice(existingChatIndex, 1);
             const updatedMessages = chat.messages.some(m => m.id === msg.id)
               ? chat.messages
-              : [...chat.messages, msg];
+              : [msg, ...chat.messages];
 
             const unreadInc = (msg.senderId !== currentUser.id && !msg.isRead) ? 1 : 0;
 
-            updated[existingChatIndex] = {
+            const updatedChat = {
               ...chat,
               messages: updatedMessages,
               lastMessage: msg,
               unreadCount: (chat.unreadCount || 0) + unreadInc,
             };
-            return updated;
+            return [updatedChat, ...updated];
           } else {
             // New conversation started
             const partnerName = msg.senderId === currentUser.id
@@ -130,30 +132,66 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         });
       };
 
+      const handleEditMessage = (msg: Message) => {
+        setChats(prevChats => prevChats.map(chat => {
+          if (chat.messages.some(m => m.id === msg.id)) {
+            return {
+              ...chat,
+              messages: chat.messages.map(m => m.id === msg.id ? msg : m),
+              lastMessage: chat.lastMessage?.id === msg.id ? msg : chat.lastMessage
+            };
+          }
+          return chat;
+        }));
+      };
+
+      const handleDeleteMessage = ({ messageId, receiverId, senderId }: { messageId: number, receiverId: number, senderId: number }) => {
+        setChats(prevChats => prevChats.map(chat => {
+          if (chat.id === receiverId || chat.id === senderId) {
+            const updatedMessages = chat.messages.filter(m => m.id !== messageId);
+            return {
+              ...chat,
+              messages: updatedMessages,
+              lastMessage: chat.lastMessage?.id === messageId ? updatedMessages[0] : chat.lastMessage
+            };
+          }
+          return chat;
+        }));
+      };
+
       socket.on('receive_message', handleReceiveMessage);
+      socket.on('message_edited', handleEditMessage);
+      socket.on('message_deleted', handleDeleteMessage);
 
       return () => {
         socket.off('receive_message', handleReceiveMessage);
+        socket.off('message_edited', handleEditMessage);
+        socket.off('message_deleted', handleDeleteMessage);
       };
     } else {
       disconnectSocket();
     }
   }, [currentUser]);
 
-  const fetchMessagesWithUser = async (partnerId: number): Promise<Message[]> => {
+  const fetchMessagesWithUser = async (partnerId: number, cursor?: number): Promise<Message[]> => {
     try {
-      const res = await fetch(`${API_BASE}/chat/messages/${partnerId}`, { credentials: 'include' });
+      const url = new URL(`${API_BASE}/chat/messages/${partnerId}`);
+      if (cursor) url.searchParams.append('cursor', cursor.toString());
+      
+      const res = await fetch(url.toString(), { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         const fetchedMsgs: Message[] = data.messages || [];
+        const nextCursor: number | null = data.nextCursor || null;
 
         // Update chats in state
         setChats(prev => prev.map(chat => {
           if (chat.id === partnerId) {
             return {
               ...chat,
-              messages: fetchedMsgs,
-              unreadCount: 0,
+              messages: cursor ? [...chat.messages, ...fetchedMsgs] : fetchedMsgs,
+              unreadCount: cursor ? chat.unreadCount : 0,
+              nextCursor,
             };
           }
           return chat;
@@ -203,16 +241,23 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const data = await res.json();
           if (data.message) {
             const msg: Message = data.message;
-            setChats(prev => prev.map(chat => {
-              if (chat.id === receiverId) {
-                return {
-                  ...chat,
-                  messages: [...chat.messages, msg],
-                  lastMessage: msg,
-                };
+            setChats(prev => {
+              const existingIndex = prev.findIndex(c => c.id === receiverId);
+              if (existingIndex !== -1) {
+                const updated = [...prev];
+                const [chat] = updated.splice(existingIndex, 1);
+                const exists = chat.messages.some(m => m.id === msg.id);
+                return [
+                  {
+                    ...chat,
+                    messages: exists ? chat.messages : [msg, ...chat.messages],
+                    lastMessage: msg,
+                  },
+                  ...updated
+                ];
               }
-              return chat;
-            }));
+              return prev;
+            });
           }
         }
       } catch (err) {
@@ -233,6 +278,57 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
     setChats(prev => [newChat, ...prev]);
     return newChat;
+  };
+
+  const editMessage = async (messageId: number, content: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/chat/messages/${messageId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content.trim() }),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const msg = data.message;
+        setChats(prevChats => prevChats.map(chat => {
+          if (chat.messages.some(m => m.id === msg.id)) {
+            return {
+              ...chat,
+              messages: chat.messages.map(m => m.id === msg.id ? msg : m),
+              lastMessage: chat.lastMessage?.id === msg.id ? msg : chat.lastMessage
+            };
+          }
+          return chat;
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to edit message', err);
+    }
+  };
+
+  const deleteMessage = async (messageId: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/chat/messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setChats(prevChats => prevChats.map(chat => {
+          const updatedMessages = chat.messages.filter(m => m.id !== messageId);
+          if (chat.messages.length !== updatedMessages.length) {
+            return {
+              ...chat,
+              messages: updatedMessages,
+              lastMessage: chat.lastMessage?.id === messageId ? updatedMessages[0] : chat.lastMessage
+            };
+          }
+          return chat;
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to delete message', err);
+    }
   };
 
   const addPost = async (title: string, content: string, coverImage: string, tags: string[]) => {
@@ -385,6 +481,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         markAsRead,
         startDirectMessage,
         updateProfile,
+        editMessage,
+        deleteMessage,
       }}
     >
       {isLoading ? <div className="flex h-screen items-center justify-center">Loading...</div> : children}

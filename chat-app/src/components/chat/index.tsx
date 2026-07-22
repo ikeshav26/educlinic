@@ -64,7 +64,7 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] w-full bg-background rounded-2xl border border-border/60 shadow-sm overflow-hidden">
+    <div className="flex h-[calc(100vh-80px)] w-full bg-card rounded-xl shadow-sm ring-1 ring-border/20 overflow-hidden">
       <ChatSidebar
         chats={chats}
         activeChatId={activeChatId}

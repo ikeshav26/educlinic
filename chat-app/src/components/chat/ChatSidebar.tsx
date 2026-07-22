@@ -71,7 +71,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3">
         <div className="space-y-0.5 pb-2">
           {isLoading ? (
             <div className="space-y-3 pt-2">
@@ -139,10 +139,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     </div>
                   </div>
 
-                  {isActive && (
-                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#3b82f6]" />
-                  )}
-
                   {unread > 0 && !isActive && (
                     <div className="h-2 w-2 rounded-full bg-[#3b82f6] absolute right-4 top-1/2 -translate-y-1/2" />
                   )}
@@ -151,7 +147,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             })
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };

@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Send, MessageSquare, Paperclip, Search, MoreVertical } from 'lucide-react';
+import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2 } from 'lucide-react';
 import type { Chat, User, Message } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { ChatMessage } from './ChatMessage';
 import { Skeleton } from '../ui/skeleton';
+import { useStore } from '../../store/mockData';
 
 interface ChatAreaProps {
   activeChat: Chat | undefined;
@@ -40,21 +41,68 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   handleSend,
   isLoading,
 }) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { fetchMessagesWithUser, editMessage } = useStore();
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const handleEditInit = (msg: Message) => {
+    setEditingMessageId(msg.id);
+    setNewMessage(msg.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingMessageId(null);
+    setNewMessage('');
+  };
+
+  const onSendWrapper = () => {
+    if (editingMessageId) {
+      editMessage(editingMessageId, newMessage);
+      setEditingMessageId(null);
+      setNewMessage('');
+    } else {
+      handleSend();
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [activeChat?.messages]);
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && activeChat?.nextCursor && !isFetchingMore) {
+          setIsFetchingMore(true);
+          fetchMessagesWithUser(activeChat.id, activeChat.nextCursor).finally(() => {
+            setIsFetchingMore(false);
+          });
+        }
+      },
+      { threshold: 0.1 }
+    );
 
-  // Group messages by date
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [activeChat?.nextCursor, activeChat?.id, isFetchingMore, fetchMessagesWithUser]);
+
   const groupedMessages: { date: string; messages: Message[] }[] = [];
   if (activeChat) {
     let currentDate = '';
-    activeChat.messages.forEach(msg => {
+    // Filter messages based on search query
+    const filteredMessages = activeChat.messages.filter(msg => 
+      msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    filteredMessages.forEach(msg => {
       const msgDate = new Date(msg.createdAt).toDateString();
       if (msgDate !== currentDate) {
         currentDate = msgDate;
@@ -112,42 +160,67 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-4 text-muted-foreground">
-              <button className="hover:text-foreground transition-colors"><Search className="h-5 w-5" /></button>
+              {isSearchOpen ? (
+                <div className="flex items-center bg-muted/50 rounded-full px-3 py-1">
+                  <Search className="h-4 w-4 text-muted-foreground mr-2" />
+                  <input 
+                    autoFocus
+                    type="text"
+                    placeholder="Search..."
+                    className="bg-transparent border-none outline-none text-sm w-32 focus:ring-0 text-foreground"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="ml-1 hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setIsSearchOpen(true)} className="hover:text-foreground transition-colors"><Search className="h-5 w-5" /></button>
+              )}
               <button className="hover:text-foreground transition-colors"><MoreVertical className="h-5 w-5" /></button>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 px-6 py-4 bg-slate-50/50">
-            <div className="space-y-6 min-h-full flex flex-col justify-end">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/50 flex flex-col-reverse gap-6">
               {activeChat.messages.length === 0 ? (
                 <div className="text-center text-xs text-muted-foreground my-8">
                   No previous messages. Say hi to {activeChat.participant.name}!
                 </div>
               ) : (
                 groupedMessages.map((group, groupIdx) => (
-                  <div key={groupIdx} className="space-y-4">
+                  <div key={groupIdx} className="flex flex-col-reverse gap-1">
+                    {group.messages.map(msg => (
+                      <ChatMessage
+                        key={msg.id}
+                        message={msg}
+                        isMe={msg.senderId === currentUser?.id}
+                        onEdit={handleEditInit}
+                      />
+                    ))}
                     <div className="flex justify-center my-4">
                       <span className="px-3 py-1 bg-muted/30 rounded-full text-[10px] font-semibold tracking-wider text-muted-foreground">
                         {formatDividerDate(group.date)}
                       </span>
                     </div>
-                    <div className="space-y-1">
-                      {group.messages.map(msg => (
-                        <ChatMessage
-                          key={msg.id}
-                          message={msg}
-                          isMe={msg.senderId === currentUser?.id}
-                        />
-                      ))}
-                    </div>
                   </div>
                 ))
               )}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+              
+              {activeChat.nextCursor && (
+                <div ref={observerTarget} className="py-4 flex justify-center w-full shrink-0">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+          </div>
 
-          <div className="p-4 pt-2 bg-slate-50/50 flex items-center gap-2">
+          <div className="p-4 pt-2 bg-slate-50/50 flex flex-col gap-2">
+            {editingMessageId && (
+              <div className="flex items-center justify-between bg-muted/30 px-4 py-2 rounded-lg text-sm text-muted-foreground">
+                <span className="flex items-center gap-2"><Edit2 className="h-4 w-4" /> Editing message</span>
+                <button onClick={cancelEdit} className="hover:text-foreground"><X className="h-4 w-4" /></button>
+              </div>
+            )}
             <div className="flex-1 relative flex items-center">
               <button className="absolute left-4 text-muted-foreground hover:text-foreground transition-colors z-10">
                 <Paperclip className="h-5 w-5" />
@@ -158,15 +231,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') handleSend();
+                  if (e.key === 'Enter') onSendWrapper();
                 }}
               />
               <button
-                onClick={handleSend}
+                onClick={onSendWrapper}
                 disabled={!newMessage.trim()}
                 className="absolute right-4 text-muted-foreground hover:text-[#3b82f6] transition-colors disabled:opacity-50 disabled:hover:text-muted-foreground z-10"
               >
-                <Send className="h-5 w-5" />
+                {editingMessageId ? <Check className="h-5 w-5 text-emerald-500" /> : <Send className="h-5 w-5" />}
               </button>
             </div>
           </div>

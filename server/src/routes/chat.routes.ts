@@ -5,6 +5,8 @@ import {
   getMessagesWithUser,
   markMessagesAsRead,
   sendMessageHttp,
+  editMessageHttp,
+  deleteMessageHttp,
 } from '../controller/chat.controller.js';
 
 const router: Router = Router();
@@ -16,5 +18,7 @@ router.get('/conversations', getConversations);
 router.get('/messages/:partnerId', getMessagesWithUser);
 router.post('/read/:partnerId', markMessagesAsRead);
 router.post('/send', sendMessageHttp);
+router.put('/messages/:messageId', editMessageHttp);
+router.delete('/messages/:messageId', deleteMessageHttp);
 
 export default router;
