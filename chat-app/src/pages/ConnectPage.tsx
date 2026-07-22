@@ -114,7 +114,7 @@ export const ConnectPage: React.FC = () => {
       </div>
 
       {loading && users.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(n => (
             <div key={n} className="bg-card border border-border/80 rounded-md overflow-hidden relative flex flex-col h-[280px]">
               {/* Banner Skeleton */}
@@ -141,7 +141,7 @@ export const ConnectPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {users.map(user => {
             const isFollowing = user.isFollowed;
             const isFollowLoading = loadingIds.has(user.id);

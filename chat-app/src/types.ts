@@ -52,6 +52,7 @@ export interface Chat {
   messages: Message[];
   lastMessage?: Message;
   unreadCount?: number;
+  blockedByMe?: boolean;
+  hasBlockedMe?: boolean;
   nextCursor?: number | null;
 }
-

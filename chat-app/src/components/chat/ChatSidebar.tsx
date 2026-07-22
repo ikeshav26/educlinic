@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Search, Edit, Home, Paperclip } from 'lucide-react';
+import { Search, Home, Paperclip } from 'lucide-react';
 import type { Chat } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { Skeleton } from '../ui/skeleton';
@@ -50,10 +50,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Chats</h1>
         <div className="flex items-center gap-3 text-muted-foreground">
-          <button className="hover:text-foreground transition-colors">
-            <Edit className="h-5 w-5" />
-          </button>
-          <Link to="/" className="hover:text-foreground transition-colors">
+          <Link to="/" className="hover:text-foreground transition-colors p-2 hover:bg-muted rounded-full">
             <Home className="h-5 w-5" />
           </Link>
         </div>
@@ -61,12 +58,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       <div className="px-5 pb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9 text-sm bg-muted/50 border-none rounded-full shadow-none focus-visible:ring-1 focus-visible:ring-border"
+            className="pl-9 h-10 text-sm bg-background border border-border/60 rounded-full shadow-sm focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all"
           />
         </div>
       </div>
@@ -99,9 +96,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <div
                   key={chat.id}
                   onClick={() => setActiveChatId(chat.id)}
-                  className={`flex items-center p-2 rounded-xl cursor-pointer transition-colors group relative ${
-                    isActive ? 'bg-[#e9effa] rounded-r-none' : 'hover:bg-muted/30'
-                  }`}
+                  className={`flex items-center p-3 mb-1 mx-2 rounded-2xl cursor-pointer transition-all group relative border ${isActive
+                    ? 'bg-primary/7 border-primary/20 shadow-sm'
+                    : 'hover:bg-muted/50 border-transparent'
+                    }`}
                 >
                   <Avatar className="h-12 w-12 shrink-0 mr-3 border border-border/20">
                     <AvatarImage src={getAvatarUrl(chat.participant.name, chat.participant.avatar)} />

@@ -14,7 +14,10 @@ interface StoreState {
   deletePost: (postId: number) => Promise<boolean>;
   deleteComment: (commentId: number) => Promise<boolean>;
   toggleFollow: (userId: number, currentlyFollowing: boolean) => Promise<void>;
-  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean }>;
+  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+  blockUser: (userId: number) => Promise<void>;
+  unblockUser: (userId: number) => Promise<void>;
+  clearChat: (partnerId: number) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessagesWithUser: (partnerId: number, cursor?: number) => Promise<Message[]>;
   sendMessage: (receiverId: number, content: string) => Promise<void>;
@@ -75,6 +78,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           messages: conv.lastMessage ? [conv.lastMessage] : [],
           lastMessage: conv.lastMessage,
           unreadCount: conv.unreadCount || 0,
+          blockedByMe: conv.blockedByMe || false,
+          hasBlockedMe: conv.hasBlockedMe || false,
         }));
         setChats(apiChats);
       }
@@ -159,14 +164,59 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }));
       };
 
+      const handleChatBlocked = ({ blockerId, blockedId }: { blockerId: number, blockedId: number }) => {
+        console.log('Received chat_blocked event:', { blockerId, blockedId, currentUserId: currentUser?.id });
+        setChats(prevChats => {
+          const newChats = prevChats.map(chat => {
+            if (chat.id === blockedId && currentUser?.id === blockerId) {
+              console.log('Setting blockedByMe for chat:', chat.id);
+              return { ...chat, blockedByMe: true };
+            }
+            if (chat.id === blockerId && currentUser?.id === blockedId) {
+              console.log('Setting hasBlockedMe for chat:', chat.id);
+              return { ...chat, hasBlockedMe: true };
+            }
+            return chat;
+          });
+          return newChats;
+        });
+      };
+
+      const handleChatUnblocked = ({ blockerId, blockedId }: { blockerId: number, blockedId: number }) => {
+        console.log('Received chat_unblocked event:', { blockerId, blockedId, currentUserId: currentUser?.id });
+        setChats(prev => prev.map(chat => {
+          if (currentUser) {
+            if (chat.id === blockedId && currentUser?.id === blockerId) {
+              console.log('Clearing blockedByMe for chat:', chat.id);
+              return { ...chat, blockedByMe: false };
+            }
+            if (chat.id === blockerId && currentUser?.id === blockedId) {
+              console.log('Clearing hasBlockedMe for chat:', chat.id);
+              return { ...chat, hasBlockedMe: false };
+            }
+          }
+          return chat;
+        }));
+      };
+
+      const handleChatCleared = ({ partnerId }: { partnerId: number }) => {
+        setChats(prev => prev.map(chat => chat.id === partnerId ? { ...chat, messages: [] } : chat));
+      };
+
       socket.on('receive_message', handleReceiveMessage);
       socket.on('message_edited', handleEditMessage);
       socket.on('message_deleted', handleDeleteMessage);
+      socket.on('chat_blocked', handleChatBlocked);
+      socket.on('chat_unblocked', handleChatUnblocked);
+      socket.on('chat_cleared', handleChatCleared);
 
       return () => {
         socket.off('receive_message', handleReceiveMessage);
         socket.off('message_edited', handleEditMessage);
         socket.off('message_deleted', handleDeleteMessage);
+        socket.off('chat_blocked', handleChatBlocked);
+        socket.off('chat_unblocked', handleChatUnblocked);
+        socket.off('chat_cleared', handleChatCleared);
       };
     } else {
       disconnectSocket();
@@ -453,8 +503,42 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const fetchFollowCounts = async (userId: number) => {
     const res = await fetch(`${API_BASE}/follow/${userId}/counts`, { credentials: 'include' });
-    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false };
-    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean }>;
+    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false, blockedByMe: false, hasBlockedMe: false };
+    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+  };
+
+  const blockUser = async (userId: number) => {
+    try {
+      await fetch(`${API_BASE}/users/${userId}/block`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('blockUser error', err);
+    }
+  };
+
+  const unblockUser = async (userId: number) => {
+    try {
+      await fetch(`${API_BASE}/users/${userId}/unblock`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('unblockUser error', err);
+    }
+  };
+
+  const clearChat = async (partnerId: number) => {
+    try {
+      await fetch(`${API_BASE}/chat/clear/${partnerId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setChats(prev => prev.map(c => c.id === partnerId ? { ...c, messages: [] } : c));
+    } catch (err) {
+      console.error('clearChat error', err);
+    }
   };
 
   const updateProfile = (name: string, bio: string, avatar: string, coverImage: string) => {
@@ -475,6 +559,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         deleteComment,
         toggleFollow,
         fetchFollowCounts,
+        blockUser,
+        unblockUser,
+        clearChat,
         fetchConversations,
         fetchMessagesWithUser,
         sendMessage,

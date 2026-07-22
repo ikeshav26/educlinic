@@ -10,7 +10,7 @@ interface ProfilePageProps {
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId }) => {
-  const { currentUser, toggleFollow, fetchFollowCounts } = useStore();
+  const { currentUser, toggleFollow, fetchFollowCounts, blockUser, unblockUser } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlUserId = searchParams.get('id') ? parseInt(searchParams.get('id')!) : undefined;
   
@@ -43,7 +43,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [blockedByMe, setBlockedByMe] = useState(false);
+  const [hasBlockedMe, setHasBlockedMe] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
   const [totalPosts, setTotalPosts] = useState(0);
   
   const [fetchedUser, setFetchedUser] = useState<User | null>(null);
@@ -76,6 +79,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
     setFollowersCount(counts.followersCount);
     setFollowingCount(counts.followingCount);
     setIsFollowing(counts.isFollowing);
+    setBlockedByMe(counts.blockedByMe);
+    setHasBlockedMe(counts.hasBlockedMe);
   }, [targetId, fetchFollowCounts]);
 
   useEffect(() => {
@@ -94,17 +99,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId: propsUserId })
     setFollowLoading(false);
   };
 
+  const handleBlockToggle = async () => {
+    setBlockLoading(true);
+    if (blockedByMe) {
+      await unblockUser(profileUser.id);
+    } else {
+      await blockUser(profileUser.id);
+    }
+    await loadCounts();
+    setBlockLoading(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <ProfileHeader
         profileUser={profileUser}
         isMe={isMe}
         isFollowing={isFollowing}
+        blockedByMe={blockedByMe}
+        hasBlockedMe={hasBlockedMe}
         followLoading={followLoading}
+        blockLoading={blockLoading}
         followersCount={followersCount}
         followingCount={followingCount}
         userPostsCount={totalPosts}
         onFollowToggle={handleFollowToggle}
+        onBlockToggle={handleBlockToggle}
         setActiveTab={setActiveTab}
       />
       <ProfilePostList

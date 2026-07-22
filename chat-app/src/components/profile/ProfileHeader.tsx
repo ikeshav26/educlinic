@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { User } from '../../types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users } from 'lucide-react';
+import { MapPin, Calendar, Link as LinkIcon, MessageSquare, UserCheck, Users, Ban } from 'lucide-react';
 import { getAvatarUrl } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/mockData';
@@ -12,11 +12,15 @@ interface ProfileHeaderProps {
   profileUser: User;
   isMe: boolean;
   isFollowing: boolean;
+  blockedByMe: boolean;
+  hasBlockedMe: boolean;
   followLoading: boolean;
+  blockLoading: boolean;
   followersCount: number;
   followingCount: number;
   userPostsCount: number;
   onFollowToggle: () => void;
+  onBlockToggle: () => void;
   setActiveTab: (tab: 'posts' | 'followers' | 'following') => void;
 }
 
@@ -24,11 +28,15 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profileUser,
   isMe,
   isFollowing,
+  blockedByMe,
+  hasBlockedMe,
   followLoading,
+  blockLoading,
   followersCount,
   followingCount,
   userPostsCount,
   onFollowToggle,
+  onBlockToggle,
   setActiveTab,
 }) => {
   const navigate = useNavigate();
@@ -37,6 +45,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const [toastMessage, setToastMessage] = useState('');
 
   const handleMessageClick = () => {
+    if (blockedByMe || hasBlockedMe) {
+      setToastMessage("You cannot message this user due to a block.");
+      setShowToast(true);
+      return;
+    }
     if (!isFollowing) {
       setToastMessage("You must follow this user to send a message.");
       setShowToast(true);
@@ -69,24 +82,51 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex gap-2 shrink-0">
             {!isMe && (
               <>
-                <Button onClick={handleMessageClick} variant="outline" className="border-border/80 gap-2">
+                <Button 
+                  onClick={handleMessageClick} 
+                  variant="outline" 
+                  className={`border-border/80 gap-2 ${blockedByMe || hasBlockedMe ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                   <MessageSquare className="h-4 w-4" /> Message
                 </Button>
-                <Button
-                  onClick={onFollowToggle}
-                  disabled={followLoading}
-                  className={
-                    isFollowing
-                      ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-medium transition-colors'
-                      : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium'
-                  }
-                >
-                  {isFollowing ? (
-                    <><UserCheck className="h-4 w-4 mr-1" /> Following</>
-                  ) : (
-                    'Follow'
-                  )}
-                </Button>
+                
+                {blockedByMe ? (
+                  <Button
+                    onClick={onBlockToggle}
+                    disabled={blockLoading}
+                    variant="destructive"
+                    className="gap-2 font-medium"
+                  >
+                    <Ban className="h-4 w-4" /> Unblock
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={onFollowToggle}
+                      disabled={followLoading || hasBlockedMe}
+                      className={
+                        isFollowing
+                          ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-medium transition-colors'
+                          : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white font-medium'
+                      }
+                    >
+                      {isFollowing ? (
+                        <><UserCheck className="h-4 w-4 mr-1" /> Following</>
+                      ) : (
+                        'Follow'
+                      )}
+                    </Button>
+                    <Button
+                      onClick={onBlockToggle}
+                      disabled={blockLoading}
+                      variant="outline"
+                      className="border-border/80 text-muted-foreground hover:text-red-500 hover:border-red-200 transition-colors px-2"
+                      title="Block User"
+                    >
+                      <Ban className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </>
             )}
             {isMe && (

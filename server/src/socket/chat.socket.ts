@@ -83,6 +83,21 @@ export const setupChatSocket = (io: SocketIOServer) => {
           return;
         }
 
+        // Check if there is a block between these users
+        const existingBlock = await prisma.block.findFirst({
+          where: {
+            OR: [
+              { blockerId: user.id, blockedId: receiverId },
+              { blockerId: receiverId, blockedId: user.id },
+            ],
+          },
+        });
+
+        if (existingBlock) {
+          socket.emit('error_message', { message: 'Cannot send message due to a block' });
+          return;
+        }
+
         // Save message to database
         const message = await prisma.message.create({
           data: {

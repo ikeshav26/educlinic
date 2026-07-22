@@ -180,18 +180,28 @@ export const getFollowCounts = async (req: Request, res: Response) => {
         ]);
 
         const currentUserId = req.user?.id;
-        const isFollowing = currentUserId
-            ? !!(await prisma.follow.findUnique({
-                where: {
-                    followerId_followingId: {
-                        followerId: currentUserId,
-                        followingId: targetUserId,
-                    },
-                },
-            }))
-            : false;
+        let isFollowing = false;
+        let blockedByMe = false;
+        let hasBlockedMe = false;
 
-        return res.status(200).json({ followersCount, followingCount, isFollowing });
+        if (currentUserId) {
+            const [followStatus, myBlock, theirBlock] = await Promise.all([
+                prisma.follow.findUnique({
+                    where: { followerId_followingId: { followerId: currentUserId, followingId: targetUserId } },
+                }),
+                prisma.block.findUnique({
+                    where: { blockerId_blockedId: { blockerId: currentUserId, blockedId: targetUserId } },
+                }),
+                prisma.block.findUnique({
+                    where: { blockerId_blockedId: { blockerId: targetUserId, blockedId: currentUserId } },
+                }),
+            ]);
+            isFollowing = !!followStatus;
+            blockedByMe = !!myBlock;
+            hasBlockedMe = !!theirBlock;
+        }
+
+        return res.status(200).json({ followersCount, followingCount, isFollowing, blockedByMe, hasBlockedMe });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Internal server error" });

@@ -39,11 +39,40 @@ export const getConversations = async (req: Request, res: Response): Promise<voi
         createdAt: string;
       };
       unreadCount: number;
+      blockedByMe: boolean;
+      hasBlockedMe: boolean;
     }>();
+
+    // Fetch blocks for the current user (either blocked by them or they are blocked)
+    const blocks = await prisma.block.findMany({
+      where: {
+        OR: [{ blockerId: currentUserId }, { blockedId: currentUserId }],
+      },
+    });
+    
+    // Create Sets of user IDs to track block directions
+    const blockedByMeIds = new Set<number>();
+    const hasBlockedMeIds = new Set<number>();
+    blocks.forEach(b => {
+      if (b.blockerId === currentUserId) blockedByMeIds.add(b.blockedId);
+      if (b.blockedId === currentUserId) hasBlockedMeIds.add(b.blockerId);
+    });
+
+    // Fetch cleared chats for the current user
+    const clearedChats = await prisma.clearedChat.findMany({
+      where: { userId: currentUserId },
+    });
+    const clearedMap = new Map<number, Date>();
+    clearedChats.forEach(c => clearedMap.set(c.partnerId, c.clearedAt));
 
     for (const msg of messages) {
       const isSender = msg.senderId === currentUserId;
       const partner = isSender ? msg.receiver : msg.sender;
+
+      const clearedAt = clearedMap.get(partner.id);
+      if (clearedAt && msg.createdAt <= clearedAt) {
+        continue;
+      }
 
       if (!conversationMap.has(partner.id)) {
         conversationMap.set(partner.id, {
@@ -59,6 +88,8 @@ export const getConversations = async (req: Request, res: Response): Promise<voi
             createdAt: msg.createdAt.toISOString(),
           },
           unreadCount: 0,
+          blockedByMe: blockedByMeIds.has(partner.id),
+          hasBlockedMe: hasBlockedMeIds.has(partner.id),
         });
       }
 
@@ -88,12 +119,23 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
       return;
     }
 
+    const clearedChat = await prisma.clearedChat.findUnique({
+      where: {
+        userId_partnerId: {
+          userId: currentUserId,
+          partnerId: partnerId,
+        },
+      },
+    });
+    const clearedAt = clearedChat?.clearedAt;
+
     const messages = await prisma.message.findMany({
       where: {
         OR: [
           { senderId: currentUserId, receiverId: partnerId },
           { senderId: partnerId, receiverId: currentUserId },
         ],
+        ...(clearedAt ? { createdAt: { gt: clearedAt } } : {}),
       },
       orderBy: { id: 'desc' }, // Order by newest first
       take: limit + 1, // Take one extra to check if there are more
@@ -183,6 +225,21 @@ export const sendMessageHttp = async (req: Request, res: Response): Promise<void
 
     if (!receiverExists) {
       res.status(404).json({ message: 'Recipient user not found' });
+      return;
+    }
+
+    // Check if there is a block between these users
+    const existingBlock = await prisma.block.findFirst({
+      where: {
+        OR: [
+          { blockerId: currentUserId, blockedId: Number(receiverId) },
+          { blockerId: Number(receiverId), blockedId: currentUserId },
+        ],
+      },
+    });
+
+    if (existingBlock) {
+      res.status(403).json({ message: 'Cannot send message to this user due to a block' });
       return;
     }
 
@@ -321,6 +378,44 @@ export const deleteMessageHttp = async (req: Request, res: Response): Promise<vo
     res.status(200).json({ success: true, messageId });
   } catch (error) {
     console.error('Error deleting message:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const clearChatHttp = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const currentUserId = req.user!.id;
+    const partnerId = parseInt(req.params.partnerId as string, 10);
+
+    if (isNaN(partnerId)) {
+      res.status(400).json({ message: 'Invalid partner user ID' });
+      return;
+    }
+
+    await prisma.clearedChat.upsert({
+      where: {
+        userId_partnerId: {
+          userId: currentUserId,
+          partnerId: partnerId,
+        },
+      },
+      update: {
+        clearedAt: new Date(),
+      },
+      create: {
+        userId: currentUserId,
+        partnerId: partnerId,
+      },
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user:${currentUserId}`).emit('chat_cleared', { partnerId });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error clearing chat:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2 } from 'lucide-react';
+import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2, Ban, Trash2 } from 'lucide-react';
 import type { Chat, User, Message } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { ChatMessage } from './ChatMessage';
@@ -23,7 +23,7 @@ const formatDividerDate = (dateStr: string) => {
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0 && now.getDate() === date.getDate()) {
     return 'TODAY';
   } else if (diffDays === 1 || (diffDays === 0 && now.getDate() !== date.getDate())) {
@@ -41,13 +41,25 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   handleSend,
   isLoading,
 }) => {
-  const { fetchMessagesWithUser, editMessage } = useStore();
+  const { fetchMessagesWithUser, editMessage, unblockUser, blockUser, clearChat } = useStore();
   const observerTarget = useRef<HTMLDivElement>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleEditInit = (msg: Message) => {
     setEditingMessageId(msg.id);
@@ -98,10 +110,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   if (activeChat) {
     let currentDate = '';
     // Filter messages based on search query
-    const filteredMessages = activeChat.messages.filter(msg => 
+    const filteredMessages = activeChat.messages.filter(msg =>
       msg.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
+
     filteredMessages.forEach(msg => {
       const msgDate = new Date(msg.createdAt).toDateString();
       if (msgDate !== currentDate) {
@@ -163,7 +175,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               {isSearchOpen ? (
                 <div className="flex items-center bg-muted/50 rounded-full px-3 py-1">
                   <Search className="h-4 w-4 text-muted-foreground mr-2" />
-                  <input 
+                  <input
                     autoFocus
                     type="text"
                     placeholder="Search..."
@@ -178,70 +190,119 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               ) : (
                 <button onClick={() => setIsSearchOpen(true)} className="hover:text-foreground transition-colors"><Search className="h-5 w-5" /></button>
               )}
-              <button className="hover:text-foreground transition-colors"><MoreVertical className="h-5 w-5" /></button>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="hover:text-foreground transition-colors"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-border/50 py-1 z-50">
+                    {!activeChat.blockedByMe && (
+                      <button
+                        onClick={() => {
+                          blockUser(activeChat.participant.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-muted/50 flex items-center gap-2"
+                      >
+                        <Ban className="h-4 w-4" /> Block User
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        clearChat(activeChat.participant.id);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" /> Clear Chat
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/50 flex flex-col-reverse gap-6">
-              {activeChat.messages.length === 0 ? (
-                <div className="text-center text-xs text-muted-foreground my-8">
-                  No previous messages. Say hi to {activeChat.participant.name}!
-                </div>
-              ) : (
-                groupedMessages.map((group, groupIdx) => (
-                  <div key={groupIdx} className="flex flex-col-reverse gap-1">
-                    {group.messages.map(msg => (
-                      <ChatMessage
-                        key={msg.id}
-                        message={msg}
-                        isMe={msg.senderId === currentUser?.id}
-                        onEdit={handleEditInit}
-                      />
-                    ))}
-                    <div className="flex justify-center my-4">
-                      <span className="px-3 py-1 bg-muted/30 rounded-full text-[10px] font-semibold tracking-wider text-muted-foreground">
-                        {formatDividerDate(group.date)}
-                      </span>
-                    </div>
+            {activeChat.messages.length === 0 ? (
+              <div className="text-center text-xs text-muted-foreground my-8">
+                No previous messages. Say hi to {activeChat.participant.name}!
+              </div>
+            ) : (
+              groupedMessages.map((group, groupIdx) => (
+                <div key={groupIdx} className="flex flex-col-reverse gap-1">
+                  {group.messages.map(msg => (
+                    <ChatMessage
+                      key={msg.id}
+                      message={msg}
+                      isMe={msg.senderId === currentUser?.id}
+                      onEdit={handleEditInit}
+                    />
+                  ))}
+                  <div className="flex justify-center my-4">
+                    <span className="px-3 py-1 bg-muted/30 rounded-full text-[10px] font-semibold tracking-wider text-muted-foreground">
+                      {formatDividerDate(group.date)}
+                    </span>
                   </div>
-                ))
-              )}
-              
-              {activeChat.nextCursor && (
-                <div ref={observerTarget} className="py-4 flex justify-center w-full shrink-0">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
-              )}
+              ))
+            )}
+
+            {activeChat.nextCursor && (
+              <div ref={observerTarget} className="py-4 flex justify-center w-full shrink-0">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
 
           <div className="p-4 pt-2 bg-slate-50/50 flex flex-col gap-2">
-            {editingMessageId && (
-              <div className="flex items-center justify-between bg-muted/30 px-4 py-2 rounded-lg text-sm text-muted-foreground">
-                <span className="flex items-center gap-2"><Edit2 className="h-4 w-4" /> Editing message</span>
-                <button onClick={cancelEdit} className="hover:text-foreground"><X className="h-4 w-4" /></button>
+            {activeChat.blockedByMe ? (
+              <div className="flex-1 flex flex-col items-center justify-center gap-2 h-20 bg-muted/20 border border-border/50 rounded-lg text-sm text-muted-foreground p-4">
+                <span>You have blocked this user.</span>
+                <button
+                  onClick={() => unblockUser(activeChat.participant.id)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-medium transition-colors"
+                >
+                  <Ban className="h-4 w-4" /> Unblock User
+                </button>
               </div>
+            ) : activeChat.hasBlockedMe ? (
+              <div className="flex-1 flex items-center justify-center h-12 bg-muted/30 border border-border/50 rounded-full text-sm text-muted-foreground">
+                You cannot send or receive messages anymore due to a block.
+              </div>
+            ) : (
+              <>
+                {editingMessageId && (
+                  <div className="flex items-center justify-between bg-muted/30 px-4 py-2 rounded-lg text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2"><Edit2 className="h-4 w-4" /> Editing message</span>
+                    <button onClick={cancelEdit} className="hover:text-foreground"><X className="h-4 w-4" /></button>
+                  </div>
+                )}
+                <div className="flex-1 relative flex items-center">
+                  <button className="absolute left-4 text-muted-foreground hover:text-foreground transition-colors z-10">
+                    <Paperclip className="h-5 w-5" />
+                  </button>
+                  <Input
+                    placeholder="Message"
+                    className="h-12 pl-12 pr-12 text-sm bg-background border border-border/50 rounded-full shadow-sm focus-visible:ring-1 focus-visible:ring-border w-full"
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') onSendWrapper();
+                    }}
+                  />
+                  <button
+                    onClick={onSendWrapper}
+                    disabled={!newMessage.trim()}
+                    className="absolute right-4 text-muted-foreground hover:text-[#3b82f6] transition-colors disabled:opacity-50 disabled:hover:text-muted-foreground z-10"
+                  >
+                    {editingMessageId ? <Check className="h-5 w-5 text-emerald-500" /> : <Send className="h-5 w-5" />}
+                  </button>
+                </div>
+              </>
             )}
-            <div className="flex-1 relative flex items-center">
-              <button className="absolute left-4 text-muted-foreground hover:text-foreground transition-colors z-10">
-                <Paperclip className="h-5 w-5" />
-              </button>
-              <Input
-                placeholder="Message"
-                className="h-12 pl-12 pr-12 text-sm bg-background border border-border/50 rounded-full shadow-sm focus-visible:ring-1 focus-visible:ring-border w-full"
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') onSendWrapper();
-                }}
-              />
-              <button
-                onClick={onSendWrapper}
-                disabled={!newMessage.trim()}
-                className="absolute right-4 text-muted-foreground hover:text-[#3b82f6] transition-colors disabled:opacity-50 disabled:hover:text-muted-foreground z-10"
-              >
-                {editingMessageId ? <Check className="h-5 w-5 text-emerald-500" /> : <Send className="h-5 w-5" />}
-              </button>
-            </div>
           </div>
         </>
       ) : (
