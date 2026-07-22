@@ -168,10 +168,10 @@ export const ConnectPage: React.FC = () => {
                     {user.name}
                   </h3>
                   <p className="text-xs text-muted-foreground truncate mb-1">
-                    {user.schoolCategory?.replace(/_/g, ' ') || 'Student at EduClinic'}
+                    {user.schoolCategory?.replace(/_/g, ' ')}
                   </p>
                   <p className="text-sm text-muted-foreground line-clamp-2 mt-2 mb-4 flex-1">
-                    {user.bio || 'Passionate student sharing insights and learning.'}
+                    {user.bio || ''}
                   </p>
 
                   <div className="flex gap-2">

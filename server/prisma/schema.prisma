@@ -43,6 +43,9 @@ model User {
   password       String
   role           UserRole        @default(USER)
   schoolCategory SchoolCategory?
+  bio            String?
+  gender         String?
+  socialLink     String?
   isVerified     Boolean         @default(false)
   createdEvents  Event[]
   registrations  Registration[]

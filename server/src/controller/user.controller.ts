@@ -46,6 +46,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
                     email: true,
                     role: true,
                     schoolCategory: true,
+                    bio: true,
+                    gender: true,
+                    socialLink: true,
+                    createdAt: true,
                 },
                 orderBy: { createdAt: 'desc' }
             }),
@@ -90,6 +94,10 @@ export const getUserById = async (req: Request, res: Response) => {
                 email: true,
                 role: true,
                 schoolCategory: true,
+                bio: true,
+                gender: true,
+                socialLink: true,
+                createdAt: true,
             }
         });
 
@@ -205,6 +213,43 @@ export const unblockUser = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "User unblocked successfully" });
   } catch (err) {
     console.error("Error unblocking user:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { name, bio, gender, socialLink } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: currentUserId },
+      data: {
+        ...(name && { name }),
+        bio,
+        gender,
+        socialLink,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        schoolCategory: true,
+        bio: true,
+        gender: true,
+        socialLink: true,
+        createdAt: true,
+      }
+    });
+
+    return res.status(200).json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (err) {
+    console.error("Error updating profile:", err);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

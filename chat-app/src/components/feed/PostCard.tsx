@@ -79,9 +79,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                 >
                   {authorUser?.name || 'DEV Contributor'}
                 </span>
-                <span className="text-xs text-muted-foreground font-normal">
-                  for <span className="font-medium text-foreground/80 hover:text-[#3b49df] cursor-pointer">Google Developer Experts</span>
-                </span>
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 {formattedDate}
@@ -118,11 +115,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                 {/* Likes count */}
                 <button
                   onClick={onLike}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
-                    post.isLiked
-                      ? 'bg-red-500/10 text-red-600 font-semibold'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
-                  }`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${post.isLiked
+                    ? 'bg-red-500/10 text-red-600 font-semibold'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                    }`}
                 >
                   <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
                   <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>

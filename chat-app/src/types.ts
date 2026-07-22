@@ -7,6 +7,10 @@ export interface User {
   coverImage?: string;
   followersCount?: number;
   followingCount?: number;
+  gender?: string | null;
+  socialLink?: string | null;
+  schoolCategory?: string;
+  createdAt?: string;
 }
 
 export interface Comment {

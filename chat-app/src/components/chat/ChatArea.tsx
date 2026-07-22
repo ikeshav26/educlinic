@@ -5,6 +5,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2, Ban, Trash2 } from 'lucide-react';
 import type { Chat, User, Message } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
+import { useNavigate } from 'react-router-dom';
 import { ChatMessage } from './ChatMessage';
 import { Skeleton } from '../ui/skeleton';
 import { useStore } from '../../store/mockData';
@@ -18,7 +19,7 @@ interface ChatAreaProps {
   isLoading?: boolean;
 }
 
-const formatDividerDate = (dateStr: string) => {
+export const formatDividerDate = (dateStr: string) => {
   const date = new Date(dateStr);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -46,6 +47,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
@@ -162,13 +164,16 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       {activeChat ? (
         <>
           <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between bg-background z-10">
-            <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => navigate(`/profile?id=${activeChat.participant.id}`)}
+            >
               <Avatar className="h-10 w-10">
                 <AvatarImage src={getAvatarUrl(activeChat.participant.name, activeChat.participant.avatar)} />
                 <AvatarFallback className="font-semibold bg-muted">{activeChat.participant.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
-                <span className="font-semibold text-base text-foreground">{activeChat.participant.name}</span>
+                <span className="font-semibold text-base text-foreground hover:text-[#3b49df] transition-colors">{activeChat.participant.name}</span>
               </div>
             </div>
             <div className="flex items-center gap-4 text-muted-foreground">
@@ -188,12 +193,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   </button>
                 </div>
               ) : (
-                <button onClick={() => setIsSearchOpen(true)} className="hover:text-foreground transition-colors"><Search className="h-5 w-5" /></button>
+                <button onClick={() => setIsSearchOpen(true)} className="hover:text-foreground transition-colors flex items-center justify-center"><Search className="h-5 w-5" /></button>
               )}
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative flex items-center justify-center" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="hover:text-foreground transition-colors"
+                  className="hover:text-foreground transition-colors flex items-center justify-center"
                 >
                   <MoreVertical className="h-5 w-5" />
                 </button>

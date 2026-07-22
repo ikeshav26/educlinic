@@ -15,7 +15,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isMe, onEdit 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowOptions(false);
       }

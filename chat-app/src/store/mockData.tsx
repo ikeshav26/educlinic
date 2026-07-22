@@ -23,7 +23,7 @@ interface StoreState {
   sendMessage: (receiverId: number, content: string) => Promise<void>;
   markAsRead: (partnerId: number) => Promise<void>;
   startDirectMessage: (partnerUser: User) => Chat;
-  updateProfile: (name: string, bio: string, avatar: string, coverImage: string) => void;
+  updateProfile: (name: string, bio: string, gender: string, socialLink: string) => Promise<void>;
   editMessage: (messageId: number, content: string) => Promise<void>;
   deleteMessage: (messageId: number) => Promise<void>;
 }
@@ -541,7 +541,23 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const updateProfile = (name: string, bio: string, avatar: string, coverImage: string) => {
+  const updateProfile = async (name: string, bio: string, gender: string, socialLink: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, bio, gender, socialLink }),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      }
+    } catch (err) {
+      console.error('Failed to update profile', err);
+    }
   };
 
   return (

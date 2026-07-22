@@ -6,7 +6,7 @@ import { Search, Home, Paperclip } from 'lucide-react';
 import type { Chat } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
 import { Skeleton } from '../ui/skeleton';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -40,6 +40,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isLoading,
 }) => {
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   const filteredChats = chats.filter(chat =>
     chat.participant.name.toLowerCase().includes(search.toLowerCase())
@@ -101,12 +102,20 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     : 'hover:bg-muted/50 border-transparent'
                     }`}
                 >
-                  <Avatar className="h-12 w-12 shrink-0 mr-3 border border-border/20">
-                    <AvatarImage src={getAvatarUrl(chat.participant.name, chat.participant.avatar)} />
-                    <AvatarFallback className="bg-muted text-foreground font-semibold">
-                      {chat.participant.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div 
+                    className="shrink-0 mr-3 z-10 hover:scale-105 transition-transform" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile?id=${chat.participant.id}`);
+                    }}
+                  >
+                    <Avatar className="h-12 w-12 border border-border/20 shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
+                      <AvatarImage src={getAvatarUrl(chat.participant.name, chat.participant.avatar)} />
+                      <AvatarFallback className="bg-muted text-foreground font-semibold">
+                        {chat.participant.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
 
                   <div className="flex-1 overflow-hidden min-w-0 pr-2">
                     <div className="flex items-center justify-between mb-0.5">
