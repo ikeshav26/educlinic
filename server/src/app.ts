@@ -30,7 +30,6 @@ const appMiddleware: express.RequestHandler[] = [
 
 app.use(appMiddleware);
 
-
 app.get('/', (req: Request, res: Response) => {
   res.send('API is running...');
 });

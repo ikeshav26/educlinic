@@ -19,7 +19,9 @@ const LoginPage = () => {
     if (authenticated) {
       router.push('/');
       if (wasAlreadyAuthenticated.current) {
-        toast.info('You are already Logged In', { toastId: 'auth-already-logged-in' });
+        toast.info('You are already Logged In', {
+          toastId: 'auth-already-logged-in',
+        });
       }
     }
   }, [authenticated, router]);

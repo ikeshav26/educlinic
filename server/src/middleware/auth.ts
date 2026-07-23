@@ -10,7 +10,15 @@ import {
 
 type AuthenticatedUser = Pick<
   User,
-  'id' | 'name' | 'email' | 'role' | 'schoolCategory' | 'bio' | 'gender' | 'socialLink' | 'createdAt'
+  | 'id'
+  | 'name'
+  | 'email'
+  | 'role'
+  | 'schoolCategory'
+  | 'bio'
+  | 'gender'
+  | 'socialLink'
+  | 'createdAt'
 >;
 
 const roleRank: Record<UserRoleEnum, number> = {

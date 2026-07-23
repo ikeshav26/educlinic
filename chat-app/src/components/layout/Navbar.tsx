@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Menu, Plus } from 'lucide-react';
+import { Search, Menu, Plus, Home } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { getAvatarUrl } from '../../lib/utils';
@@ -84,6 +84,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
+          <a
+            href="http://localhost:3000/"
+            className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-primary transition-colors px-3 py-1.5 rounded-full text-sm font-semibold border border-gray-200"
+            title="Back to Alumni Portal"
+          >
+            <Home className="h-4 w-4" />
+            <span className="hidden sm:inline">Alumni Portal</span>
+          </a>
+
           <Button
             variant="outline"
             className="hidden sm:flex text-primary border-primary hover:bg-primary/10"

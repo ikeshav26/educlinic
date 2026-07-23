@@ -23,10 +23,22 @@ const navigation: RouteItem[] = [
     name: 'Our Institutions',
     subRoutes: [
       { name: 'School of Engineering', path: 'https://www.bfcet.com' },
-      { name: 'School of Sciences', path: 'https://babafaridgroup.edu.in/School-of-Sciences.php' },
-      { name: 'School of Agriculture', path: 'https://www.bfcet.com/department-of-agriculture' },
-      { name: 'School of Business Studies', path: 'https://www.bfcet.com/dept-management' },
-      { name: 'School of Computer Applications', path: 'https://www.bfcet.com/dept-comp-application' },
+      {
+        name: 'School of Sciences',
+        path: 'https://babafaridgroup.edu.in/School-of-Sciences.php',
+      },
+      {
+        name: 'School of Agriculture',
+        path: 'https://www.bfcet.com/department-of-agriculture',
+      },
+      {
+        name: 'School of Business Studies',
+        path: 'https://www.bfcet.com/dept-management',
+      },
+      {
+        name: 'School of Computer Applications',
+        path: 'https://www.bfcet.com/dept-comp-application',
+      },
       { name: 'School of Humanities', path: 'https://www.bfcbti.com/' },
       { name: 'School of Education', path: 'https://www.bfcedu.com/' },
       { name: 'School of Law', path: 'https://babafaridcollegeoflaw.com/' },
@@ -48,13 +60,12 @@ const navigation: RouteItem[] = [
     name: 'Gallery',
     subRoutes: [
       { name: 'Campus Life', path: '/gallery/campus-life' },
-      { name: 'Events', path: '/gallery/events' },
-      { name: 'Global Internship', path: '/gallery/global-internship' },
-      { name: 'Global Summit', path: '/gallery/global-summit' },
+      { name: 'Events', path: '/gallery/events' }
     ],
   },
   {
-    name: 'About', path: '/about'
+    name: 'About',
+    path: '/about',
   },
   { name: 'Contact Us', path: '/contact' },
 ];
@@ -70,7 +81,9 @@ const MainNav = () => {
   }, [isMenuOpen]);
 
   const pathname = usePathname();
-  const isAuthenticated = useUserStore((state: UserStore) => state.isAuthenticated);
+  const isAuthenticated = useUserStore(
+    (state: UserStore) => state.isAuthenticated
+  );
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -87,37 +100,51 @@ const MainNav = () => {
     }
   };
 
-  const handleLinkClick = (e: React.MouseEvent, url: string, name: string, isMobile = false) => {
+  const handleLinkClick = (
+    e: React.MouseEvent,
+    url: string,
+    name: string,
+    isMobile = false
+  ) => {
     if (url.startsWith('http')) {
       e.preventDefault();
       if (isMobile) setIsMenuOpen(false);
-      hotToast((t) => (
-        <div className="flex flex-col gap-4 min-w-[280px] p-2">
-          <div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1.5">External Link</h3>
-            <p className="text-[15px] text-gray-600">
-              Continue to <b>{name}</b>?
-            </p>
+      hotToast(
+        (t) => (
+          <div className="flex flex-col gap-4 min-w-[280px] p-2">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 mb-1.5">
+                External Link
+              </h3>
+              <p className="text-[15px] text-gray-600">
+                Continue to <b>{name}</b>?
+              </p>
+            </div>
+            <div className="flex justify-end gap-2.5">
+              <button
+                onClick={() => hotToast.dismiss(t.id)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer rounded-none"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  hotToast.dismiss(t.id);
+                  window.open(url, '_blank');
+                }}
+                className="px-4 py-2 text-sm font-medium bg-[#d60000] text-white hover:bg-[#b30000] transition-colors cursor-pointer rounded-none"
+              >
+                Continue
+              </button>
+            </div>
           </div>
-          <div className="flex justify-end gap-2.5">
-            <button
-              onClick={() => hotToast.dismiss(t.id)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer rounded-none"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                hotToast.dismiss(t.id);
-                window.open(url, '_blank');
-              }}
-              className="px-4 py-2 text-sm font-medium bg-[#d60000] text-white hover:bg-[#b30000] transition-colors cursor-pointer rounded-none"
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      ), { duration: 6000, position: 'bottom-right', style: { borderRadius: '0px' } });
+        ),
+        {
+          duration: 6000,
+          position: 'bottom-right',
+          style: { borderRadius: '0px' },
+        }
+      );
     } else {
       if (isMobile) setIsMenuOpen(false);
     }
@@ -146,7 +173,7 @@ const MainNav = () => {
           />
         </div>
 
-        <div className="hidden lg:flex items-center space-x-3 xl:space-x-5">
+        <div className="hidden xl:flex items-center space-x-3 xl:space-x-5">
           {navigation.map((item) => {
             const isActive = item.path ? pathname === item.path : false;
 
@@ -155,10 +182,14 @@ const MainNav = () => {
                 {item.path ? (
                   <Link
                     href={item.path}
-                    onClick={item.path.startsWith('http') ? (e) => handleLinkClick(e, item.path!, item.name) : undefined}
+                    onClick={
+                      item.path.startsWith('http')
+                        ? (e) => handleLinkClick(e, item.path!, item.name)
+                        : undefined
+                    }
                     className={`inline-flex items-center text-[15px] font-semibold pb-1 border-b-2 transition-colors ${isActive
-                      ? 'border-[#d60000] text-gray-900'
-                      : 'border-transparent text-gray-600 hover:text-[#d60000] hover:border-[#d60000]'
+                        ? 'border-[#d60000] text-gray-900'
+                        : 'border-transparent text-gray-600 hover:text-[#d60000] hover:border-[#d60000]'
                       }`}
                   >
                     {item.name}
@@ -166,8 +197,8 @@ const MainNav = () => {
                 ) : (
                   <span
                     className={`inline-flex items-center gap-1 text-[15px] font-semibold pb-1 border-b-2 transition-colors cursor-pointer group-hover:text-[#d60000] group-hover:border-[#d60000] ${isActive
-                      ? 'border-[#d60000] text-gray-900'
-                      : 'border-transparent text-gray-600'
+                        ? 'border-[#d60000] text-gray-900'
+                        : 'border-transparent text-gray-600'
                       }`}
                   >
                     {item.name}
@@ -183,7 +214,11 @@ const MainNav = () => {
                           <Link
                             key={sub.name}
                             href={sub.path}
-                            onClick={sub.path.startsWith('http') ? (e) => handleLinkClick(e, sub.path, sub.name) : undefined}
+                            onClick={
+                              sub.path.startsWith('http')
+                                ? (e) => handleLinkClick(e, sub.path, sub.name)
+                                : undefined
+                            }
                             className="block px-6 py-2 text-[14px] text-gray-600 hover:text-[#d60000] transition-colors"
                           >
                             {sub.name}
@@ -199,7 +234,7 @@ const MainNav = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             {isAuthenticated ? (
               <button
                 onClick={handleLogout}
@@ -219,7 +254,7 @@ const MainNav = () => {
           </div>
 
           <button
-            className="lg:hidden text-gray-700 hover:text-[#d60000] focus:outline-none"
+            className="xl:hidden text-gray-700 hover:text-[#d60000] focus:outline-none"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu size={28} />
@@ -230,14 +265,14 @@ const MainNav = () => {
       {/* Overlay Backdrop */}
       {isMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-[60]"
+          className="xl:hidden fixed inset-0 bg-black/50 z-[60]"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`lg:hidden fixed top-0 left-0 h-full w-[280px] sm:w-[320px] bg-white z-[70] transform transition-transform duration-300 ease-in-out flex flex-col shadow-2xl ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`xl:hidden fixed top-0 left-0 h-full w-[280px] sm:w-[320px] bg-white z-[70] transform transition-transform duration-300 ease-in-out flex flex-col shadow-2xl ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
@@ -265,16 +300,22 @@ const MainNav = () => {
                   <Link
                     href={item.path}
                     className={`block text-base font-medium py-3 px-4 rounded-lg transition-colors duration-200 ${pathname === item.path
-                      ? 'bg-red-50 text-[#d60000]'
-                      : 'text-gray-700 hover:bg-red-50 hover:text-[#d60000]'
+                        ? 'bg-red-50 text-[#d60000]'
+                        : 'text-gray-700 hover:bg-red-50 hover:text-[#d60000]'
                       }`}
-                    onClick={(e) => item.path?.startsWith('http') ? handleLinkClick(e, item.path, item.name, true) : setIsMenuOpen(false)}
+                    onClick={(e) =>
+                      item.path?.startsWith('http')
+                        ? handleLinkClick(e, item.path, item.name, true)
+                        : setIsMenuOpen(false)
+                    }
                   >
                     {item.name}
                   </Link>
                 ) : (
                   <button
-                    onClick={() => setExpandedMenu(isExpanded ? null : item.name)}
+                    onClick={() =>
+                      setExpandedMenu(isExpanded ? null : item.name)
+                    }
                     className={`text-base font-medium py-3 px-4 rounded-lg flex items-center justify-between w-full transition-colors duration-200 ${isExpanded ? 'bg-red-50 text-[#d60000]' : 'text-gray-800 hover:bg-red-50 hover:text-[#d60000]'}`}
                   >
                     {item.name}
@@ -296,10 +337,14 @@ const MainNav = () => {
                           key={sub.name}
                           href={sub.path}
                           className={`block text-sm py-2 px-3 rounded-md transition-colors duration-200 ${pathname === sub.path
-                            ? 'bg-red-50 text-[#d60000] font-medium'
-                            : 'text-gray-500 hover:bg-red-50 hover:text-[#d60000]'
+                              ? 'bg-red-50 text-[#d60000] font-medium'
+                              : 'text-gray-500 hover:bg-red-50 hover:text-[#d60000]'
                             }`}
-                          onClick={(e) => sub.path.startsWith('http') ? handleLinkClick(e, sub.path, sub.name, true) : setIsMenuOpen(false)}
+                          onClick={(e) =>
+                            sub.path.startsWith('http')
+                              ? handleLinkClick(e, sub.path, sub.name, true)
+                              : setIsMenuOpen(false)
+                          }
                         >
                           {sub.name}
                         </Link>
@@ -308,7 +353,7 @@ const MainNav = () => {
                   )}
                 </div>
               </div>
-            )
+            );
           })}
 
           <div className="pt-4 border-t border-gray-100 mt-2 pb-6">

@@ -1,11 +1,13 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../config/db.js';
 
-export const getConversations = async (req: Request, res: Response): Promise<void> => {
+export const getConversations = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
 
-    // Find all distinct users the current user has sent or received messages with
     const messages = await prisma.message.findMany({
       where: {
         OR: [{ senderId: currentUserId }, { receiverId: currentUserId }],
@@ -21,49 +23,49 @@ export const getConversations = async (req: Request, res: Response): Promise<voi
       },
     });
 
-    const conversationMap = new Map<number, {
-      id: number; // chat identifier (partner user ID)
-      participant: {
+    const conversationMap = new Map<
+      number,
+      {
         id: number;
-        name: string;
-        email: string;
-        schoolCategory: string | null;
-      };
-      lastMessage: {
-        id: number;
-        senderId: number;
-        receiverId: number;
-        content: string;
-        isRead: boolean;
-        isEdited: boolean;
-        createdAt: string;
-      };
-      unreadCount: number;
-      blockedByMe: boolean;
-      hasBlockedMe: boolean;
-    }>();
+        participant: {
+          id: number;
+          name: string;
+          email: string;
+          schoolCategory: string | null;
+        };
+        lastMessage: {
+          id: number;
+          senderId: number;
+          receiverId: number;
+          content: string;
+          isRead: boolean;
+          isEdited: boolean;
+          createdAt: string;
+        };
+        unreadCount: number;
+        blockedByMe: boolean;
+        hasBlockedMe: boolean;
+      }
+    >();
 
-    // Fetch blocks for the current user (either blocked by them or they are blocked)
     const blocks = await prisma.block.findMany({
       where: {
         OR: [{ blockerId: currentUserId }, { blockedId: currentUserId }],
       },
     });
-    
-    // Create Sets of user IDs to track block directions
+
     const blockedByMeIds = new Set<number>();
     const hasBlockedMeIds = new Set<number>();
-    blocks.forEach(b => {
+    blocks.forEach((b) => {
       if (b.blockerId === currentUserId) blockedByMeIds.add(b.blockedId);
       if (b.blockedId === currentUserId) hasBlockedMeIds.add(b.blockerId);
     });
 
-    // Fetch cleared chats for the current user
     const clearedChats = await prisma.clearedChat.findMany({
       where: { userId: currentUserId },
     });
     const clearedMap = new Map<number, Date>();
-    clearedChats.forEach(c => clearedMap.set(c.partnerId, c.clearedAt));
+    clearedChats.forEach((c) => clearedMap.set(c.partnerId, c.clearedAt));
 
     for (const msg of messages) {
       const isSender = msg.senderId === currentUserId;
@@ -93,26 +95,34 @@ export const getConversations = async (req: Request, res: Response): Promise<voi
         });
       }
 
-      // Increment unread count if message was received by current user and is not read
       if (!isSender && !msg.isRead) {
         const existing = conversationMap.get(partner.id)!;
         existing.unreadCount += 1;
       }
     }
 
-    res.status(200).json({ conversations: Array.from(conversationMap.values()) });
+    res
+      .status(200)
+      .json({ conversations: Array.from(conversationMap.values()) });
   } catch (error) {
     console.error('Error fetching conversations:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-export const getMessagesWithUser = async (req: Request, res: Response): Promise<void> => {
+export const getMessagesWithUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const partnerId = parseInt(req.params.partnerId as string, 10);
-    const cursor = req.query.cursor ? parseInt(req.query.cursor as string, 10) : undefined;
-    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 30;
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string, 10)
+      : undefined;
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string, 10)
+      : 30;
 
     if (isNaN(partnerId)) {
       res.status(400).json({ message: 'Invalid partner user ID' });
@@ -137,8 +147,8 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
         ],
         ...(clearedAt ? { createdAt: { gt: clearedAt } } : {}),
       },
-      orderBy: { id: 'desc' }, // Order by newest first
-      take: limit + 1, // Take one extra to check if there are more
+      orderBy: { id: 'desc' },
+      take: limit + 1,
       ...(cursor && !isNaN(cursor) ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
         sender: { select: { id: true, name: true } },
@@ -152,10 +162,9 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
       nextCursor = nextItem!.id;
     }
 
-    // Mark unread messages from partner as read (only those fetched in this batch)
     const unreadMessageIds = messages
-      .filter(msg => msg.senderId === partnerId && !msg.isRead)
-      .map(msg => msg.id);
+      .filter((msg) => msg.senderId === partnerId && !msg.isRead)
+      .map((msg) => msg.id);
 
     if (unreadMessageIds.length > 0) {
       await prisma.message.updateMany({
@@ -164,7 +173,7 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
       });
     }
 
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg) => ({
       id: msg.id,
       senderId: msg.senderId,
       receiverId: msg.receiverId,
@@ -183,7 +192,10 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
   }
 };
 
-export const markMessagesAsRead = async (req: Request, res: Response): Promise<void> => {
+export const markMessagesAsRead = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const partnerId = parseInt(req.params.partnerId as string, 10);
@@ -209,7 +221,10 @@ export const markMessagesAsRead = async (req: Request, res: Response): Promise<v
   }
 };
 
-export const sendMessageHttp = async (req: Request, res: Response): Promise<void> => {
+export const sendMessageHttp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const { receiverId, content } = req.body;
@@ -228,7 +243,6 @@ export const sendMessageHttp = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Check if there is a block between these users
     const existingBlock = await prisma.block.findFirst({
       where: {
         OR: [
@@ -239,7 +253,9 @@ export const sendMessageHttp = async (req: Request, res: Response): Promise<void
     });
 
     if (existingBlock) {
-      res.status(403).json({ message: 'Cannot send message to this user due to a block' });
+      res
+        .status(403)
+        .json({ message: 'Cannot send message to this user due to a block' });
       return;
     }
 
@@ -282,7 +298,10 @@ export const sendMessageHttp = async (req: Request, res: Response): Promise<void
   }
 };
 
-export const editMessageHttp = async (req: Request, res: Response): Promise<void> => {
+export const editMessageHttp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const messageId = parseInt(req.params.messageId as string, 10);
@@ -330,7 +349,10 @@ export const editMessageHttp = async (req: Request, res: Response): Promise<void
 
     const io = req.app.get('io');
     if (io) {
-      io.to(`user:${updatedMessage.receiverId}`).emit('message_edited', formattedMessage);
+      io.to(`user:${updatedMessage.receiverId}`).emit(
+        'message_edited',
+        formattedMessage
+      );
       io.to(`user:${currentUserId}`).emit('message_edited', formattedMessage);
     }
 
@@ -341,7 +363,10 @@ export const editMessageHttp = async (req: Request, res: Response): Promise<void
   }
 };
 
-export const deleteMessageHttp = async (req: Request, res: Response): Promise<void> => {
+export const deleteMessageHttp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const messageId = parseInt(req.params.messageId as string, 10);
@@ -361,7 +386,9 @@ export const deleteMessageHttp = async (req: Request, res: Response): Promise<vo
     }
 
     if (message.senderId !== currentUserId) {
-      res.status(403).json({ message: 'You can only delete your own messages' });
+      res
+        .status(403)
+        .json({ message: 'You can only delete your own messages' });
       return;
     }
 
@@ -371,8 +398,16 @@ export const deleteMessageHttp = async (req: Request, res: Response): Promise<vo
 
     const io = req.app.get('io');
     if (io) {
-      io.to(`user:${message.receiverId}`).emit('message_deleted', { messageId, receiverId: message.receiverId, senderId: currentUserId });
-      io.to(`user:${currentUserId}`).emit('message_deleted', { messageId, receiverId: message.receiverId, senderId: currentUserId });
+      io.to(`user:${message.receiverId}`).emit('message_deleted', {
+        messageId,
+        receiverId: message.receiverId,
+        senderId: currentUserId,
+      });
+      io.to(`user:${currentUserId}`).emit('message_deleted', {
+        messageId,
+        receiverId: message.receiverId,
+        senderId: currentUserId,
+      });
     }
 
     res.status(200).json({ success: true, messageId });
@@ -382,7 +417,10 @@ export const deleteMessageHttp = async (req: Request, res: Response): Promise<vo
   }
 };
 
-export const clearChatHttp = async (req: Request, res: Response): Promise<void> => {
+export const clearChatHttp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const currentUserId = req.user!.id;
     const partnerId = parseInt(req.params.partnerId as string, 10);

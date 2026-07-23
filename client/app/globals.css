@@ -135,8 +135,12 @@
 
 @layer utilities {
   @keyframes marquee-seamless {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
   }
 
   .animate-marquee {
@@ -144,4 +148,3 @@
     min-width: 100%;
   }
 }
-

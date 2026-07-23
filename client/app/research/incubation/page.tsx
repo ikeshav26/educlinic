@@ -27,16 +27,15 @@ export default function IncubationPage() {
     '/collaborations/Santosh-Startups-Forum-e1693477043554.jpeg',
   ];
 
-  const heroImages = [
-    '/gallery/slider6-1.jpg',
-    '/gallery/slide-bfcet-6.jpg',
-  ];
+  const heroImages = ['/gallery/slider6-1.jpg', '/gallery/slide-bfcet-6.jpg'];
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1));
+      setCurrentSlide((prev) =>
+        prev === heroImages.length - 1 ? 0 : prev + 1
+      );
     }, 8000);
     return () => clearInterval(timer);
   }, [heroImages.length]);
@@ -98,16 +97,38 @@ export default function IncubationPage() {
         </h1>
         <div className="space-y-6 text-gray-700 leading-relaxed text-sm md:text-base">
           <p>
-            To create an ecosystem of Startups & inculcate the entrepreneurial traits. BFCET has established an Incubation centre with an objective to support the budding entrepreneurs to establish their new venture through constant guidance & mentoring through various training programs & industrial collaborations.
+            To create an ecosystem of Startups & inculcate the entrepreneurial
+            traits. BFCET has established an Incubation centre with an objective
+            to support the budding entrepreneurs to establish their new venture
+            through constant guidance & mentoring through various training
+            programs & industrial collaborations.
           </p>
           <p>
-            Incubation Centre is registered under the Societies Registration Act, 1860 to promote innovation and entrepreneurship. To accomplish its goal, Incubation centre facilitates startups, enterprises, faculty and students by providing technical and business support & services. Incubation centre continuously interacts with various Government bodies and departments to enable the students to become job providers rather than job seekers.
+            Incubation Centre is registered under the Societies Registration
+            Act, 1860 to promote innovation and entrepreneurship. To accomplish
+            its goal, Incubation centre facilitates startups, enterprises,
+            faculty and students by providing technical and business support &
+            services. Incubation centre continuously interacts with various
+            Government bodies and departments to enable the students to become
+            job providers rather than job seekers.
           </p>
           <p>
-            Entrepreneurship is essential for fostering innovation, creating employment opportunities, and driving economic development. By focusing on promoting innovation and entrepreneurship, Incubation is making a positive impact on the community it serves and contributing to the larger goal of building a thriving entrepreneurial ecosystem.
+            Entrepreneurship is essential for fostering innovation, creating
+            employment opportunities, and driving economic development. By
+            focusing on promoting innovation and entrepreneurship, Incubation is
+            making a positive impact on the community it serves and contributing
+            to the larger goal of building a thriving entrepreneurial ecosystem.
           </p>
           <p>
-            Incubation program of BFCET aims to nurturing innovative business ideas and transforming them into successful ventures. By offering such support, it can help startups overcome initial challenges, improve their chances of success, and contribute to economic growth and job creation in the region. This support includes mentorship, access to resources and networks, guidance on business strategy, funding assistance, and other valuable assistance that can significantly contribute to the success of startups and entrepreneurial endeavors.
+            Incubation program of BFCET aims to nurturing innovative business
+            ideas and transforming them into successful ventures. By offering
+            such support, it can help startups overcome initial challenges,
+            improve their chances of success, and contribute to economic growth
+            and job creation in the region. This support includes mentorship,
+            access to resources and networks, guidance on business strategy,
+            funding assistance, and other valuable assistance that can
+            significantly contribute to the success of startups and
+            entrepreneurial endeavors.
           </p>
         </div>
       </section>
@@ -117,25 +138,50 @@ export default function IncubationPage() {
           <div>
             <h2 className="text-2xl font-bold text-[#142340] mb-4">Vision</h2>
             <p className="text-gray-700 leading-relaxed">
-              To foster the entrepreneurial culture and developing leaders from diverse backgrounds to address the real time problems with their innovative ideas.
+              To foster the entrepreneurial culture and developing leaders from
+              diverse backgrounds to address the real time problems with their
+              innovative ideas.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h2 className="text-2xl font-bold text-[#142340] mb-6">Mission</h2>
+              <h2 className="text-2xl font-bold text-[#142340] mb-6">
+                Mission
+              </h2>
               <ol className="list-decimal list-outside ml-5 space-y-3 text-gray-700 text-sm md:text-base">
-                <li>To assist the budding entrepreneurs at all levels from pre-incubation to incubation to enterprise</li>
-                <li>To provide necessary business support services such as infrastructure, mentoring, training, networking, Legal and Funding etc.</li>
-                <li>To promote linkages with industries, research institutions, Government agencies and other related organizations engaged in promoting...</li>
+                <li>
+                  To assist the budding entrepreneurs at all levels from
+                  pre-incubation to incubation to enterprise
+                </li>
+                <li>
+                  To provide necessary business support services such as
+                  infrastructure, mentoring, training, networking, Legal and
+                  Funding etc.
+                </li>
+                <li>
+                  To promote linkages with industries, research institutions,
+                  Government agencies and other related organizations engaged in
+                  promoting...
+                </li>
                 <li>Innovation and entrepreneurial spirit.</li>
-                <li>To make the School of Entrepreneurship a Self-Sustainable in terms of administration, Process, Partnership & Network and Profitability</li>
-                <li>To build an environment to motivate and support innovative ideas for taking prototype of society to generate employment opportunities.</li>
+                <li>
+                  To make the School of Entrepreneurship a Self-Sustainable in
+                  terms of administration, Process, Partnership & Network and
+                  Profitability
+                </li>
+                <li>
+                  To build an environment to motivate and support innovative
+                  ideas for taking prototype of society to generate employment
+                  opportunities.
+                </li>
               </ol>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-[#142340] mb-6">Services</h2>
+              <h2 className="text-2xl font-bold text-[#142340] mb-6">
+                Services
+              </h2>
               <ol className="list-decimal list-outside ml-5 space-y-3 text-gray-700 text-sm md:text-base">
                 <li>Strategy and Business Plan Development</li>
                 <li>Technology Validation</li>
@@ -161,29 +207,48 @@ export default function IncubationPage() {
         </div>
         <div className="relative w-full max-w-6xl mx-auto flex overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
           <div className="flex w-max">
-            <div className="flex animate-marquee whitespace-nowrap items-center space-x-12 px-6 py-4" style={{ animationDuration: '75s' }}>
-              {Array(4).fill(startupLogos).flat().map((src, idx) => (
-                <div key={`startup-1-${idx}`} className="relative h-24 w-40 flex-shrink-0 flex items-center justify-center">
-                  <Image
-                    src={src}
-                    alt={`Startup ${idx}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ))}
+            <div
+              className="flex animate-marquee whitespace-nowrap items-center space-x-12 px-6 py-4"
+              style={{ animationDuration: '75s' }}
+            >
+              {Array(4)
+                .fill(startupLogos)
+                .flat()
+                .map((src, idx) => (
+                  <div
+                    key={`startup-1-${idx}`}
+                    className="relative h-24 w-40 flex-shrink-0 flex items-center justify-center"
+                  >
+                    <Image
+                      src={src}
+                      alt={`Startup ${idx}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
             </div>
-            <div className="flex animate-marquee whitespace-nowrap items-center space-x-12 px-6 py-4" style={{ animationDuration: '75s' }} aria-hidden="true">
-              {Array(4).fill(startupLogos).flat().map((src, idx) => (
-                <div key={`startup-2-${idx}`} className="relative h-24 w-40 flex-shrink-0 flex items-center justify-center">
-                  <Image
-                    src={src}
-                    alt={`Startup ${idx}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ))}
+            <div
+              className="flex animate-marquee whitespace-nowrap items-center space-x-12 px-6 py-4"
+              style={{ animationDuration: '75s' }}
+              aria-hidden="true"
+            >
+              {Array(4)
+                .fill(startupLogos)
+                .flat()
+                .map((src, idx) => (
+                  <div
+                    key={`startup-2-${idx}`}
+                    className="relative h-24 w-40 flex-shrink-0 flex items-center justify-center"
+                  >
+                    <Image
+                      src={src}
+                      alt={`Startup ${idx}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
             </div>
           </div>
         </div>
@@ -197,29 +262,48 @@ export default function IncubationPage() {
         </div>
         <div className="relative w-full max-w-6xl mx-auto flex overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
           <div className="flex w-max">
-            <div className="flex animate-marquee whitespace-nowrap items-center space-x-16 px-8 py-4" style={{ animationDuration: '50s' }}>
-              {Array(6).fill(collaborationLogos).flat().map((src, idx) => (
-                <div key={`collab-1-${idx}`} className="relative h-28 w-48 flex-shrink-0 flex items-center justify-center">
-                  <Image
-                    src={src}
-                    alt={`Collaboration ${idx}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ))}
+            <div
+              className="flex animate-marquee whitespace-nowrap items-center space-x-16 px-8 py-4"
+              style={{ animationDuration: '50s' }}
+            >
+              {Array(6)
+                .fill(collaborationLogos)
+                .flat()
+                .map((src, idx) => (
+                  <div
+                    key={`collab-1-${idx}`}
+                    className="relative h-28 w-48 flex-shrink-0 flex items-center justify-center"
+                  >
+                    <Image
+                      src={src}
+                      alt={`Collaboration ${idx}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
             </div>
-            <div className="flex animate-marquee whitespace-nowrap items-center space-x-16 px-8 py-4" style={{ animationDuration: '50s' }} aria-hidden="true">
-              {Array(6).fill(collaborationLogos).flat().map((src, idx) => (
-                <div key={`collab-2-${idx}`} className="relative h-28 w-48 flex-shrink-0 flex items-center justify-center">
-                  <Image
-                    src={src}
-                    alt={`Collaboration ${idx}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ))}
+            <div
+              className="flex animate-marquee whitespace-nowrap items-center space-x-16 px-8 py-4"
+              style={{ animationDuration: '50s' }}
+              aria-hidden="true"
+            >
+              {Array(6)
+                .fill(collaborationLogos)
+                .flat()
+                .map((src, idx) => (
+                  <div
+                    key={`collab-2-${idx}`}
+                    className="relative h-28 w-48 flex-shrink-0 flex items-center justify-center"
+                  >
+                    <Image
+                      src={src}
+                      alt={`Collaboration ${idx}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
             </div>
           </div>
         </div>
@@ -228,7 +312,6 @@ export default function IncubationPage() {
       <section className="bg-white py-16 mt-12">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-
             <div className="space-y-8">
               <div>
                 <h3 className="text-xl font-bold text-[#142340] uppercase tracking-wide border-l-4 border-orange-500 pl-3">
@@ -237,15 +320,23 @@ export default function IncubationPage() {
                 <div className="w-8 h-1 bg-yellow-400 mt-3 mb-6 ml-3"></div>
                 <div className="space-y-6 text-sm text-gray-700 ml-3">
                   <div>
-                    <p className="font-bold text-gray-900 text-[15px]">Dr. Manish Gupta</p>
-                    <p className="text-gray-500 mt-1">Head, Incubation Centre</p>
+                    <p className="font-bold text-gray-900 text-[15px]">
+                      Dr. Manish Gupta
+                    </p>
+                    <p className="text-gray-500 mt-1">
+                      Head, Incubation Centre
+                    </p>
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-[15px]">Er. Gaurav Narang</p>
+                    <p className="font-bold text-gray-900 text-[15px]">
+                      Er. Gaurav Narang
+                    </p>
                     <p className="text-gray-500 mt-1">CEO, Incubation Centre</p>
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-[15px]">Ms. Tania Sachdeva</p>
+                    <p className="font-bold text-gray-900 text-[15px]">
+                      Ms. Tania Sachdeva
+                    </p>
                     <p className="text-gray-500 mt-1">Incubation Manager</p>
                   </div>
                 </div>
@@ -256,7 +347,10 @@ export default function IncubationPage() {
                   For More Information
                 </h3>
                 <div className="w-8 h-1 bg-yellow-400 mt-2 mb-5"></div>
-                <Link href="/contact" className="inline-block bg-[#5c5c5c] hover:bg-gray-700 text-white px-8 py-2.5 text-sm font-medium transition-colors">
+                <Link
+                  href="/contact"
+                  className="inline-block bg-[#5c5c5c] hover:bg-gray-700 text-white px-8 py-2.5 text-sm font-medium transition-colors"
+                >
                   Click here
                 </Link>
               </div>
@@ -268,9 +362,14 @@ export default function IncubationPage() {
                   <Mail size={22} fill="currentColor" className="text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-[#ea3b3b] text-[15px]">Email Address</p>
+                  <p className="font-bold text-[#ea3b3b] text-[15px]">
+                    Email Address
+                  </p>
                   <div className="w-10 h-[2px] bg-yellow-400 mt-2 mb-3"></div>
-                  <a href="mailto:soe@babafaridgroup.edu.in" className="text-sm text-gray-500 font-medium hover:text-gray-900">
+                  <a
+                    href="mailto:soe@babafaridgroup.edu.in"
+                    className="text-sm text-gray-500 font-medium hover:text-gray-900"
+                  >
                     soe@babafaridgroup.edu.in
                   </a>
                 </div>
@@ -278,12 +377,21 @@ export default function IncubationPage() {
 
               <div className="flex items-start gap-6">
                 <div className="bg-[#ea3b3b] p-3.5 rounded-full text-white shrink-0 mt-1 shadow-sm">
-                  <Phone size={22} fill="currentColor" className="text-white border-0" />
+                  <Phone
+                    size={22}
+                    fill="currentColor"
+                    className="text-white border-0"
+                  />
                 </div>
                 <div>
-                  <p className="font-bold text-[#ea3b3b] text-[15px]">Call Us</p>
+                  <p className="font-bold text-[#ea3b3b] text-[15px]">
+                    Call Us
+                  </p>
                   <div className="w-10 h-[2px] bg-yellow-400 mt-2 mb-3"></div>
-                  <a href="tel:9501117069" className="text-sm text-gray-500 font-medium hover:text-gray-900">
+                  <a
+                    href="tel:9501117069"
+                    className="text-sm text-gray-500 font-medium hover:text-gray-900"
+                  >
                     9501117069
                   </a>
                 </div>
@@ -294,15 +402,19 @@ export default function IncubationPage() {
                   <FaLinkedin size={22} />
                 </div>
                 <div>
-                  <p className="font-bold text-[#ea3b3b] text-[15px]">Social Media</p>
+                  <p className="font-bold text-[#ea3b3b] text-[15px]">
+                    Social Media
+                  </p>
                   <div className="w-10 h-[2px] bg-yellow-400 mt-2 mb-3"></div>
-                  <a href="#" className="text-sm text-gray-500 font-medium hover:text-gray-900">
+                  <a
+                    href="#"
+                    className="text-sm text-gray-500 font-medium hover:text-gray-900"
+                  >
                     LinkedIn
                   </a>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>

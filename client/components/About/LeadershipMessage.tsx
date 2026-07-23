@@ -8,7 +8,10 @@ interface LeadershipMessageBlockProps {
   index: number;
 }
 
-export const LeadershipMessageBlock: React.FC<LeadershipMessageBlockProps> = ({ message, index }) => {
+export const LeadershipMessageBlock: React.FC<LeadershipMessageBlockProps> = ({
+  message,
+  index,
+}) => {
   const isEven = index % 2 === 0;
 
   return (
@@ -51,7 +54,10 @@ export const LeadershipMessageBlock: React.FC<LeadershipMessageBlockProps> = ({ 
 
         {/* Paragraphs */}
         {message.content.map((paragraph, pIdx) => (
-          <p key={pIdx} className="mb-3 sm:mb-4 text-gray-700 text-justify sm:text-left leading-relaxed">
+          <p
+            key={pIdx}
+            className="mb-3 sm:mb-4 text-gray-700 text-justify sm:text-left leading-relaxed"
+          >
             {paragraph}
           </p>
         ))}
@@ -61,9 +67,7 @@ export const LeadershipMessageBlock: React.FC<LeadershipMessageBlockProps> = ({ 
           <p className="font-bold text-gray-900 text-sm md:text-base">
             {message.name}
           </p>
-          <p className="text-gray-600 text-sm font-normal">
-            {message.role}
-          </p>
+          <p className="text-gray-600 text-sm font-normal">{message.role}</p>
         </div>
       </div>
     </div>
@@ -74,7 +78,9 @@ interface LeadershipMessagesSectionProps {
   messages: LeadershipMessage[];
 }
 
-export const LeadershipMessagesSection: React.FC<LeadershipMessagesSectionProps> = ({ messages }) => {
+export const LeadershipMessagesSection: React.FC<
+  LeadershipMessagesSectionProps
+> = ({ messages }) => {
   return (
     <section className="bg-white py-10 md:py-16 w-full">
       <div className="w-full px-4 md:px-8 lg:px-16 xl:px-32 max-w-7xl mx-auto space-y-10 md:space-y-14">

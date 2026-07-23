@@ -116,7 +116,8 @@ export default function EventDetailPage() {
             Event Not Found
           </h2>
           <p className="text-gray-600 mb-6 leading-relaxed">
-            The event you are looking for does not exist or may have been removed.
+            The event you are looking for does not exist or may have been
+            removed.
           </p>
           <button
             onClick={() => router.back()}
@@ -196,19 +197,33 @@ export default function EventDetailPage() {
               </h1>
               <div className="flex flex-col gap-3.5 mb-7">
                 <div className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
-                  <Calendar size={17} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={2} />
-                  <span>{startFull} {startTime}</span>
+                  <Calendar
+                    size={17}
+                    className="text-gray-400 mt-0.5 shrink-0"
+                    strokeWidth={2}
+                  />
+                  <span>
+                    {startFull} {startTime}
+                  </span>
                 </div>
                 <div className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
-                  <MapPin size={17} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={2} />
-                  <span className="whitespace-pre-line leading-snug">{event.place}</span>
+                  <MapPin
+                    size={17}
+                    className="text-gray-400 mt-0.5 shrink-0"
+                    strokeWidth={2}
+                  />
+                  <span className="whitespace-pre-line leading-snug">
+                    {event.place}
+                  </span>
                 </div>
               </div>
 
               <button
                 onClick={() => {
                   if (!isAuthenticated) {
-                    toast.error('Please make sure you are logged in to register.');
+                    toast.error(
+                      'Please make sure you are logged in to register.'
+                    );
                   } else {
                     setIsModalOpen(true);
                   }
@@ -217,10 +232,8 @@ export default function EventDetailPage() {
               >
                 Register Now
               </button>
-
             </div>
           </div>
-
         </div>
       </div>
 
@@ -239,7 +252,10 @@ export default function EventDetailPage() {
               </button>
             </div>
 
-            <form onSubmit={handleRegister} className="p-8 md:p-10 flex flex-col bg-white flex-1 overflow-y-auto max-h-[75vh]">
+            <form
+              onSubmit={handleRegister}
+              className="p-8 md:p-10 flex flex-col bg-white flex-1 overflow-y-auto max-h-[75vh]"
+            >
               <h3 className="text-[#85161a] text-[17px] font-normal tracking-wide mb-10 uppercase">
                 FILL DETAILS
               </h3>
@@ -247,7 +263,9 @@ export default function EventDetailPage() {
               <div className="flex flex-col gap-10">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end">
                   <div className="md:col-span-5 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Name <span className="text-gray-400">*</span></label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      Name <span className="text-gray-400">*</span>
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -258,8 +276,13 @@ export default function EventDetailPage() {
                   </div>
 
                   <div className="md:col-span-3 relative group">
-                    <label className="text-[#85161a] text-[14px] absolute -top-6 left-0 transition-colors">Country Code <span className="text-[#85161a]">*</span></label>
-                    <select name="countryCode" className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 cursor-pointer text-[15px]">
+                    <label className="text-[#85161a] text-[14px] absolute -top-6 left-0 transition-colors">
+                      Country Code <span className="text-[#85161a]">*</span>
+                    </label>
+                    <select
+                      name="countryCode"
+                      className="w-full py-1.5 border-b border-gray-200 bg-transparent text-gray-800 focus:outline-none focus:border-gray-400 cursor-pointer text-[15px]"
+                    >
                       <option value="+91">+91 India</option>
                       <option value="+1">+1 USA</option>
                       <option value="+44">+44 UK</option>
@@ -267,7 +290,9 @@ export default function EventDetailPage() {
                   </div>
 
                   <div className="md:col-span-4 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Contact No. <span className="text-gray-400">*</span></label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      Contact No. <span className="text-gray-400">*</span>
+                    </label>
                     <input
                       type="text"
                       name="contactNo"
@@ -278,7 +303,9 @@ export default function EventDetailPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end mt-2">
                   <div className="md:col-span-6 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Personal E-mail <span className="text-gray-400">*</span></label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      Personal E-mail <span className="text-gray-400">*</span>
+                    </label>
                     <input
                       type="email"
                       name="email"
@@ -289,7 +316,9 @@ export default function EventDetailPage() {
                   </div>
 
                   <div className="md:col-span-6 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">LinkedIn Profile URL</label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      LinkedIn Profile URL
+                    </label>
                     <input
                       type="url"
                       name="linkedInUrl"
@@ -300,7 +329,9 @@ export default function EventDetailPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-end mt-2">
                   <div className="md:col-span-7 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Company / College</label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      Company / College
+                    </label>
                     <input
                       type="text"
                       name="companyOrCollege"
@@ -310,7 +341,9 @@ export default function EventDetailPage() {
                   </div>
 
                   <div className="md:col-span-5 relative group">
-                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">Graduation Year (or Expected)</label>
+                    <label className="text-gray-400 text-[15px] absolute -top-6 left-0 transition-colors group-focus-within:text-gray-700">
+                      Graduation Year (or Expected)
+                    </label>
                     <input
                       type="text"
                       name="graduationYear"
