@@ -19,30 +19,32 @@ export const Chat: React.FC = () => {
   const userIdParam = searchParams.get('userId');
 
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [showMobileChatView, setShowMobileChatView] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [messagesLoading, setMessagesLoading] = useState(false);
 
   const handleSetActiveChatId = (id: number) => {
     setActiveChatId(id);
     setSearchParams({ userId: id.toString() });
+    setShowMobileChatView(true);
   };
 
-  // Auto-select chat from query params or first chat in list
   useEffect(() => {
     if (userIdParam) {
       const parsedId = parseInt(userIdParam, 10);
       if (!isNaN(parsedId) && parsedId !== activeChatId) {
         setActiveChatId(parsedId);
+        setShowMobileChatView(true);
         return;
       }
     }
 
     if (activeChatId === null && chats.length > 0) {
-      handleSetActiveChatId(chats[0].id);
+      setActiveChatId(chats[0].id);
+      // We don't call handleSetActiveChatId here to avoid triggering showMobileChatView on initial load
     }
   }, [userIdParam, chats.length]);
 
-  // Load message history when active chat changes
   useEffect(() => {
     if (activeChatId) {
       setMessagesLoading(true);
@@ -53,7 +55,9 @@ export const Chat: React.FC = () => {
     }
   }, [activeChatId]);
 
-  const activeChat: ChatType | undefined = chats.find(c => c.id === activeChatId);
+  const activeChat: ChatType | undefined = chats.find(
+    (c) => c.id === activeChatId
+  );
 
   const handleSend = async () => {
     if (activeChatId && newMessage.trim()) {
@@ -70,6 +74,7 @@ export const Chat: React.FC = () => {
         activeChatId={activeChatId}
         setActiveChatId={handleSetActiveChatId}
         isLoading={isLoading}
+        className={`${showMobileChatView ? 'hidden md:flex' : 'flex'} w-full md:w-80 shrink-0 bg-background border-r border-border/40 overflow-hidden flex-col h-full`}
       />
       <ChatArea
         activeChat={activeChat}
@@ -78,6 +83,11 @@ export const Chat: React.FC = () => {
         setNewMessage={setNewMessage}
         handleSend={handleSend}
         isLoading={isLoading || messagesLoading}
+        className={`${showMobileChatView ? 'flex' : 'hidden md:flex'} flex-1 bg-background overflow-hidden flex-col`}
+        onBack={() => {
+          setShowMobileChatView(false);
+          setSearchParams({});
+        }}
       />
     </div>
   );

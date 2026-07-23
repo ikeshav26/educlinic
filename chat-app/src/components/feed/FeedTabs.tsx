@@ -9,16 +9,31 @@ interface FeedTabsProps {
   onTabChange: (tab: FeedTab) => void;
 }
 
-export const FeedTabs: React.FC<FeedTabsProps> = ({ activeTab, onTabChange }) => {
+export const FeedTabs: React.FC<FeedTabsProps> = ({
+  activeTab,
+  onTabChange,
+}) => {
   const tabs: { id: FeedTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'relevant', label: 'Relevant', icon: <Sparkles className="h-4 w-4 mr-1.5 text-amber-500" /> },
-    { id: 'latest', label: 'Latest', icon: <Clock className="h-4 w-4 mr-1.5 text-blue-500" /> },
-    { id: 'top', label: 'Top', icon: <Flame className="h-4 w-4 mr-1.5 text-orange-500" /> },
+    {
+      id: 'relevant',
+      label: 'Relevant',
+      icon: <Sparkles className="h-4 w-4 mr-1.5 text-amber-500" />,
+    },
+    {
+      id: 'latest',
+      label: 'Latest',
+      icon: <Clock className="h-4 w-4 mr-1.5 text-blue-500" />,
+    },
+    {
+      id: 'top',
+      label: 'Top',
+      icon: <Flame className="h-4 w-4 mr-1.5 text-orange-500" />,
+    },
   ];
 
   return (
     <div className="flex items-center gap-1 sm:gap-2 border-b border-border/40 pb-2 mb-4">
-      {tabs.map(tab => (
+      {tabs.map((tab) => (
         <Button
           key={tab.id}
           variant="ghost"

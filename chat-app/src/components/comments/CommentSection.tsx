@@ -10,7 +10,7 @@ import { MessageSquare, ShieldAlert, Loader2 } from 'lucide-react';
 interface CommentSectionProps {
   postId: number;
   postOwnerId?: number;
-  comments: Comment[]; // maintained for compatibility but not primary source
+  comments: Comment[];
   commentsCount: number;
 }
 
@@ -23,24 +23,27 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 }) => {
   const { currentUser, addComment } = useStore();
   const [commentInput, setCommentInput] = useState('');
-  
+
   const [loadedComments, setLoadedComments] = useState<Comment[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
-  
+
   const observer = useRef<IntersectionObserver | null>(null);
-  const lastCommentElementRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore]);
+  const lastCommentElementRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   useEffect(() => {
     setLoadedComments([]);
@@ -53,12 +56,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     const fetchComments = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/posts/${postId}/comments?page=${page}&limit=10`, { credentials: 'include' });
+        const res = await fetch(
+          `${API_BASE}/posts/${postId}/comments?page=${page}&limit=10`,
+          { credentials: 'include' }
+        );
         if (res.ok) {
           const data = await res.json();
-          setLoadedComments(prev => {
-            const existingIds = new Set(prev.map(c => c.id));
-            const newComments = data.comments.filter((c: any) => !existingIds.has(c.id));
+          setLoadedComments((prev) => {
+            const existingIds = new Set(prev.map((c) => c.id));
+            const newComments = data.comments.filter(
+              (c: any) => !existingIds.has(c.id)
+            );
             return [...prev, ...newComments];
           });
           setHasMore(data.hasMore);
@@ -80,7 +88,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     if (commentInput.trim()) {
       const newComment = await addComment(postId, commentInput);
       if (newComment) {
-        setLoadedComments(prev => [newComment, ...prev]);
+        setLoadedComments((prev) => [newComment, ...prev]);
       }
       setCommentInput('');
     }
@@ -93,15 +101,22 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           <MessageSquare className="h-5 w-5 text-[#3b49df]" />
           <span>Top comments ({commentsCount})</span>
         </h2>
-        <a href="#code-of-conduct" className="text-xs text-muted-foreground hover:text-[#3b49df] flex items-center gap-1">
+        <a
+          href="#code-of-conduct"
+          className="text-xs text-muted-foreground hover:text-[#3b49df] flex items-center gap-1"
+        >
           <ShieldAlert className="h-3.5 w-3.5" /> Code of Conduct
         </a>
       </div>
 
       <div className="flex gap-3 sm:gap-4">
         <Avatar className="h-9 w-9 shrink-0 border border-border/60">
-          <AvatarImage src={getAvatarUrl(currentUser?.name, currentUser?.avatar)} />
-          <AvatarFallback>{currentUser?.name?.substring(0, 2) || 'ME'}</AvatarFallback>
+          <AvatarImage
+            src={getAvatarUrl(currentUser?.name, currentUser?.avatar)}
+          />
+          <AvatarFallback>
+            {currentUser?.name?.substring(0, 2) || 'ME'}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-3 min-w-0">
           <textarea
@@ -146,13 +161,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             );
           }
         })}
-        
+
         {loading && (
           <div className="flex justify-center py-6">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
-        
+
         {!initialLoad && loadedComments.length === 0 && (
           <div className="text-center text-muted-foreground py-8 text-sm bg-muted/20 rounded-md border border-dashed border-border/60">
             No comments yet. Be the first to share your thoughts!

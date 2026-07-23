@@ -14,39 +14,39 @@ export const leadershipMessages: LeadershipMessage[] = [
   {
     id: 'chairman-message',
     title: 'Message from the Chairman',
-    salutation: 'Respected Parents & Dear Students,',
+    salutation: 'Dear Alumni & Students,',
     name: 'Dr. Gurmeet Singh Dhaliwal',
     role: '(Chairman)',
     image: '/images/chairman.png',
     imageAlt: 'Dr. Gurmeet Singh Dhaliwal - Chairman BFGI',
     highlights: [
-      '30+ Years of Educational Excellence since 1994',
-      'Pioneering Education 4.0 & Experiential Learning',
-      'Transforming towards Multidisciplinary Baba Farid University'
+      'Bridging the Gap Between Alumni and Students',
+      'Fostering a Lifelong Community of Learning',
+      'Empowering Future Leaders through Shared Experiences',
     ],
     content: [
-      'It gives me immense pleasure to welcome you to the Baba Farid Group of Institutions (BFGI). From our humble beginnings in 1994 to the emergence of BFGI as a multidisciplinary academic ecosystem, our journey has been guided by the vision of empowering young minds through quality education, innovation, and societal development.',
-      'In response to the rapidly evolving global landscape, BFGI has embraced Education 4.0 with student-centric flipped classrooms, project-based learning, and cutting-edge research in Artificial Intelligence, IoT, and Extended Reality. Through our School of Skill Development and School of Entrepreneurship, we prepare students to become problem solvers, innovators, and responsible global citizens.',
-      'As we move forward into a transformative phase of establishing a multidisciplinary Baba Farid University, we remain committed to nurturing talent, character, and leadership. I warmly welcome all students and parents to join the BFGI family in shaping a future built on knowledge, innovation, and excellence.'
-    ]
+      'It gives me immense pleasure to welcome you to the Baba Farid Group of Institutions (BFGI) Alumni Portal. Our alumni are the true ambassadors of our institution, and this platform is dedicated to celebrating your achievements and maintaining our lifelong bond.',
+      'This portal serves as a vibrant bridge between our distinguished alumni and our ambitious current students. We believe that the wisdom and industry experience of our alumni can immensely benefit our students. Here, you can seamlessly connect, share your professional journeys, and mentor the next generation of leaders.',
+      'I strongly encourage our alumni to take the initiative in organizing events, webinars, and meetups through this platform, and I urge our students to actively attend them. Together, let us build a strong, collaborative community that drives innovation, excellence, and mutual growth.',
+    ],
   },
   {
     id: 'campus-director-message',
     title: 'Message from the Campus Director',
-    salutation: 'Dear Aspirants & Future Leaders,',
+    salutation: 'Dear BFGI Family,',
     name: 'Prof. (Dr.) M.P. Poonia',
     role: 'Campus Director',
     image: '/images/director.png',
     imageAlt: 'Prof. (Dr.) M.P. Poonia - Campus Director BFGI',
     highlights: [
-      'Holistic Academic & Professional Excellence',
-      '10 Pioneering Learning & Innovation Initiatives',
-      'Global Internships & Industry Immersion'
+      'Building a Strong Mentorship Network',
+      'Interactive Events and Knowledge Sharing',
+      'Global Industry Connections',
     ],
     content: [
-      'At BFGI, we are dedicated to producing future leaders and innovators poised to enact positive transformations on a global scale. Our vibrant campus, esteemed faculty, and cutting-edge facilities converge to foster an environment conducive to academic, professional, and personal excellence across engineering, management, healthcare, and emerging fields.',
-      'With a robust emphasis on experiential learning, industry immersion, and groundbreaking research, 10 pioneering initiatives have been launched to elevate BFGI to global standards. We empower students with abundant avenues for extracurricular pursuits, immersive internships, and global outreach programs.',
-      'I extend a warm invitation to all self-motivated aspirants to become integral members of our vibrant learning community. Embark on your journey of exploration, growth, and triumph today—your pathway to a promising future commences right here.'
-    ]
-  }
+      'At BFGI, our vision extends far beyond the classroom. We are deeply committed to producing future innovators and leaders, and our alumni network is the cornerstone of this mission. This Alumni Portal is designed to foster meaningful interactions and professional networking.',
+      'We have created this platform so that students can directly learn from the real-world experiences of those who once walked these same halls. Whether it is through organizing insightful events, offering career guidance, or simply sharing a success story, our alumni play a pivotal role in shaping the careers of our students.',
+      'I invite all our alumni and students to actively engage with this platform. Host events, participate in discussions, and forge connections that will last a lifetime. Your journey with BFGI does not end at graduation—it simply evolves into a new, impactful chapter.',
+    ],
+  },
 ];

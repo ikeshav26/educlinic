@@ -10,7 +10,6 @@ import {
 
 const router: Router = Router();
 
-
 router.post('/', authMiddleware(), followUser);
 router.delete('/', authMiddleware(), unfollowUser);
 router.get('/:userId/followers', authMiddleware(), getFollowers);

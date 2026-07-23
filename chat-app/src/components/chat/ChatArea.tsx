@@ -2,7 +2,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Send, MessageSquare, Paperclip, Search, MoreVertical, Loader2, X, Check, Edit2, Ban, Trash2 } from 'lucide-react';
+import {
+  Send,
+  MessageSquare,
+  Paperclip,
+  Search,
+  MoreVertical,
+  Loader2,
+  X,
+  Check,
+  Edit2,
+  Ban,
+  Trash2,
+  ArrowLeft,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import type { Chat, User, Message } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
@@ -18,6 +31,8 @@ interface ChatAreaProps {
   setNewMessage: (msg: string) => void;
   handleSend: () => void;
   isLoading?: boolean;
+  className?: string;
+  onBack?: () => void;
 }
 
 export const formatDividerDate = (dateStr: string) => {
@@ -28,10 +43,19 @@ export const formatDividerDate = (dateStr: string) => {
 
   if (diffDays === 0 && now.getDate() === date.getDate()) {
     return 'TODAY';
-  } else if (diffDays === 1 || (diffDays === 0 && now.getDate() !== date.getDate())) {
+  } else if (
+    diffDays === 1 ||
+    (diffDays === 0 && now.getDate() !== date.getDate())
+  ) {
     return 'YESTERDAY';
   } else {
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+    return date
+      .toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+      .toUpperCase();
   }
 };
 
@@ -42,35 +66,58 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   setNewMessage,
   handleSend,
   isLoading,
+  className,
+  onBack,
 }) => {
-  const { fetchMessagesWithUser, editMessage, unblockUser, blockUser, clearChat, fetchFollowCounts, toggleFollow, latestFollowUpdate } = useStore();
+  const {
+    fetchMessagesWithUser,
+    editMessage,
+    unblockUser,
+    blockUser,
+    clearChat,
+    fetchFollowCounts,
+    toggleFollow,
+    latestFollowUpdate,
+  } = useStore();
   const observerTarget = useRef<HTMLDivElement>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  const [followStatus, setFollowStatus] = useState<{ isFollowing: boolean; isFollowingMe: boolean } | null>(null);
+  const [followStatus, setFollowStatus] = useState<{
+    isFollowing: boolean;
+    isFollowingMe: boolean;
+  } | null>(null);
   const [isTogglingFollow, setIsTogglingFollow] = useState(false);
 
   useEffect(() => {
     if (activeChat?.participant.id) {
       setFollowStatus(null);
-      fetchFollowCounts(activeChat.participant.id).then(res => {
-        setFollowStatus({ isFollowing: res.isFollowing, isFollowingMe: res.isFollowingMe });
+      fetchFollowCounts(activeChat.participant.id).then((res) => {
+        setFollowStatus({
+          isFollowing: res.isFollowing,
+          isFollowingMe: res.isFollowingMe,
+        });
       });
     }
   }, [activeChat?.participant.id, fetchFollowCounts]);
 
   useEffect(() => {
     if (latestFollowUpdate && activeChat?.participant.id) {
-      if (latestFollowUpdate.followerId === activeChat.participant.id && latestFollowUpdate.followingId === currentUser?.id) {
-        setFollowStatus(prev => ({
+      if (
+        latestFollowUpdate.followerId === activeChat.participant.id &&
+        latestFollowUpdate.followingId === currentUser?.id
+      ) {
+        setFollowStatus((prev) => ({
           isFollowing: prev?.isFollowing ?? false,
-          isFollowingMe: latestFollowUpdate.isFollowing
+          isFollowingMe: latestFollowUpdate.isFollowing,
         }));
       }
-      if (latestFollowUpdate.followerId === currentUser?.id && latestFollowUpdate.followingId === activeChat.participant.id) {
-        setFollowStatus(prev => ({
+      if (
+        latestFollowUpdate.followerId === currentUser?.id &&
+        latestFollowUpdate.followingId === activeChat.participant.id
+      ) {
+        setFollowStatus((prev) => ({
           isFollowing: latestFollowUpdate.isFollowing,
-          isFollowingMe: prev?.isFollowingMe ?? false
+          isFollowingMe: prev?.isFollowingMe ?? false,
         }));
       }
     }
@@ -82,7 +129,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     try {
       await toggleFollow(activeChat.participant.id, followStatus.isFollowing);
       const updatedStatus = await fetchFollowCounts(activeChat.participant.id);
-      setFollowStatus({ isFollowing: updatedStatus.isFollowing, isFollowingMe: updatedStatus.isFollowingMe });
+      setFollowStatus({
+        isFollowing: updatedStatus.isFollowing,
+        isFollowingMe: updatedStatus.isFollowingMe,
+      });
     } finally {
       setIsTogglingFollow(false);
     }
@@ -97,7 +147,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -127,12 +180,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && activeChat?.nextCursor && !isFetchingMore) {
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          activeChat?.nextCursor &&
+          !isFetchingMore
+        ) {
           setIsFetchingMore(true);
-          fetchMessagesWithUser(activeChat.id, activeChat.nextCursor).finally(() => {
-            setIsFetchingMore(false);
-          });
+          fetchMessagesWithUser(activeChat.id, activeChat.nextCursor).finally(
+            () => {
+              setIsFetchingMore(false);
+            }
+          );
         }
       },
       { threshold: 0.1 }
@@ -148,17 +207,21 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         observer.unobserve(currentTarget);
       }
     };
-  }, [activeChat?.nextCursor, activeChat?.id, isFetchingMore, fetchMessagesWithUser]);
+  }, [
+    activeChat?.nextCursor,
+    activeChat?.id,
+    isFetchingMore,
+    fetchMessagesWithUser,
+  ]);
 
   const groupedMessages: { date: string; messages: Message[] }[] = [];
   if (activeChat) {
     let currentDate = '';
-    // Filter messages based on search query
-    const filteredMessages = activeChat.messages.filter(msg =>
+    const filteredMessages = activeChat.messages.filter((msg) =>
       msg.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    filteredMessages.forEach(msg => {
+    filteredMessages.forEach((msg) => {
       const msgDate = new Date(msg.createdAt).toDateString();
       if (msgDate !== currentDate) {
         currentDate = msgDate;
@@ -171,7 +234,12 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+      <div
+        className={
+          className ||
+          'flex-1 flex flex-col h-full bg-background overflow-hidden relative'
+        }
+      >
         <div className="p-4 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-full shrink-0" />
@@ -202,33 +270,65 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   }
 
   return (
-    <div className="flex-1 bg-background overflow-hidden flex flex-col">
+    <div
+      className={
+        className || 'flex-1 bg-background overflow-hidden flex flex-col'
+      }
+    >
       {activeChat ? (
         <>
           <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between bg-background z-10">
-            <div 
+            <div
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => navigate(`/profile?id=${activeChat.participant.id}`)}
+              onClick={() =>
+                navigate(`/profile?id=${activeChat.participant.id}`)
+              }
             >
+              {onBack && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBack();
+                  }}
+                  className="md:hidden mr-1 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
               <Avatar className="h-10 w-10">
-                <AvatarImage src={getAvatarUrl(activeChat.participant.name, activeChat.participant.avatar)} />
-                <AvatarFallback className="font-semibold bg-muted">{activeChat.participant.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage
+                  src={getAvatarUrl(
+                    activeChat.participant.name,
+                    activeChat.participant.avatar
+                  )}
+                />
+                <AvatarFallback className="font-semibold bg-muted">
+                  {activeChat.participant.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <span className="font-semibold text-base text-foreground hover:text-[#3b49df] transition-colors">{activeChat.participant.name}</span>
+                <span className="font-semibold text-base text-foreground hover:text-[#3b49df] transition-colors">
+                  {activeChat.participant.name}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4 text-muted-foreground">
               {followStatus && (
                 <Button
-                  variant={followStatus.isFollowing ? "secondary" : "default"}
+                  variant={followStatus.isFollowing ? 'secondary' : 'default'}
                   size="sm"
                   onClick={handleToggleFollow}
                   disabled={isTogglingFollow}
                   className="hidden sm:flex h-8 w-[100px] text-xs rounded-full font-medium"
                 >
-                  {isTogglingFollow ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    followStatus.isFollowing ? 'Following' : followStatus.isFollowingMe ? 'Follow Back' : 'Follow'
+                  {isTogglingFollow ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : followStatus.isFollowing ? (
+                    'Following'
+                  ) : followStatus.isFollowingMe ? (
+                    'Follow Back'
+                  ) : (
+                    'Follow'
                   )}
                 </Button>
               )}
@@ -243,14 +343,28 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="ml-1 hover:text-foreground">
+                  <button
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="ml-1 hover:text-foreground"
+                  >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
-                <button onClick={() => setIsSearchOpen(true)} className="hover:text-foreground transition-colors flex items-center justify-center"><Search className="h-5 w-5" /></button>
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="hover:text-foreground transition-colors flex items-center justify-center"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
               )}
-              <div className="relative flex items-center justify-center" ref={dropdownRef}>
+              <div
+                className="relative flex items-center justify-center"
+                ref={dropdownRef}
+              >
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="hover:text-foreground transition-colors flex items-center justify-center"
@@ -293,7 +407,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             ) : (
               groupedMessages.map((group, groupIdx) => (
                 <div key={groupIdx} className="flex flex-col-reverse gap-1">
-                  {group.messages.map(msg => (
+                  {group.messages.map((msg) => (
                     <ChatMessage
                       key={msg.id}
                       message={msg}
@@ -311,7 +425,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             )}
 
             {activeChat.nextCursor && (
-              <div ref={observerTarget} className="py-4 flex justify-center w-full shrink-0">
+              <div
+                ref={observerTarget}
+                className="py-4 flex justify-center w-full shrink-0"
+              >
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             )}
@@ -334,9 +451,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               </div>
             ) : !followStatus ? (
               <div className="flex-1 flex items-center justify-center h-12">
-                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ) : (!followStatus.isFollowing || !followStatus.isFollowingMe) ? (
+            ) : !followStatus.isFollowing || !followStatus.isFollowingMe ? (
               <div className="flex-1 flex items-center justify-center h-12 bg-muted/30 border border-border/50 rounded-full text-sm font-medium text-muted-foreground">
                 Both users must follow each other to chat.
               </div>
@@ -344,8 +461,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               <>
                 {editingMessageId && (
                   <div className="flex items-center justify-between bg-muted/30 px-4 py-2 rounded-lg text-sm text-muted-foreground">
-                    <span className="flex items-center gap-2"><Edit2 className="h-4 w-4" /> Editing message</span>
-                    <button onClick={cancelEdit} className="hover:text-foreground"><X className="h-4 w-4" /></button>
+                    <span className="flex items-center gap-2">
+                      <Edit2 className="h-4 w-4" /> Editing message
+                    </span>
+                    <button
+                      onClick={cancelEdit}
+                      className="hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 )}
                 <div className="flex-1 relative flex items-center">
@@ -356,8 +480,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     placeholder="Message"
                     className="h-12 pl-12 pr-12 text-sm bg-background border border-border/50 rounded-full shadow-sm focus-visible:ring-1 focus-visible:ring-border w-full"
                     value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={e => {
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') onSendWrapper();
                     }}
                   />
@@ -366,7 +490,11 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     disabled={!newMessage.trim()}
                     className="absolute right-4 text-muted-foreground hover:text-[#3b82f6] transition-colors disabled:opacity-50 disabled:hover:text-muted-foreground z-10"
                   >
-                    {editingMessageId ? <Check className="h-5 w-5 text-emerald-500" /> : <Send className="h-5 w-5" />}
+                    {editingMessageId ? (
+                      <Check className="h-5 w-5 text-emerald-500" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </>
@@ -376,7 +504,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6">
           <MessageSquare className="h-12 w-12 mb-4 text-muted-foreground/30" />
-          <p className="text-base font-medium">Select a chat to start messaging</p>
+          <p className="text-base font-medium">
+            Select a chat to start messaging
+          </p>
         </div>
       )}
     </div>

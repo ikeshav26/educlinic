@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X, PlayCircle, PauseCircle } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  PlayCircle,
+  PauseCircle,
+} from 'lucide-react';
 
 interface LightboxGalleryProps {
   images: string[];
@@ -14,11 +20,15 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleNext = useCallback(() => {
-    setSelectedIndex((prev) => (prev === null ? null : prev === images.length - 1 ? 0 : prev + 1));
+    setSelectedIndex((prev) =>
+      prev === null ? null : prev === images.length - 1 ? 0 : prev + 1
+    );
   }, [images.length]);
 
   const handlePrev = useCallback(() => {
-    setSelectedIndex((prev) => (prev === null ? null : prev === 0 ? images.length - 1 : prev - 1));
+    setSelectedIndex((prev) =>
+      prev === null ? null : prev === 0 ? images.length - 1 : prev - 1
+    );
   }, [images.length]);
 
   const openModal = (index: number) => {
@@ -54,7 +64,11 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
   }, [isPlaying, selectedIndex, handleNext]);
 
   if (!images || images.length === 0) {
-    return <div className="text-gray-500 text-center py-8">No images available in this gallery.</div>;
+    return (
+      <div className="text-gray-500 text-center py-8">
+        No images available in this gallery.
+      </div>
+    );
   }
 
   return (
@@ -63,14 +77,14 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
         {images.map((src, index) => (
           <div
             key={index}
-            className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.67rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] relative aspect-[4/3] group cursor-pointer overflow-hidden rounded-md border-[3px] border-[#b91c1c] shadow-lg hover:shadow-2xl transition-all duration-300"
             onClick={() => openModal(index)}
+            className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.67rem)] md:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.125rem)] relative aspect-[4/3] group cursor-pointer overflow-hidden rounded-md border-[3px] border-[#b91c1c] shadow-lg hover:shadow-2xl transition-all duration-300"
           >
             <Image
               src={src}
               alt={`Gallery Image ${index + 1}`}
               fill
-              className="object-cover transition-transform duration-500"
+              className="object-cover transition-transform duration-500 hover:scale-105"
             />
           </div>
         ))}
@@ -86,7 +100,10 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={(e) => { e.stopPropagation(); closeModal(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                closeModal();
+              }}
               className="absolute top-4 right-4 z-[100] bg-black/50 cursor-pointer text-white p-2 rounded-full backdrop-blur-sm transition-colors hover:bg-[#b91c1c]"
               title="Close Modal"
             >
@@ -106,11 +123,18 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
             <div className="w-full h-14 bg-white flex items-center justify-between px-6 border-t border-gray-100">
               <div className="flex items-center gap-3 text-gray-600">
                 <button
-                  onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPlaying(!isPlaying);
+                  }}
                   className="hover:text-[#b91c1c] transition-colors flex items-center"
-                  title={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
+                  title={isPlaying ? 'Pause Slideshow' : 'Play Slideshow'}
                 >
-                  {isPlaying ? <PauseCircle size={20} strokeWidth={2} /> : <PlayCircle size={20} strokeWidth={2} />}
+                  {isPlaying ? (
+                    <PauseCircle size={20} strokeWidth={2} />
+                  ) : (
+                    <PlayCircle size={20} strokeWidth={2} />
+                  )}
                 </button>
                 <div className="text-sm font-semibold tracking-wide text-gray-500">
                   {selectedIndex + 1} / {images.length}
@@ -118,7 +142,10 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
               </div>
 
               <button
-                onClick={(e) => { e.stopPropagation(); closeModal(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeModal();
+                }}
                 className="flex items-center gap-1.5 bg-gray-400 cursor-pointer hover:bg-[#b91c1c] text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider transition-colors"
               >
                 CLOSE <X size={14} strokeWidth={3} />
@@ -127,14 +154,20 @@ export default function LightboxGallery({ images }: LightboxGalleryProps) {
           </div>
 
           <button
-            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
             className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-[#b91c1c] text-white p-2 md:p-3 rounded-full transition-colors z-50"
           >
             <ChevronLeft size={32} />
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
             className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-[#b91c1c] text-white p-2 md:p-3 rounded-full transition-colors z-50"
           >
             <ChevronRight size={32} />

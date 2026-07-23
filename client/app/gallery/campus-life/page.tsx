@@ -5,7 +5,10 @@ import Image from 'next/image';
 import LightboxGallery from '@/components/Gallery/LightboxGallery';
 
 export default function CampusLifeGallery() {
-  const images = Array.from({ length: 30 }, (_, i) => `/gallery/campus-life/${i + 1}.jpg`);
+  const images = Array.from(
+    { length: 30 },
+    (_, i) => `/gallery/campus-life/${i + 1}.jpg`
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -18,8 +21,7 @@ export default function CampusLifeGallery() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
-        <div className="absolute inset-0 flex items-center container mx-auto px-4 md:px-8 max-w-7xl">
-        </div>
+        <div className="absolute inset-0 flex items-center container mx-auto px-4 md:px-8 max-w-7xl"></div>
       </div>
 
       <section className="py-16">

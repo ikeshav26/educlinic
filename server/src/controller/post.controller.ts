@@ -21,7 +21,12 @@ export const createPost = async (
 
     let finalContent = content;
     if (tags && Array.isArray(tags) && tags.length > 0) {
-      const tagString = tags.map((t: string) => `<span class="text-[#3b49df] bg-[#3b49df]/10 px-2 py-0.5 rounded font-mono font-medium">#${t}</span>`).join(' ');
+      const tagString = tags
+        .map(
+          (t: string) =>
+            `<span class="text-[#3b49df] bg-[#3b49df]/10 px-2 py-0.5 rounded font-mono font-medium">#${t}</span>`
+        )
+        .join(' ');
       finalContent = `${content}\n\n<div class="mt-4 flex gap-2">${tagString}</div>`;
     }
 
@@ -66,23 +71,26 @@ export const getAllPosts = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const page = parseInt(req.query.page as string || '1');
-    const limit = parseInt(req.query.limit as string || '20');
+    const page = parseInt((req.query.page as string) || '1');
+    const limit = parseInt((req.query.limit as string) || '20');
     const skip = (page - 1) * limit;
-    const authorId = req.query.authorId ? parseInt(req.query.authorId as string) : undefined;
+    const authorId = req.query.authorId
+      ? parseInt(req.query.authorId as string)
+      : undefined;
     const tag = req.query.tag as string | undefined;
     const search = req.query.search as string | undefined;
     const sortBy = req.query.sortBy as string | undefined;
 
     const AND: any[] = [];
     if (authorId) AND.push({ createdById: authorId });
-    if (tag) AND.push({ content: { contains: `#${tag}`, mode: 'insensitive' } });
+    if (tag)
+      AND.push({ content: { contains: `#${tag}`, mode: 'insensitive' } });
     if (search) {
       AND.push({
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } }
-        ]
+          { content: { contains: search, mode: 'insensitive' } },
+        ],
       });
     }
 
@@ -92,8 +100,8 @@ export const getAllPosts = async (
     if (sortBy === 'likes') {
       orderByClause = {
         likes: {
-          _count: 'desc'
-        }
+          _count: 'desc',
+        },
       };
     }
 
@@ -117,7 +125,7 @@ export const getAllPosts = async (
           }),
         },
       }),
-      prisma.post.count({ where: whereClause })
+      prisma.post.count({ where: whereClause }),
     ]);
 
     const formattedPosts = posts.map((post) => ({
@@ -132,7 +140,7 @@ export const getAllPosts = async (
       page,
       limit,
       total,
-      hasMore: skip + posts.length < total
+      hasMore: skip + posts.length < total,
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -167,7 +175,6 @@ export const getPostById = async (
             where: { userId },
           },
         }),
-
       },
     });
 
@@ -290,8 +297,8 @@ export const getPostComments = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const page = parseInt(req.query.page as string || '1');
-    const limit = parseInt(req.query.limit as string || '5');
+    const page = parseInt((req.query.page as string) || '1');
+    const limit = parseInt((req.query.limit as string) || '5');
     const skip = (page - 1) * limit;
     const userId = req.user?.id;
 
@@ -321,7 +328,7 @@ export const getPostComments = async (
       }),
     ]);
 
-    const formattedComments = comments.map(c => ({
+    const formattedComments = comments.map((c) => ({
       ...c,
       isLiked: userId ? c.likes && c.likes.length > 0 : false,
       likes: undefined,
@@ -347,8 +354,8 @@ export const getCommentReplies = async (
 ): Promise<void> => {
   try {
     const { commentId } = req.params;
-    const page = parseInt(req.query.page as string || '1');
-    const limit = parseInt(req.query.limit as string || '5');
+    const page = parseInt((req.query.page as string) || '1');
+    const limit = parseInt((req.query.limit as string) || '5');
     const skip = (page - 1) * limit;
     const userId = req.user?.id;
 
@@ -378,7 +385,7 @@ export const getCommentReplies = async (
       }),
     ]);
 
-    const formattedReplies = replies.map(r => ({
+    const formattedReplies = replies.map((r) => ({
       ...r,
       isLiked: userId ? r.likes && r.likes.length > 0 : false,
       likes: undefined,
@@ -511,7 +518,9 @@ export const deleteComment = async (
     }
 
     if (comment.authorId !== userId && comment.post.createdById !== userId) {
-      res.status(403).json({ message: 'You do not have permission to delete this comment' });
+      res
+        .status(403)
+        .json({ message: 'You do not have permission to delete this comment' });
       return;
     }
 
@@ -556,7 +565,9 @@ export const deletePost = async (
     }
 
     if (post.createdById !== userId) {
-      res.status(403).json({ message: 'You do not have permission to delete this post' });
+      res
+        .status(403)
+        .json({ message: 'You do not have permission to delete this post' });
       return;
     }
 
@@ -570,4 +581,3 @@ export const deletePost = async (
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-

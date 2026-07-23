@@ -8,7 +8,7 @@ export const getSocket = (): Socket => {
   if (!socket) {
     socket = io(SOCKET_URL, {
       withCredentials: true,
-      autoConnect: false, // will connect explicitly when user is authenticated
+      autoConnect: false,
     });
   }
   return socket;

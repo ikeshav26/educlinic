@@ -16,8 +16,7 @@ export default function EventsGallery() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
-        <div className="absolute inset-0 flex items-center container mx-auto px-4 md:px-8 max-w-7xl">
-        </div>
+        <div className="absolute inset-0 flex items-center container mx-auto px-4 md:px-8 max-w-7xl"></div>
       </div>
 
       <section className="py-16">
@@ -37,7 +36,6 @@ export default function EventsGallery() {
                   />
                 </div>
                 <div className="p-6 sm:p-8 flex flex-col justify-between w-full sm:w-2/3 relative">
-
                   <div className="mb-6">
                     <h3 className="text-xl sm:text-2xl font-bold text-[#1e293b] sm:pr-8 mb-4 leading-snug">
                       {album.title}
@@ -62,7 +60,6 @@ export default function EventsGallery() {
               </div>
             ))}
           </div>
-
         </div>
       </section>
     </div>

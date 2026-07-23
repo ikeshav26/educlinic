@@ -18,7 +18,11 @@ interface EditProfileModalProps {
   user: User;
 }
 
-export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onOpenChange, user }) => {
+export const EditProfileModal: React.FC<EditProfileModalProps> = ({
+  isOpen,
+  onOpenChange,
+  user,
+}) => {
   const { updateProfile } = useStore();
   const [name, setName] = useState(user.name || '');
   const [bio, setBio] = useState(user.bio || '');
@@ -85,7 +89,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onOp
             />
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

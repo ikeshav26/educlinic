@@ -32,8 +32,12 @@ export const PostAuthorCard: React.FC<PostAuthorCardProps> = ({
             className="relative z-10 h-16 w-16 border-4 border-card bg-card shadow-xs cursor-pointer"
             onClick={() => navigate('/profile')}
           >
-            <AvatarImage src={getAvatarUrl(authorUser?.name, authorUser?.avatar)} />
-            <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DEV'}</AvatarFallback>
+            <AvatarImage
+              src={getAvatarUrl(authorUser?.name, authorUser?.avatar)}
+            />
+            <AvatarFallback>
+              {authorUser?.name?.substring(0, 2) || 'DEV'}
+            </AvatarFallback>
           </Avatar>
           <h3
             className="font-bold text-xl text-foreground hover:text-[#3b49df] cursor-pointer transition-colors pb-0.5"
@@ -47,12 +51,20 @@ export const PostAuthorCard: React.FC<PostAuthorCardProps> = ({
           <Button
             onClick={onFollowToggle}
             disabled={followLoading}
-            className={`w-full font-medium mb-4 rounded-md ${isFollowing
-              ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-              : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
-              }`}
+            className={`w-full font-medium mb-4 rounded-md ${
+              isFollowing
+                ? 'bg-muted text-foreground border border-border/80 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
+            }`}
           >
-            {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
+            {isFollowing ? (
+              <>
+                <UserCheck className="h-4 w-4 mr-1" />
+                Following
+              </>
+            ) : (
+              'Follow'
+            )}
           </Button>
         )}
 
@@ -63,7 +75,15 @@ export const PostAuthorCard: React.FC<PostAuthorCardProps> = ({
         <div className="space-y-2 text-xs text-muted-foreground border-t border-border/40 pt-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5" />
-            <span>Joined BFGI network on {(authorUser as any)?.createdAt ? new Date((authorUser as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Jan 15, 2024'}</span>
+            <span>
+              Joined BFGI network on{' '}
+              {(authorUser as any)?.createdAt
+                ? new Date((authorUser as any).createdAt).toLocaleDateString(
+                    'en-US',
+                    { month: 'short', day: 'numeric', year: 'numeric' }
+                  )
+                : 'Jan 15, 2024'}
+            </span>
           </div>
         </div>
       </div>

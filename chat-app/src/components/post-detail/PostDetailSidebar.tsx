@@ -27,21 +27,27 @@ export const PostDetailSidebar: React.FC<PostDetailSidebarProps> = ({
   return (
     <>
       <aside className="hidden lg:flex flex-col items-center gap-6 w-14 shrink-0 pt-6 sticky top-16 self-start max-h-[calc(100vh-4.5rem)] overflow-y-auto text-muted-foreground [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {/* Like */}
         <button
           onClick={onLike}
           className="flex flex-col items-center gap-1 group cursor-pointer"
           title="Like post"
         >
-          <div className={`p-3 rounded-full transition-colors ${isLiked ? 'bg-red-500/10 text-red-500' : 'hover:bg-muted group-hover:text-red-500'}`}>
-            <Heart className={`h-6 w-6 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+          <div
+            className={`p-3 rounded-full transition-colors ${isLiked ? 'bg-red-500/10 text-red-500' : 'hover:bg-muted group-hover:text-red-500'}`}
+          >
+            <Heart
+              className={`h-6 w-6 ${isLiked ? 'fill-red-500 text-red-500' : ''}`}
+            />
           </div>
           <span className="text-xs font-semibold">{likesCount}</span>
         </button>
 
-        {/* Comment */}
         <button
-          onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
+          onClick={() =>
+            document
+              .getElementById('comments')
+              ?.scrollIntoView({ behavior: 'smooth' })
+          }
           className="flex flex-col items-center gap-1 group cursor-pointer"
           title="Jump to comments"
         >
@@ -51,7 +57,6 @@ export const PostDetailSidebar: React.FC<PostDetailSidebarProps> = ({
           <span className="text-xs font-semibold">{commentsCount}</span>
         </button>
 
-        {/* Share */}
         <button
           onClick={handleShare}
           className="flex flex-col items-center gap-1 group cursor-pointer"

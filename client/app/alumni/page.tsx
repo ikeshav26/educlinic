@@ -13,7 +13,9 @@ const AlumniPage = () => {
     if (isAuthenticated) {
       window.location.href = 'http://localhost:5173';
     } else {
-      toast.error('Login first to connect with Alumni', { toastId: 'alumni-login-error' });
+      toast.error('Login first to connect with Alumni', {
+        toastId: 'alumni-login-error',
+      });
       router.push('/');
     }
   }, [isAuthenticated, router]);
@@ -26,4 +28,3 @@ const AlumniPage = () => {
 };
 
 export default AlumniPage;
-

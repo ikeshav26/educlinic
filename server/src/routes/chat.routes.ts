@@ -12,7 +12,6 @@ import {
 
 const router: Router = Router();
 
-// Protect all chat routes with authentication middleware
 router.use(authMiddleware());
 
 router.get('/conversations', getConversations);

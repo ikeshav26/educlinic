@@ -18,9 +18,12 @@ export const useUserStore = create<UserStore>()((set) => ({
   setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
   fetchUser: async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+        {
+          withCredentials: true,
+        }
+      );
       set({ user: res.data.user, isAuthenticated: true });
     } catch (err) {
       set({ user: null, isAuthenticated: false });

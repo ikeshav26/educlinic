@@ -7,7 +7,10 @@ interface PostEditorProps {
   onChange: (val: string) => void;
 }
 
-export const PostEditor: React.FC<PostEditorProps> = ({ content, onChange }) => {
+export const PostEditor: React.FC<PostEditorProps> = ({
+  content,
+  onChange,
+}) => {
   const quillRef = useRef<ReactQuill>(null);
 
   const imageHandler = () => {
@@ -25,15 +28,16 @@ export const PostEditor: React.FC<PostEditorProps> = ({ content, onChange }) => 
       reader.onload = async () => {
         const base64Image = reader.result as string;
         try {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+          const apiUrl =
+            import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
           const response = await fetch(`${apiUrl}/posts/upload`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+              Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
             },
             credentials: 'include',
-            body: JSON.stringify({ image: base64Image })
+            body: JSON.stringify({ image: base64Image }),
           });
 
           if (!response.ok) throw new Error('Upload failed');
@@ -54,18 +58,21 @@ export const PostEditor: React.FC<PostEditorProps> = ({ content, onChange }) => 
     };
   };
 
-  const modules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ 'header': [2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        ['link', 'image'],
-        ['clean']
-      ],
-      handlers: { image: imageHandler }
-    }
-  }), []);
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ header: [2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link', 'image'],
+          ['clean'],
+        ],
+        handlers: { image: imageHandler },
+      },
+    }),
+    []
+  );
 
   return (
     <div className="mt-4 mb-8">

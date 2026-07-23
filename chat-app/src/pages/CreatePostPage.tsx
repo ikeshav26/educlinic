@@ -17,16 +17,34 @@ export const CreatePostPage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const predefinedTags = [
-    'campus', 'events', 'coding', 'sports', 'placements', 
-    'hackathon', 'clubs', 'interview', 'experience', 'roadmap', 
-    'information', 'ai', 'discussions', 'projects', 'internships', 
-    'research', 'opportunities', 'help', 'announcements'
+    'campus',
+    'events',
+    'coding',
+    'sports',
+    'placements',
+    'hackathon',
+    'clubs',
+    'interview',
+    'experience',
+    'roadmap',
+    'information',
+    'ai',
+    'discussions',
+    'projects',
+    'internships',
+    'research',
+    'opportunities',
+    'help',
+    'announcements',
   ];
 
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : 
-      prev.length < 4 ? [...prev, tag] : prev
+    setSelectedTags((prev) =>
+      prev.includes(tag)
+        ? prev.filter((t) => t !== tag)
+        : prev.length < 4
+          ? [...prev, tag]
+          : prev
     );
   };
 
@@ -49,7 +67,9 @@ export const CreatePostPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto py-4 space-y-4">
       <div className="flex items-center justify-between bg-card border border-border/80 rounded-md p-3 px-4 shadow-2xs">
-        <span className="font-bold text-lg text-foreground">Create Article</span>
+        <span className="font-bold text-lg text-foreground">
+          Create Article
+        </span>
         <Button
           variant="ghost"
           size="icon"
@@ -75,9 +95,11 @@ export const CreatePostPage: React.FC = () => {
         />
 
         <div className="border-b border-border/40 pb-4 space-y-2">
-          <p className="text-sm font-medium text-foreground">Select up to 4 tags:</p>
+          <p className="text-sm font-medium text-foreground">
+            Select up to 4 tags:
+          </p>
           <div className="flex flex-wrap gap-2">
-            {predefinedTags.map(tag => {
+            {predefinedTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <button
@@ -85,8 +107,8 @@ export const CreatePostPage: React.FC = () => {
                   onClick={() => toggleTag(tag)}
                   disabled={!isSelected && selectedTags.length >= 4}
                   className={`text-xs px-3 py-1.5 rounded-full font-mono transition-colors ${
-                    isSelected 
-                      ? 'bg-[#3b49df] text-white' 
+                    isSelected
+                      ? 'bg-[#3b49df] text-white'
                       : 'bg-muted hover:bg-muted/80 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed'
                   }`}
                 >
@@ -112,7 +134,12 @@ export const CreatePostPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { setTitle(''); setContent(''); setCoverImage(''); setSelectedTags([]); }}
+            onClick={() => {
+              setTitle('');
+              setContent('');
+              setCoverImage('');
+              setSelectedTags([]);
+            }}
             className="text-muted-foreground"
           >
             Revert changes

@@ -30,4 +30,3 @@ startAllServices().then(() => {
     console.log(`Server and Socket.IO running on port ${env.PORT}`);
   });
 });
-

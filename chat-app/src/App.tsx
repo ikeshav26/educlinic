@@ -13,6 +13,7 @@ import { ConnectPage } from './pages/ConnectPage';
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 
 const Layout = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const location = useLocation();
   const isCreatePost = location.pathname === '/create-post';
   const isPostDetail = location.pathname.startsWith('/post/');
@@ -20,14 +21,20 @@ const Layout = () => {
   const isConnect = location.pathname === '/connect';
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-clip flex flex-col font-sans">
-      <Navbar />
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <Navbar onMenuClick={() => setIsMobileMenuOpen(true)} />
 
       <div className="container mx-auto max-w-[1280px] px-2 sm:px-4 py-4 flex-1 flex justify-center gap-4">
-        {!isCreatePost && !isPostDetail && (
-          <Sidebar />
+        {((!isCreatePost && !isPostDetail) || isMobileMenuOpen) && (
+          <Sidebar
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+            hideOnDesktop={isCreatePost || isPostDetail}
+          />
         )}
-        <main className={`flex-1 min-w-0 ${isCreatePost ? 'max-w-4xl' : (isPostDetail || isChat || isConnect ? 'max-w-full' : 'max-w-[680px]')}`}>
+        <main
+          className={`flex-1 min-w-0 ${isCreatePost ? 'max-w-4xl' : isPostDetail || isChat || isConnect ? 'max-w-full' : 'max-w-[680px]'}`}
+        >
           <Outlet />
         </main>
         {location.pathname === '/' && !isPostDetail && <RightSidebar />}
