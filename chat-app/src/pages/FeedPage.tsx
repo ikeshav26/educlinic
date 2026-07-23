@@ -16,9 +16,13 @@ export const FeedPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
-  const [showComments, setShowComments] = useState<{ [key: number]: boolean }>({});
-  
+  const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>(
+    {}
+  );
+  const [showComments, setShowComments] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeTag = searchParams.get('tag');
@@ -30,57 +34,74 @@ export const FeedPage: React.FC = () => {
     const content = commentInputs[postId];
     if (content && content.trim()) {
       addComment(postId, content);
-      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+      setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
     }
   };
 
   const handleLike = async (postId: number) => {
-    // Optimistic update
-    setFeedPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        const currentlyLiked = post.isLiked;
-        const count = post._count?.likes ?? 0;
-        return {
-          ...post,
-          isLiked: !currentlyLiked,
-          _count: { ...post._count, likes: currentlyLiked ? count - 1 : count + 1, comments: post._count?.comments ?? 0 }
-        };
-      }
-      return post;
-    }));
+    setFeedPosts((prev) =>
+      prev.map((post) => {
+        if (post.id === postId) {
+          const currentlyLiked = post.isLiked;
+          const count = post._count?.likes ?? 0;
+          return {
+            ...post,
+            isLiked: !currentlyLiked,
+            _count: {
+              ...post._count,
+              likes: currentlyLiked ? count - 1 : count + 1,
+              comments: post._count?.comments ?? 0,
+            },
+          };
+        }
+        return post;
+      })
+    );
 
     try {
       await fetch(`${API_BASE}/posts/${postId}/like`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       });
     } catch (err) {
       console.error(err);
     }
   };
 
-  const fetchPosts = useCallback(async (pageNum: number, isInitial = false) => {
-    try {
-      if (isInitial) setLoading(true);
-      else setIsFetchingMore(true);
+  const fetchPosts = useCallback(
+    async (pageNum: number, isInitial = false) => {
+      try {
+        if (isInitial) setLoading(true);
+        else setIsFetchingMore(true);
 
-      const tagQuery = activeTag ? `&tag=${encodeURIComponent(activeTag)}` : '';
-      const searchQuery = activeSearch ? `&search=${encodeURIComponent(activeSearch)}` : '';
-      const res = await fetch(`${API_BASE}/posts?page=${pageNum}&limit=5${tagQuery}${searchQuery}`, {
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFeedPosts(prev => isInitial ? data.posts : [...prev, ...data.posts]);
-        setHasMore(data.hasMore);
+        const tagQuery = activeTag
+          ? `&tag=${encodeURIComponent(activeTag)}`
+          : '';
+        const searchQuery = activeSearch
+          ? `&search=${encodeURIComponent(activeSearch)}`
+          : '';
+        const res = await fetch(
+          `${API_BASE}/posts?page=${pageNum}&limit=5${tagQuery}${searchQuery}`,
+          {
+            credentials: 'include',
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setFeedPosts((prev) =>
+            isInitial ? data.posts : [...prev, ...data.posts]
+          );
+          setHasMore(data.hasMore);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setIsFetchingMore(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setIsFetchingMore(false);
-    }
-  }, [activeTag, activeSearch]);
+    },
+    [activeTag, activeSearch]
+  );
 
   useEffect(() => {
     setPage(1);
@@ -89,8 +110,13 @@ export const FeedPage: React.FC = () => {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loading && !isFetchingMore) {
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !loading &&
+          !isFetchingMore
+        ) {
           const nextPage = page + 1;
           setPage(nextPage);
           fetchPosts(nextPage);
@@ -113,16 +139,24 @@ export const FeedPage: React.FC = () => {
           <div>
             <h2 className="font-bold text-lg">
               {activeTag ? (
-                <>Showing posts for <span className="text-[#3b49df]">#{activeTag}</span></>
+                <>
+                  Showing posts for{' '}
+                  <span className="text-[#3b49df]">#{activeTag}</span>
+                </>
               ) : (
-                <>Search results for "<span className="text-[#3b49df]">{activeSearch}</span>"</>
+                <>
+                  Search results for "
+                  <span className="text-[#3b49df]">{activeSearch}</span>"
+                </>
               )}
             </h2>
-            <p className="text-sm text-muted-foreground">Discover what the community is saying.</p>
+            <p className="text-sm text-muted-foreground">
+              Discover what the community is saying.
+            </p>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/')}
             className="text-muted-foreground hover:text-foreground"
           >
@@ -140,9 +174,9 @@ export const FeedPage: React.FC = () => {
         </>
       ) : (
         <>
-          {feedPosts.map(post => {
+          {feedPosts.map((post) => {
             const authorUser = post.author
-              ? users.find(u => u.id === post.author?.id) || post.author
+              ? users.find((u) => u.id === post.author?.id) || post.author
               : post.createdBy;
             return (
               <PostCard
@@ -153,21 +187,28 @@ export const FeedPage: React.FC = () => {
                 commentInput={commentInputs[post.id] || ''}
                 showComments={showComments[post.id] || false}
                 onLike={() => handleLike(post.id)}
-                onCommentToggle={() => setShowComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
-                onCommentChange={val => setCommentInputs(prev => ({ ...prev, [post.id]: val }))}
+                onCommentToggle={() =>
+                  setShowComments((prev) => ({
+                    ...prev,
+                    [post.id]: !prev[post.id],
+                  }))
+                }
+                onCommentChange={(val) =>
+                  setCommentInputs((prev) => ({ ...prev, [post.id]: val }))
+                }
                 onCommentSubmit={() => handleComment(post.id)}
               />
             );
           })}
-          
+
           <div ref={observerTarget} className="h-10 w-full" />
-          
+
           {isFetchingMore && (
             <div className="pt-2">
               <PostSkeleton />
             </div>
           )}
-          
+
           {!hasMore && feedPosts.length > 0 && (
             <div className="text-center py-6 text-muted-foreground text-sm font-medium">
               You've caught up with the latest posts!

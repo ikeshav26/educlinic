@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
-import { ScrollArea } from '../ui/scroll-area';
 import { Search, Home, Paperclip } from 'lucide-react';
 import type { Chat } from '../../types';
 import { getAvatarUrl } from '../../lib/utils';
@@ -13,6 +12,7 @@ interface ChatSidebarProps {
   activeChatId: number | null | undefined;
   setActiveChatId: (id: number) => void;
   isLoading?: boolean;
+  className?: string;
 }
 
 const formatShortTime = (dateStr: string) => {
@@ -38,20 +38,31 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   activeChatId,
   setActiveChatId,
   isLoading,
+  className,
 }) => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
-  const filteredChats = chats.filter(chat =>
+  const filteredChats = chats.filter((chat) =>
     chat.participant.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="w-80 shrink-0 bg-background border-r border-border/40 overflow-hidden flex flex-col h-full">
+    <div
+      className={
+        className ||
+        'w-80 shrink-0 bg-background border-r border-border/40 overflow-hidden flex flex-col h-full'
+      }
+    >
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Chats</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Chats
+        </h1>
         <div className="flex items-center gap-3 text-muted-foreground">
-          <Link to="/" className="hover:text-foreground transition-colors p-2 hover:bg-muted rounded-full">
+          <Link
+            to="/"
+            className="hover:text-foreground transition-colors p-2 hover:bg-muted rounded-full"
+          >
             <Home className="h-5 w-5" />
           </Link>
         </div>
@@ -63,7 +74,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           <Input
             placeholder="Search"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-10 text-sm bg-background border border-border/60 rounded-full shadow-sm focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all"
           />
         </div>
@@ -73,7 +84,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <div className="space-y-0.5 pb-2">
           {isLoading ? (
             <div className="space-y-3 pt-2">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="flex items-center gap-3 p-2">
                   <Skeleton className="h-12 w-12 rounded-full shrink-0" />
                   <div className="space-y-2 flex-1">
@@ -88,8 +99,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
               {search ? 'No matching conversations' : 'No conversations yet.'}
             </div>
           ) : (
-            filteredChats.map(chat => {
-              const lastMsg = chat.lastMessage || (chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : null);
+            filteredChats.map((chat) => {
+              const lastMsg =
+                chat.lastMessage ||
+                (chat.messages.length > 0
+                  ? chat.messages[chat.messages.length - 1]
+                  : null);
               const unread = chat.unreadCount || 0;
               const isActive = activeChatId === chat.id;
 
@@ -97,20 +112,26 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <div
                   key={chat.id}
                   onClick={() => setActiveChatId(chat.id)}
-                  className={`flex items-center p-3 mb-1 mx-2 rounded-2xl cursor-pointer transition-all group relative border ${isActive
-                    ? 'bg-primary/7 border-primary/20 shadow-sm'
-                    : 'hover:bg-muted/50 border-transparent'
-                    }`}
+                  className={`flex items-center p-3 mb-1 mx-2 rounded-2xl cursor-pointer transition-all group relative border ${
+                    isActive
+                      ? 'bg-primary/7 border-primary/20 shadow-sm'
+                      : 'hover:bg-muted/50 border-transparent'
+                  }`}
                 >
-                  <div 
-                    className="shrink-0 mr-3 z-10 hover:scale-105 transition-transform" 
+                  <div
+                    className="shrink-0 mr-3 z-10 hover:scale-105 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/profile?id=${chat.participant.id}`);
                     }}
                   >
                     <Avatar className="h-12 w-12 border border-border/20 shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
-                      <AvatarImage src={getAvatarUrl(chat.participant.name, chat.participant.avatar)} />
+                      <AvatarImage
+                        src={getAvatarUrl(
+                          chat.participant.name,
+                          chat.participant.avatar
+                        )}
+                      />
                       <AvatarFallback className="bg-muted text-foreground font-semibold">
                         {chat.participant.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -119,7 +140,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
                   <div className="flex-1 overflow-hidden min-w-0 pr-2">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className={`text-sm truncate ${unread > 0 ? 'font-bold text-foreground' : 'font-medium text-foreground/90'}`}>
+                      <span
+                        className={`text-sm truncate ${unread > 0 ? 'font-bold text-foreground' : 'font-medium text-foreground/90'}`}
+                      >
                         {chat.participant.name}
                       </span>
                       {lastMsg && (
@@ -129,19 +152,27 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className={`text-[13px] truncate ${unread > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                      <span
+                        className={`text-[13px] truncate ${unread > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
+                      >
                         {lastMsg ? (
                           <>
                             {lastMsg.senderId !== chat.participant.id && (
-                              <span className="font-semibold mr-1 text-foreground/70">You:</span>
+                              <span className="font-semibold mr-1 text-foreground/70">
+                                You:
+                              </span>
                             )}
                             {lastMsg.content.length > 0 ? (
                               lastMsg.content
                             ) : (
-                              <span className="flex items-center gap-1"><Paperclip className="h-3 w-3" /> Attachment</span>
+                              <span className="flex items-center gap-1">
+                                <Paperclip className="h-3 w-3" /> Attachment
+                              </span>
                             )}
                           </>
-                        ) : 'No messages yet'}
+                        ) : (
+                          'No messages yet'
+                        )}
                       </span>
                     </div>
                   </div>

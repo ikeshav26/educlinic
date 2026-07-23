@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Menu, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { getAvatarUrl } from '../../lib/utils';
@@ -7,7 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useStore } from '../../store/mockData';
 import { Link, useNavigate } from 'react-router-dom';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onMenuClick?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const { currentUser } = useStore();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +44,16 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-7xl">
-        <div className="flex items-center gap-4 w-full max-w-[600px]">
+        <div className="flex items-center gap-2 sm:gap-4 w-full max-w-[600px]">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden shrink-0 -ml-2 text-muted-foreground hover:text-foreground"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+
           <Link
             to="/"
             className="flex items-center gap-2.5 cursor-pointer transition-transform hover:scale-105"
@@ -79,10 +92,23 @@ export const Navbar: React.FC = () => {
             Create Post
           </Button>
 
+          <Button
+            size="icon"
+            className="sm:hidden h-8 w-8 rounded-md bg-primary/10  text-black"
+            onClick={() => navigate('/create-post')}
+          >
+            <Plus className="h-4 w-4 stroke-2 " />
+          </Button>
+
           <Link to="/profile">
             <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-primary transition-all">
-              <AvatarImage src={getAvatarUrl(currentUser?.name, currentUser?.avatar)} alt={currentUser?.name} />
-              <AvatarFallback>{currentUser?.name?.substring(0, 2)}</AvatarFallback>
+              <AvatarImage
+                src={getAvatarUrl(currentUser?.name, currentUser?.avatar)}
+                alt={currentUser?.name}
+              />
+              <AvatarFallback>
+                {currentUser?.name?.substring(0, 2)}
+              </AvatarFallback>
             </Avatar>
           </Link>
         </div>

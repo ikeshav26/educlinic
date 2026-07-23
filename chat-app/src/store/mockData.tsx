@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from 'react';
 import type { User, Post, Chat, Message, Comment } from '../types';
 import { getSocket, connectSocket, disconnectSocket } from '../lib/socket';
 
@@ -8,44 +14,79 @@ interface StoreState {
   posts: Post[];
   chats: Chat[];
   isLoading: boolean;
-  addPost: (title: string, content: string, coverImage: string, tags: string[]) => Promise<void>;
+  addPost: (
+    title: string,
+    content: string,
+    coverImage: string,
+    tags: string[]
+  ) => Promise<void>;
   toggleLike: (postId: number) => Promise<void>;
-  addComment: (postId: number, content: string, parentId?: number) => Promise<Comment | undefined>;
+  addComment: (
+    postId: number,
+    content: string,
+    parentId?: number
+  ) => Promise<Comment | undefined>;
   deletePost: (postId: number) => Promise<boolean>;
   deleteComment: (commentId: number) => Promise<boolean>;
   toggleFollow: (userId: number, currentlyFollowing: boolean) => Promise<void>;
-  fetchFollowCounts: (userId: number) => Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; isFollowingMe: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+  fetchFollowCounts: (userId: number) => Promise<{
+    followersCount: number;
+    followingCount: number;
+    isFollowing: boolean;
+    isFollowingMe: boolean;
+    blockedByMe: boolean;
+    hasBlockedMe: boolean;
+  }>;
   blockUser: (userId: number) => Promise<void>;
   unblockUser: (userId: number) => Promise<void>;
   clearChat: (partnerId: number) => Promise<void>;
   fetchConversations: () => Promise<void>;
-  fetchMessagesWithUser: (partnerId: number, cursor?: number) => Promise<Message[]>;
+  fetchMessagesWithUser: (
+    partnerId: number,
+    cursor?: number
+  ) => Promise<Message[]>;
   sendMessage: (receiverId: number, content: string) => Promise<void>;
   markAsRead: (partnerId: number) => Promise<void>;
   startDirectMessage: (partnerUser: User) => Chat;
-  updateProfile: (name: string, bio: string, gender: string, socialLink: string) => Promise<void>;
+  updateProfile: (
+    name: string,
+    bio: string,
+    gender: string,
+    socialLink: string
+  ) => Promise<void>;
   editMessage: (messageId: number, content: string) => Promise<void>;
   deleteMessage: (messageId: number) => Promise<void>;
-  latestFollowUpdate: { followerId: number; followingId: number; isFollowing: boolean } | null;
+  latestFollowUpdate: {
+    followerId: number;
+    followingId: number;
+    isFollowing: boolean;
+  } | null;
 }
 
 export const StoreContext = createContext<StoreState | undefined>(undefined);
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
-export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const StoreProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [latestFollowUpdate, setLatestFollowUpdate] = useState<{ followerId: number; followingId: number; isFollowing: boolean } | null>(null);
+  const [latestFollowUpdate, setLatestFollowUpdate] = useState<{
+    followerId: number;
+    followingId: number;
+    isFollowing: boolean;
+  } | null>(null);
 
-  // Initialize store and authenticate user
   useEffect(() => {
     const initStore = async () => {
       try {
-        const userRes = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+        const userRes = await fetch(`${API_BASE}/auth/me`, {
+          credentials: 'include',
+        });
         if (!userRes.ok) {
           window.location.href = 'http://localhost:3000';
           return;
@@ -53,7 +94,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const userData = await userRes.json();
         setCurrentUser(userData.user);
 
-        const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
+        const postsRes = await fetch(`${API_BASE}/posts`, {
+          credentials: 'include',
+        });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
           setPosts(postsData.posts || postsData);
@@ -68,21 +111,24 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     initStore();
   }, []);
 
-  // Fetch initial conversations list once user is logged in
   const fetchConversations = async () => {
     try {
-      const res = await fetch(`${API_BASE}/chat/conversations`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/chat/conversations`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
-        const apiChats: Chat[] = (data.conversations || []).map((conv: any) => ({
-          id: conv.id,
-          participant: conv.participant,
-          messages: conv.lastMessage ? [conv.lastMessage] : [],
-          lastMessage: conv.lastMessage,
-          unreadCount: conv.unreadCount || 0,
-          blockedByMe: conv.blockedByMe || false,
-          hasBlockedMe: conv.hasBlockedMe || false,
-        }));
+        const apiChats: Chat[] = (data.conversations || []).map(
+          (conv: any) => ({
+            id: conv.id,
+            participant: conv.participant,
+            messages: conv.lastMessage ? [conv.lastMessage] : [],
+            lastMessage: conv.lastMessage,
+            unreadCount: conv.unreadCount || 0,
+            blockedByMe: conv.blockedByMe || false,
+            hasBlockedMe: conv.hasBlockedMe || false,
+          })
+        );
         setChats(apiChats);
       }
     } catch (err) {
@@ -98,18 +144,22 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const socket = getSocket();
 
       const handleReceiveMessage = (msg: Message) => {
-        setChats(prevChats => {
-          const partnerId = msg.senderId === currentUser.id ? msg.receiverId! : msg.senderId;
-          const existingChatIndex = prevChats.findIndex(c => c.id === partnerId);
+        setChats((prevChats) => {
+          const partnerId =
+            msg.senderId === currentUser.id ? msg.receiverId! : msg.senderId;
+          const existingChatIndex = prevChats.findIndex(
+            (c) => c.id === partnerId
+          );
 
           if (existingChatIndex !== -1) {
             const updated = [...prevChats];
             const [chat] = updated.splice(existingChatIndex, 1);
-            const updatedMessages = chat.messages.some(m => m.id === msg.id)
+            const updatedMessages = chat.messages.some((m) => m.id === msg.id)
               ? chat.messages
               : [msg, ...chat.messages];
 
-            const unreadInc = (msg.senderId !== currentUser.id && !msg.isRead) ? 1 : 0;
+            const unreadInc =
+              msg.senderId !== currentUser.id && !msg.isRead ? 1 : 0;
 
             const updatedChat = {
               ...chat,
@@ -119,10 +169,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             };
             return [updatedChat, ...updated];
           } else {
-            // New conversation started
-            const partnerName = msg.senderId === currentUser.id
-              ? (msg.receiver?.name || 'User')
-              : (msg.sender?.name || 'User');
+            const partnerName =
+              msg.senderId === currentUser.id
+                ? msg.receiver?.name || 'User'
+                : msg.sender?.name || 'User';
 
             const newChat: Chat = {
               id: partnerId,
@@ -140,36 +190,64 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       };
 
       const handleEditMessage = (msg: Message) => {
-        setChats(prevChats => prevChats.map(chat => {
-          if (chat.messages.some(m => m.id === msg.id)) {
-            return {
-              ...chat,
-              messages: chat.messages.map(m => m.id === msg.id ? msg : m),
-              lastMessage: chat.lastMessage?.id === msg.id ? msg : chat.lastMessage
-            };
-          }
-          return chat;
-        }));
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.messages.some((m) => m.id === msg.id)) {
+              return {
+                ...chat,
+                messages: chat.messages.map((m) => (m.id === msg.id ? msg : m)),
+                lastMessage:
+                  chat.lastMessage?.id === msg.id ? msg : chat.lastMessage,
+              };
+            }
+            return chat;
+          })
+        );
       };
 
-      const handleDeleteMessage = ({ messageId, receiverId, senderId }: { messageId: number, receiverId: number, senderId: number }) => {
-        setChats(prevChats => prevChats.map(chat => {
-          if (chat.id === receiverId || chat.id === senderId) {
-            const updatedMessages = chat.messages.filter(m => m.id !== messageId);
-            return {
-              ...chat,
-              messages: updatedMessages,
-              lastMessage: chat.lastMessage?.id === messageId ? updatedMessages[0] : chat.lastMessage
-            };
-          }
-          return chat;
-        }));
+      const handleDeleteMessage = ({
+        messageId,
+        receiverId,
+        senderId,
+      }: {
+        messageId: number;
+        receiverId: number;
+        senderId: number;
+      }) => {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.id === receiverId || chat.id === senderId) {
+              const updatedMessages = chat.messages.filter(
+                (m) => m.id !== messageId
+              );
+              return {
+                ...chat,
+                messages: updatedMessages,
+                lastMessage:
+                  chat.lastMessage?.id === messageId
+                    ? updatedMessages[0]
+                    : chat.lastMessage,
+              };
+            }
+            return chat;
+          })
+        );
       };
 
-      const handleChatBlocked = ({ blockerId, blockedId }: { blockerId: number, blockedId: number }) => {
-        console.log('Received chat_blocked event:', { blockerId, blockedId, currentUserId: currentUser?.id });
-        setChats(prevChats => {
-          const newChats = prevChats.map(chat => {
+      const handleChatBlocked = ({
+        blockerId,
+        blockedId,
+      }: {
+        blockerId: number;
+        blockedId: number;
+      }) => {
+        console.log('Received chat_blocked event:', {
+          blockerId,
+          blockedId,
+          currentUserId: currentUser?.id,
+        });
+        setChats((prevChats) => {
+          const newChats = prevChats.map((chat) => {
             if (chat.id === blockedId && currentUser?.id === blockerId) {
               console.log('Setting blockedByMe for chat:', chat.id);
               return { ...chat, blockedByMe: true };
@@ -184,28 +262,48 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         });
       };
 
-      const handleChatUnblocked = ({ blockerId, blockedId }: { blockerId: number, blockedId: number }) => {
-        console.log('Received chat_unblocked event:', { blockerId, blockedId, currentUserId: currentUser?.id });
-        setChats(prev => prev.map(chat => {
-          if (currentUser) {
-            if (chat.id === blockedId && currentUser?.id === blockerId) {
-              console.log('Clearing blockedByMe for chat:', chat.id);
-              return { ...chat, blockedByMe: false };
+      const handleChatUnblocked = ({
+        blockerId,
+        blockedId,
+      }: {
+        blockerId: number;
+        blockedId: number;
+      }) => {
+        console.log('Received chat_unblocked event:', {
+          blockerId,
+          blockedId,
+          currentUserId: currentUser?.id,
+        });
+        setChats((prev) =>
+          prev.map((chat) => {
+            if (currentUser) {
+              if (chat.id === blockedId && currentUser?.id === blockerId) {
+                console.log('Clearing blockedByMe for chat:', chat.id);
+                return { ...chat, blockedByMe: false };
+              }
+              if (chat.id === blockerId && currentUser?.id === blockedId) {
+                console.log('Clearing hasBlockedMe for chat:', chat.id);
+                return { ...chat, hasBlockedMe: false };
+              }
             }
-            if (chat.id === blockerId && currentUser?.id === blockedId) {
-              console.log('Clearing hasBlockedMe for chat:', chat.id);
-              return { ...chat, hasBlockedMe: false };
-            }
-          }
-          return chat;
-        }));
+            return chat;
+          })
+        );
       };
 
       const handleChatCleared = ({ partnerId }: { partnerId: number }) => {
-        setChats(prev => prev.map(chat => chat.id === partnerId ? { ...chat, messages: [] } : chat));
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat.id === partnerId ? { ...chat, messages: [] } : chat
+          )
+        );
       };
 
-      const handleFollowUpdated = (data: { followerId: number, followingId: number, isFollowing: boolean }) => {
+      const handleFollowUpdated = (data: {
+        followerId: number;
+        followingId: number;
+        isFollowing: boolean;
+      }) => {
         setLatestFollowUpdate(data);
       };
 
@@ -231,29 +329,35 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, [currentUser]);
 
-  const fetchMessagesWithUser = async (partnerId: number, cursor?: number): Promise<Message[]> => {
+  const fetchMessagesWithUser = async (
+    partnerId: number,
+    cursor?: number
+  ): Promise<Message[]> => {
     try {
       const url = new URL(`${API_BASE}/chat/messages/${partnerId}`);
       if (cursor) url.searchParams.append('cursor', cursor.toString());
-      
+
       const res = await fetch(url.toString(), { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         const fetchedMsgs: Message[] = data.messages || [];
         const nextCursor: number | null = data.nextCursor || null;
 
-        // Update chats in state
-        setChats(prev => prev.map(chat => {
-          if (chat.id === partnerId) {
-            return {
-              ...chat,
-              messages: cursor ? [...chat.messages, ...fetchedMsgs] : fetchedMsgs,
-              unreadCount: cursor ? chat.unreadCount : 0,
-              nextCursor,
-            };
-          }
-          return chat;
-        }));
+        setChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === partnerId) {
+              return {
+                ...chat,
+                messages: cursor
+                  ? [...chat.messages, ...fetchedMsgs]
+                  : fetchedMsgs,
+                unreadCount: cursor ? chat.unreadCount : 0,
+                nextCursor,
+              };
+            }
+            return chat;
+          })
+        );
 
         return fetchedMsgs;
       }
@@ -269,12 +373,14 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         method: 'POST',
         credentials: 'include',
       });
-      setChats(prev => prev.map(chat => {
-        if (chat.id === partnerId) {
-          return { ...chat, unreadCount: 0 };
-        }
-        return chat;
-      }));
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === partnerId) {
+            return { ...chat, unreadCount: 0 };
+          }
+          return chat;
+        })
+      );
     } catch (err) {
       console.error('Failed to mark messages as read', err);
     }
@@ -287,7 +393,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (socket.connected) {
       socket.emit('send_message', { receiverId, content: content.trim() });
     } else {
-      // Fallback via HTTP REST
       try {
         const res = await fetch(`${API_BASE}/chat/send`, {
           method: 'POST',
@@ -299,19 +404,19 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           const data = await res.json();
           if (data.message) {
             const msg: Message = data.message;
-            setChats(prev => {
-              const existingIndex = prev.findIndex(c => c.id === receiverId);
+            setChats((prev) => {
+              const existingIndex = prev.findIndex((c) => c.id === receiverId);
               if (existingIndex !== -1) {
                 const updated = [...prev];
                 const [chat] = updated.splice(existingIndex, 1);
-                const exists = chat.messages.some(m => m.id === msg.id);
+                const exists = chat.messages.some((m) => m.id === msg.id);
                 return [
                   {
                     ...chat,
                     messages: exists ? chat.messages : [msg, ...chat.messages],
                     lastMessage: msg,
                   },
-                  ...updated
+                  ...updated,
                 ];
               }
               return prev;
@@ -325,7 +430,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const startDirectMessage = (partnerUser: User): Chat => {
-    const existing = chats.find(c => c.id === partnerUser.id);
+    const existing = chats.find((c) => c.id === partnerUser.id);
     if (existing) return existing;
 
     const newChat: Chat = {
@@ -334,7 +439,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       messages: [],
       unreadCount: 0,
     };
-    setChats(prev => [newChat, ...prev]);
+    setChats((prev) => [newChat, ...prev]);
     return newChat;
   };
 
@@ -349,16 +454,19 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (res.ok) {
         const data = await res.json();
         const msg = data.message;
-        setChats(prevChats => prevChats.map(chat => {
-          if (chat.messages.some(m => m.id === msg.id)) {
-            return {
-              ...chat,
-              messages: chat.messages.map(m => m.id === msg.id ? msg : m),
-              lastMessage: chat.lastMessage?.id === msg.id ? msg : chat.lastMessage
-            };
-          }
-          return chat;
-        }));
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.messages.some((m) => m.id === msg.id)) {
+              return {
+                ...chat,
+                messages: chat.messages.map((m) => (m.id === msg.id ? msg : m)),
+                lastMessage:
+                  chat.lastMessage?.id === msg.id ? msg : chat.lastMessage,
+              };
+            }
+            return chat;
+          })
+        );
       }
     } catch (err) {
       console.error('Failed to edit message', err);
@@ -372,33 +480,47 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         credentials: 'include',
       });
       if (res.ok) {
-        setChats(prevChats => prevChats.map(chat => {
-          const updatedMessages = chat.messages.filter(m => m.id !== messageId);
-          if (chat.messages.length !== updatedMessages.length) {
-            return {
-              ...chat,
-              messages: updatedMessages,
-              lastMessage: chat.lastMessage?.id === messageId ? updatedMessages[0] : chat.lastMessage
-            };
-          }
-          return chat;
-        }));
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            const updatedMessages = chat.messages.filter(
+              (m) => m.id !== messageId
+            );
+            if (chat.messages.length !== updatedMessages.length) {
+              return {
+                ...chat,
+                messages: updatedMessages,
+                lastMessage:
+                  chat.lastMessage?.id === messageId
+                    ? updatedMessages[0]
+                    : chat.lastMessage,
+              };
+            }
+            return chat;
+          })
+        );
       }
     } catch (err) {
       console.error('Failed to delete message', err);
     }
   };
 
-  const addPost = async (title: string, content: string, coverImage: string, tags: string[]) => {
+  const addPost = async (
+    title: string,
+    content: string,
+    coverImage: string,
+    tags: string[]
+  ) => {
     try {
       const res = await fetch(`${API_BASE}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content, imageUrl: coverImage, tags }),
-        credentials: 'include'
+        credentials: 'include',
       });
       if (res.ok) {
-        const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
+        const postsRes = await fetch(`${API_BASE}/posts`, {
+          credentials: 'include',
+        });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
           setPosts(postsData.posts || postsData);
@@ -411,26 +533,34 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const toggleLike = async (postId: number) => {
     try {
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          const currentlyLiked = post.isLiked;
-          const count = post._count?.likes ?? 0;
-          return {
-            ...post,
-            isLiked: !currentlyLiked,
-            _count: { ...post._count, likes: currentlyLiked ? count - 1 : count + 1, comments: post._count?.comments ?? 0 }
-          };
-        }
-        return post;
-      }));
+      setPosts(
+        posts.map((post) => {
+          if (post.id === postId) {
+            const currentlyLiked = post.isLiked;
+            const count = post._count?.likes ?? 0;
+            return {
+              ...post,
+              isLiked: !currentlyLiked,
+              _count: {
+                ...post._count,
+                likes: currentlyLiked ? count - 1 : count + 1,
+                comments: post._count?.comments ?? 0,
+              },
+            };
+          }
+          return post;
+        })
+      );
 
       const res = await fetch(`${API_BASE}/posts/${postId}/like`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!res.ok) {
-        const postsRes = await fetch(`${API_BASE}/posts`, { credentials: 'include' });
+        const postsRes = await fetch(`${API_BASE}/posts`, {
+          credentials: 'include',
+        });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
           setPosts(postsData.posts || postsData);
@@ -441,13 +571,17 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const addComment = async (postId: number, content: string, parentId?: number) => {
+  const addComment = async (
+    postId: number,
+    content: string,
+    parentId?: number
+  ) => {
     try {
       const res = await fetch(`${API_BASE}/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, parentId }),
-        credentials: 'include'
+        credentials: 'include',
       });
       if (res.ok) {
         return await res.json();
@@ -461,7 +595,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const res = await fetch(`${API_BASE}/posts/comments/${commentId}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
       });
       return res.ok;
     } catch (err) {
@@ -474,10 +608,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const res = await fetch(`${API_BASE}/posts/${postId}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
       });
       if (res.ok) {
-        setPosts(prev => prev.filter(p => p.id !== postId));
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
         return true;
       }
       return false;
@@ -510,9 +644,26 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const fetchFollowCounts = async (userId: number) => {
-    const res = await fetch(`${API_BASE}/follow/${userId}/counts`, { credentials: 'include' });
-    if (!res.ok) return { followersCount: 0, followingCount: 0, isFollowing: false, isFollowingMe: false, blockedByMe: false, hasBlockedMe: false };
-    return res.json() as Promise<{ followersCount: number; followingCount: number; isFollowing: boolean; isFollowingMe: boolean; blockedByMe: boolean; hasBlockedMe: boolean }>;
+    const res = await fetch(`${API_BASE}/follow/${userId}/counts`, {
+      credentials: 'include',
+    });
+    if (!res.ok)
+      return {
+        followersCount: 0,
+        followingCount: 0,
+        isFollowing: false,
+        isFollowingMe: false,
+        blockedByMe: false,
+        hasBlockedMe: false,
+      };
+    return res.json() as Promise<{
+      followersCount: number;
+      followingCount: number;
+      isFollowing: boolean;
+      isFollowingMe: boolean;
+      blockedByMe: boolean;
+      hasBlockedMe: boolean;
+    }>;
   };
 
   const blockUser = async (userId: number) => {
@@ -543,13 +694,20 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         method: 'POST',
         credentials: 'include',
       });
-      setChats(prev => prev.map(c => c.id === partnerId ? { ...c, messages: [] } : c));
+      setChats((prev) =>
+        prev.map((c) => (c.id === partnerId ? { ...c, messages: [] } : c))
+      );
     } catch (err) {
       console.error('clearChat error', err);
     }
   };
 
-  const updateProfile = async (name: string, bio: string, gender: string, socialLink: string) => {
+  const updateProfile = async (
+    name: string,
+    bio: string,
+    gender: string,
+    socialLink: string
+  ) => {
     try {
       const res = await fetch(`${API_BASE}/users/profile`, {
         method: 'PUT',
@@ -597,7 +755,13 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         latestFollowUpdate,
       }}
     >
-      {isLoading ? <div className="flex h-screen items-center justify-center">Loading...</div> : children}
+      {isLoading ? (
+        <div className="flex h-screen items-center justify-center">
+          Loading...
+        </div>
+      ) : (
+        children
+      )}
     </StoreContext.Provider>
   );
 };

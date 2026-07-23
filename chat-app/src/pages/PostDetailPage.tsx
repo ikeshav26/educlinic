@@ -3,7 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/mockData';
 import { Button } from '../components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Heart, MessageSquare, Share2, ArrowLeft, UserCheck } from 'lucide-react';
+import {
+  Heart,
+  MessageSquare,
+  Share2,
+  ArrowLeft,
+  UserCheck,
+} from 'lucide-react';
 import { getAvatarUrl } from '../lib/utils';
 import { CommentSection } from '../components/comments/CommentSection';
 import { PostDetailSidebar } from '../components/post-detail/PostDetailSidebar';
@@ -16,16 +22,23 @@ export const PostDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const postId = Number(id);
-  const { posts, users, toggleLike, toggleFollow, fetchFollowCounts, currentUser } = useStore();
+  const {
+    posts,
+    users,
+    toggleLike,
+    toggleFollow,
+    fetchFollowCounts,
+    currentUser,
+  } = useStore();
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
 
-  const post = posts.find(p => p.id === postId);
+  const post = posts.find((p) => p.id === postId);
 
   const authorUser = post?.author
-    ? users.find(u => u.id === post.author?.id) || post.author
+    ? users.find((u) => u.id === post.author?.id) || post.author
     : post?.createdBy;
 
   const authorId = authorUser?.id;
@@ -50,7 +63,11 @@ export const PostDetailPage: React.FC = () => {
     return (
       <div className="p-12 text-center space-y-4">
         <div className="text-xl font-bold">Post not found</div>
-        <Button onClick={() => navigate('/')} variant="outline" className="gap-2">
+        <Button
+          onClick={() => navigate('/')}
+          variant="outline"
+          className="gap-2"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to feed
         </Button>
       </div>
@@ -82,7 +99,6 @@ export const PostDetailPage: React.FC = () => {
       />
 
       <article className="flex-1 min-w-0 bg-card rounded-md border border-border/80 overflow-hidden shadow-2xs">
-        {/* Author header bar */}
         <div className="p-4 sm:p-8 pb-0 md:px-12 md:pt-12">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -90,8 +106,12 @@ export const PostDetailPage: React.FC = () => {
                 className="h-11 w-11 border border-border/60 cursor-pointer"
                 onClick={() => navigate('/profile')}
               >
-                <AvatarImage src={getAvatarUrl(authorUser?.name, authorUser?.avatar)} />
-                <AvatarFallback>{authorUser?.name?.substring(0, 2) || 'DEV'}</AvatarFallback>
+                <AvatarImage
+                  src={getAvatarUrl(authorUser?.name, authorUser?.avatar)}
+                />
+                <AvatarFallback>
+                  {authorUser?.name?.substring(0, 2) || 'DEV'}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <div
@@ -101,7 +121,13 @@ export const PostDetailPage: React.FC = () => {
                   {authorUser?.name || 'DEV Contributor'}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  Posted on {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • 4 min read
+                  Posted on{' '}
+                  {new Date(post.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}{' '}
+                  • 4 min read
                 </div>
               </div>
             </div>
@@ -117,20 +143,41 @@ export const PostDetailPage: React.FC = () => {
                     : 'bg-[#3b49df] hover:bg-[#2f3ab2] text-white'
                 }`}
               >
-                {isFollowing ? <><UserCheck className="h-4 w-4 mr-1" />Following</> : 'Follow'}
+                {isFollowing ? (
+                  <>
+                    <UserCheck className="h-4 w-4 mr-1" />
+                    Following
+                  </>
+                ) : (
+                  'Follow'
+                )}
               </Button>
             )}
           </div>
         </div>
 
         <PostContent post={post} />
-
-        {/* Mobile action bar */}
         <div className="lg:hidden flex items-center justify-around py-3 border-t border-border/60 bg-muted/20 px-4">
-          <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className={isLiked ? 'text-red-500 font-semibold' : ''}>
-            <Heart className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`} /> {likesCount}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleLike(post.id)}
+            className={isLiked ? 'text-red-500 font-semibold' : ''}
+          >
+            <Heart
+              className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`}
+            />{' '}
+            {likesCount}
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              document
+                .getElementById('comments')
+                ?.scrollIntoView({ behavior: 'smooth' })
+            }
+          >
             <MessageSquare className="h-5 w-5 mr-1" /> {commentsCount}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleShareMobile}>
@@ -139,7 +186,12 @@ export const PostDetailPage: React.FC = () => {
         </div>
 
         <div className="border-t border-border/60">
-          <CommentSection postId={post.id} postOwnerId={authorId} comments={post.comments || []} commentsCount={commentsCount} />
+          <CommentSection
+            postId={post.id}
+            postOwnerId={authorId}
+            comments={post.comments || []}
+            commentsCount={commentsCount}
+          />
         </div>
       </article>
 

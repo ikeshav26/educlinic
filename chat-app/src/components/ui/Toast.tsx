@@ -7,7 +7,11 @@ interface ToastProps {
   onDismiss: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({ message, visible, onDismiss }) => {
+export const Toast: React.FC<ToastProps> = ({
+  message,
+  visible,
+  onDismiss,
+}) => {
   useEffect(() => {
     if (!visible) return;
     const timer = setTimeout(onDismiss, 2800);
@@ -16,7 +20,7 @@ export const Toast: React.FC<ToastProps> = ({ message, visible, onDismiss }) => 
 
   return (
     <div
-      className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-300 ease-out ${
+      className={`fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-[9999] transition-all duration-300 ease-out ${
         visible
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'

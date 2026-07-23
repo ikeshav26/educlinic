@@ -11,16 +11,16 @@ export const PostSkeleton: React.FC = () => {
           <Skeleton className="h-3 w-20" />
         </div>
       </div>
-      
+
       <div className="space-y-3 mb-4">
         <Skeleton className="h-6 w-3/4" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-5/6" />
         <Skeleton className="h-4 w-4/6" />
       </div>
-      
+
       <Skeleton className="h-64 w-full rounded-md mb-4" />
-      
+
       <div className="flex items-center gap-4 pt-3 border-t border-border/40">
         <Skeleton className="h-5 w-16" />
         <Skeleton className="h-5 w-16" />
