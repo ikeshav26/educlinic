@@ -1,123 +1,131 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { CalendarDays, Search, Loader2, Calendar } from "lucide-react"
-import { toast } from "sonner"
-import axios from "axios"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarDays, Search, Loader2, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
 
-import { CreateEventForm, type CreateEventFormData, type EventItem } from "@/components/events/CreateEventForm"
-import { EventCard } from "@/components/events/EventCard"
-import { ViewEventModal } from "@/components/events/ViewEventModal"
-import { EditEventModal } from "@/components/events/EditEventModal"
+import {
+  CreateEventForm,
+  type CreateEventFormData,
+  type EventItem,
+} from '@/components/events/CreateEventForm';
+import { EventCard } from '@/components/events/EventCard';
+import { ViewEventModal } from '@/components/events/ViewEventModal';
+import { EditEventModal } from '@/components/events/EditEventModal';
 
 export default function Events() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // State for events and pagination
-  const [events, setEvents] = useState<EventItem[]>([])
-  const [total, setTotal] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6
-  const [isLoading, setIsLoading] = useState(false)
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const [isLoading, setIsLoading] = useState(false);
 
   // Filters & search
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterType, setFilterType] = useState<"ALL" | "UPCOMING" | "PAST">("ALL")
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'ALL' | 'UPCOMING' | 'PAST'>(
+    'ALL'
+  );
 
   // Form submission loading states
-  const [isCreating, setIsCreating] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   // Modal active states
-  const [viewingEvent, setViewingEvent] = useState<EventItem | null>(null)
-  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null)
+  const [viewingEvent, setViewingEvent] = useState<EventItem | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
 
   // Fetch Events from API
   // Fetch Events from API across all events
   const fetchEvents = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const offset = (currentPage - 1) * itemsPerPage
-      const params = new URLSearchParams()
-      if (filterType === "UPCOMING") params.append("filter", "upcoming")
-      if (filterType === "PAST") params.append("filter", "past")
-      if (searchQuery.trim()) params.append("search", searchQuery.trim())
+      const offset = (currentPage - 1) * itemsPerPage;
+      const params = new URLSearchParams();
+      if (filterType === 'UPCOMING') params.append('filter', 'upcoming');
+      if (filterType === 'PAST') params.append('filter', 'past');
+      if (searchQuery.trim()) params.append('search', searchQuery.trim());
 
-      const queryString = params.toString() ? `?${params.toString()}` : ""
+      const queryString = params.toString() ? `?${params.toString()}` : '';
       const response = await axios.get(
         `http://localhost:4000/api/events/all-events/${itemsPerPage}/${offset}${queryString}`,
         { withCredentials: true }
-      )
-      setEvents(response.data.events || [])
-      setTotal(response.data.total || 0)
+      );
+      setEvents(response.data.events || []);
+      setTotal(response.data.total || 0);
     } catch (error) {
-      console.error("Failed to fetch events:", error)
-      toast.error("Failed to load events")
+      console.error('Failed to fetch events:', error);
+      toast.error('Failed to load events');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchEvents()
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [currentPage, filterType, searchQuery])
+      fetchEvents();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [currentPage, filterType, searchQuery]);
 
   // Events returned from API are filtered across all database events and sorted latest added first
   const filteredEvents = [...events].sort((a, b) => {
     if (a.createdAt && b.createdAt) {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
-    return b.id - a.id
-  })
+    return b.id - a.id;
+  });
 
-  const totalPages = Math.max(1, Math.ceil(total / itemsPerPage))
+  const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
 
   // Create Event Handler
   const handleCreateEvent = async (formData: CreateEventFormData) => {
     if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      toast.error("End date must be after start date")
-      return
+      toast.error('End date must be after start date');
+      return;
     }
 
-    setIsCreating(true)
+    setIsCreating(true);
     try {
       await axios.post(
-        "http://localhost:4000/api/events/create",
+        'http://localhost:4000/api/events/create',
         {
           name: formData.name.trim(),
           description: formData.description.trim() || undefined,
           organizedBy: formData.organizedBy.trim(),
           place: formData.place.trim(),
           eventType: formData.eventType,
-          visibility: formData.visibility || "GLOBAL",
+          visibility: formData.visibility || 'GLOBAL',
           startDate: formData.startDate,
           endDate: formData.endDate,
           imageUrl: formData.imageUrl || undefined,
           startRegistrationsNow: formData.startRegistrationsNow ?? true,
-          registrationLimit: formData.registrationLimit ? Number(formData.registrationLimit) : null
+          registrationLimit: formData.registrationLimit
+            ? Number(formData.registrationLimit)
+            : null,
         },
         { withCredentials: true }
-      )
+      );
 
-      toast.success("Event created successfully!")
-      setCurrentPage(1)
-      fetchEvents()
+      toast.success('Event created successfully!');
+      setCurrentPage(1);
+      fetchEvents();
     } catch (error: any) {
-      console.error("Failed to create event:", error)
-      toast.error(error.response?.data?.message || "Failed to create event")
+      console.error('Failed to create event:', error);
+      toast.error(error.response?.data?.message || 'Failed to create event');
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   // Update Event Handler
   const handleUpdateEvent = async (eventId: number, updatedData: any) => {
     if (new Date(updatedData.endDate) <= new Date(updatedData.startDate)) {
-      toast.error("End date must be after start date")
-      return
+      toast.error('End date must be after start date');
+      return;
     }
 
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
       await axios.patch(
         `http://localhost:4000/api/events/update/${eventId}`,
@@ -127,63 +135,65 @@ export default function Events() {
           organizedBy: updatedData.organizedBy.trim(),
           place: updatedData.place.trim(),
           eventType: updatedData.eventType,
-          visibility: updatedData.visibility || "GLOBAL",
+          visibility: updatedData.visibility || 'GLOBAL',
           startDate: updatedData.startDate,
           endDate: updatedData.endDate,
           imageUrl: updatedData.imageUrl || undefined,
           startRegistrationsNow: updatedData.startRegistrationsNow ?? true,
-          registrationLimit: updatedData.registrationLimit ? Number(updatedData.registrationLimit) : null
+          registrationLimit: updatedData.registrationLimit
+            ? Number(updatedData.registrationLimit)
+            : null,
         },
         { withCredentials: true }
-      )
+      );
 
-      toast.success("Event updated successfully!")
-      setEditingEvent(null)
-      fetchEvents()
+      toast.success('Event updated successfully!');
+      setEditingEvent(null);
+      fetchEvents();
     } catch (error: any) {
-      console.error("Failed to update event:", error)
-      toast.error(error.response?.data?.message || "Failed to update event")
+      console.error('Failed to update event:', error);
+      toast.error(error.response?.data?.message || 'Failed to update event');
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   // Delete Event Handler
   const executeDeleteEvent = async (eventId: number) => {
     try {
-      await axios.delete(
-        `http://localhost:4000/api/events/delete/${eventId}`,
-        { withCredentials: true }
-      )
-      toast.success("Event deleted successfully!")
-      fetchEvents()
+      await axios.delete(`http://localhost:4000/api/events/delete/${eventId}`, {
+        withCredentials: true,
+      });
+      toast.success('Event deleted successfully!');
+      fetchEvents();
     } catch (error: any) {
-      console.error("Failed to delete event:", error)
-      toast.error(error.response?.data?.message || "Failed to delete event")
+      console.error('Failed to delete event:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete event');
     }
-  }
+  };
 
   const handleDeleteEvent = (ev: EventItem) => {
     toast(`Delete event "${ev.name}"?`, {
-      description: "This action cannot be undone. All registrations will also be removed.",
+      description:
+        'This action cannot be undone. All registrations will also be removed.',
       duration: 8000,
       action: {
-        label: "Confirm",
-        onClick: () => executeDeleteEvent(ev.id)
+        label: 'Confirm',
+        onClick: () => executeDeleteEvent(ev.id),
       },
       cancel: {
-        label: "Cancel",
-        onClick: () => {}
-      }
-    })
-  }
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
+  };
 
   // Share / Copy Event URL Handler
   const handleShareEvent = (ev: EventItem) => {
-    const eventUrl = `http://localhost:3000/events/${ev.id}`
-    navigator.clipboard.writeText(eventUrl)
-    toast.success(`Copied Event URL: ${eventUrl}`)
-  }
+    const eventUrl = `http://localhost:3000/events/${ev.id}`;
+    navigator.clipboard.writeText(eventUrl);
+    toast.success(`Copied Event URL: ${eventUrl}`);
+  };
 
   return (
     <div className="w-full h-[calc(100vh-64px)] min-h-[640px] p-6 lg:p-8 flex flex-col">
@@ -213,39 +223,42 @@ export default function Events() {
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterType("ALL")
-                    setCurrentPage(1)
+                    setFilterType('ALL');
+                    setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 rounded transition-colors ${filterType === "ALL"
-                      ? "bg-white text-slate-900 shadow-2xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`px-3 py-1 rounded transition-colors ${
+                    filterType === 'ALL'
+                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   All
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterType("UPCOMING")
-                    setCurrentPage(1)
+                    setFilterType('UPCOMING');
+                    setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 rounded transition-colors ${filterType === "UPCOMING"
-                      ? "bg-white text-slate-900 shadow-2xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`px-3 py-1 rounded transition-colors ${
+                    filterType === 'UPCOMING'
+                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   Upcoming
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterType("PAST")
-                    setCurrentPage(1)
+                    setFilterType('PAST');
+                    setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 rounded transition-colors ${filterType === "PAST"
-                      ? "bg-white text-slate-900 shadow-2xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`px-3 py-1 rounded transition-colors ${
+                    filterType === 'PAST'
+                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   Past
                 </button>
@@ -258,8 +271,8 @@ export default function Events() {
                   placeholder="Search all events by name, place..."
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    setCurrentPage(1)
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
                   }}
                   className="pl-9 pr-3 py-1.5 border border-gray-200 rounded-full text-xs w-full sm:w-60 focus:outline-none focus:border-slate-800"
                 />
@@ -278,7 +291,9 @@ export default function Events() {
             ) : filteredEvents.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center gap-2 text-gray-400 border border-dashed border-gray-200 rounded-sm">
                 <Calendar className="w-8 h-8 text-gray-300" />
-                <span className="text-sm font-bold text-gray-700">No Events Found</span>
+                <span className="text-sm font-bold text-gray-700">
+                  No Events Found
+                </span>
                 <span className="text-xs text-gray-400">
                   Fill in the form on the left to register a new event.
                 </span>
@@ -306,43 +321,51 @@ export default function Events() {
           {total > 0 && (
             <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between shrink-0 text-xs text-gray-600">
               <div>
-                Showing{" "}
+                Showing{' '}
                 <strong className="font-bold text-slate-800">
                   {Math.min((currentPage - 1) * itemsPerPage + 1, total)}
-                </strong>{" "}
-                to{" "}
+                </strong>{' '}
+                to{' '}
                 <strong className="font-bold text-slate-800">
                   {Math.min(currentPage * itemsPerPage, total)}
-                </strong>{" "}
-                of <strong className="font-bold text-slate-900">{total}</strong> events
+                </strong>{' '}
+                of <strong className="font-bold text-slate-900">{total}</strong>{' '}
+                events
               </div>
 
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   className="px-3 py-1.5 rounded border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
                   Previous
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => setCurrentPage(num)}
-                    className={`px-3 py-1.5 rounded border text-xs font-bold transition-colors ${currentPage === num
-                        ? "border-slate-800 bg-slate-800 text-white"
-                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setCurrentPage(num)}
+                      className={`px-3 py-1.5 rounded border text-xs font-bold transition-colors ${
+                        currentPage === num
+                          ? 'border-slate-800 bg-slate-800 text-white'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                       }`}
-                  >
-                    {num}
-                  </button>
-                ))}
+                    >
+                      {num}
+                    </button>
+                  )
+                )}
                 <button
                   type="button"
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   className="px-3 py-1.5 rounded border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
                   Next
@@ -367,7 +390,6 @@ export default function Events() {
         onSubmit={handleUpdateEvent}
         isUpdating={isUpdating}
       />
-
     </div>
-  )
+  );
 }

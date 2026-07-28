@@ -1,4 +1,4 @@
-import { Search, Image as ImageIcon, ChevronRight } from "lucide-react"
+import { Search, Image as ImageIcon, ChevronRight } from 'lucide-react';
 
 export default function Gallery() {
   return (
@@ -12,9 +12,9 @@ export default function Gallery() {
           <span className="text-gray-400">Overview</span>
         </div>
         <div className="relative">
-          <input 
-            type="text" 
-            placeholder="search..." 
+          <input
+            type="text"
+            placeholder="search..."
             className="pl-4 pr-10 py-1.5 border border-gray-200 rounded-full text-sm w-64 focus:outline-none focus:border-blue-400"
           />
           <Search className="w-4 h-4 absolute right-3 top-2.5 text-gray-400" />
@@ -25,5 +25,5 @@ export default function Gallery() {
         {/* Content will be added here later */}
       </div>
     </div>
-  )
+  );
 }

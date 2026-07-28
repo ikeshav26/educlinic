@@ -2,9 +2,14 @@ import type { Request, Response } from 'express';
 import { prisma } from '../config/db.js';
 import cloudinary from '../config/cloudinary.js';
 
-export const addGalleryItem = async (req: Request, res: Response): Promise<void> => {
+export const addGalleryItem = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const rawItems = Array.isArray(req.body.items) ? req.body.items : [req.body];
+    const rawItems = Array.isArray(req.body.items)
+      ? req.body.items
+      : [req.body];
 
     if (rawItems.length === 0) {
       res.status(400).json({ message: 'No items provided' });
@@ -14,7 +19,9 @@ export const addGalleryItem = async (req: Request, res: Response): Promise<void>
     // Validate all items
     for (const item of rawItems) {
       if (!item.imageUrl || !item.category) {
-        res.status(400).json({ message: 'imageUrl and category are required for all items' });
+        res.status(400).json({
+          message: 'imageUrl and category are required for all items',
+        });
         return;
       }
     }
@@ -23,7 +30,8 @@ export const addGalleryItem = async (req: Request, res: Response): Promise<void>
 
     for (const item of rawItems) {
       const { imageUrl, category, description } = item;
-      const finalDescription = description && description.trim() !== '' ? description : category;
+      const finalDescription =
+        description && description.trim() !== '' ? description : category;
 
       let finalImageUrl = imageUrl;
       let finalPublicId: string | null = null;
@@ -36,7 +44,10 @@ export const addGalleryItem = async (req: Request, res: Response): Promise<void>
           finalImageUrl = cloudinaryUpload.secure_url;
           finalPublicId = cloudinaryUpload.public_id;
         } catch (error) {
-          console.warn('Cloudinary upload failed, falling back to base64 URL storage:', error);
+          console.warn(
+            'Cloudinary upload failed, falling back to base64 URL storage:',
+            error
+          );
           finalImageUrl = imageUrl;
           finalPublicId = null;
         }
@@ -63,7 +74,10 @@ export const addGalleryItem = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const getGalleryItems = async (req: Request, res: Response): Promise<void> => {
+export const getGalleryItems = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { category, limit, page } = req.query;
     const parsedLimit = limit ? parseInt(limit as string) : undefined;
@@ -96,7 +110,9 @@ export const getGalleryItems = async (req: Request, res: Response): Promise<void
       select: { category: true },
       distinct: ['category'],
     });
-    const categories = allCategories.map((c: { category: string }) => c.category);
+    const categories = allCategories.map(
+      (c: { category: string }) => c.category
+    );
 
     res.status(200).json({
       items,
@@ -111,7 +127,10 @@ export const getGalleryItems = async (req: Request, res: Response): Promise<void
   }
 };
 
-export const deleteGalleryItem = async (req: Request, res: Response): Promise<void> => {
+export const deleteGalleryItem = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
